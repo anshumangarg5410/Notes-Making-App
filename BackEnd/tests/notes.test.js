@@ -205,4 +205,77 @@ describe('Notes API & Ownership Isolation', () => {
     expect(searchRes.body.data.length).toBe(1);
     expect(searchRes.body.data[0].title).toBe('Quantum Computing Fundamentals');
   });
+
+  it('should duplicate an existing note with (Copy) title suffix', async () => {
+    const createRes = await request(app)
+      .post('/api/notes')
+      .set('Authorization', `Bearer ${tokenA}`)
+      .send({ title: 'Original Masterpiece', color: 'emerald', tags: ['Ideas'] });
+
+    const sourceId = createRes.body.data._id;
+
+    const dupRes = await request(app)
+      .post(`/api/notes/${sourceId}/duplicate`)
+      .set('Authorization', `Bearer ${tokenA}`);
+
+    expect(dupRes.status).toBe(201);
+    expect(dupRes.body.success).toBe(true);
+    expect(dupRes.body.data.title).toBe('Original Masterpiece (Copy)');
+    expect(dupRes.body.data.color).toBe('emerald');
+    expect(dupRes.body.data.tags).toContain('Ideas');
+    expect(dupRes.body.data._id).not.toBe(sourceId);
+  });
+
+  it('should empty trash permanently for the authenticated user', async () => {
+    const noteRes = await request(app)
+      .post('/api/notes')
+      .set('Authorization', `Bearer ${tokenA}`)
+      .send({ title: 'Note to be trashed and emptied' });
+
+    const noteId = noteRes.body.data._id;
+
+    // Move to trash
+    await request(app)
+      .delete(`/api/notes/${noteId}`)
+      .set('Authorization', `Bearer ${tokenA}`);
+
+    // Empty trash
+    const emptyRes = await request(app)
+      .delete('/api/notes/trash/empty')
+      .set('Authorization', `Bearer ${tokenA}`);
+
+    expect(emptyRes.status).toBe(200);
+    expect(emptyRes.body.success).toBe(true);
+    expect(emptyRes.body.deletedCount).toBeGreaterThanOrEqual(1);
+
+    // Confirm trash is empty
+    const trashList = await request(app)
+      .get('/api/notes?filter=trash')
+      .set('Authorization', `Bearer ${tokenA}`);
+
+    expect(trashList.body.data.length).toBe(0);
+  });
+
+  it('should reject invalid color and overlong title via validation middleware', async () => {
+    // Test invalid color
+    const invalidColorRes = await request(app)
+      .post('/api/notes')
+      .set('Authorization', `Bearer ${tokenA}`)
+      .send({ title: 'Valid Title', color: 'neon-rainbow' });
+
+    expect(invalidColorRes.status).toBe(400);
+    expect(invalidColorRes.body.success).toBe(false);
+    expect(invalidColorRes.body.message).toMatch(/Invalid color/);
+
+    // Test excessive title length (> 150 chars)
+    const longTitle = 'A'.repeat(151);
+    const longTitleRes = await request(app)
+      .post('/api/notes')
+      .set('Authorization', `Bearer ${tokenA}`)
+      .send({ title: longTitle });
+
+    expect(longTitleRes.status).toBe(400);
+    expect(longTitleRes.body.success).toBe(false);
+    expect(longTitleRes.body.message).toMatch(/cannot exceed 150 characters/);
+  });
 });

@@ -243,6 +243,42 @@ export const WorkspacePage = () => {
       },
       onCancel: () => setConfirmDialog({ isOpen: false })
     });
+  // Action: Duplicate Note
+  const handleDuplicateNote = async (noteId) => {
+    try {
+      const res = await noteService.duplicateNote(noteId);
+      if (res.success && res.data) {
+        setNotes((prev) => [res.data, ...prev]);
+        setSelectedNote(res.data);
+        fetchStats();
+        success('Note duplicated');
+      }
+    } catch (err) {
+      toastError(err.response?.data?.message || 'Failed to duplicate note');
+    }
+  };
+
+  // Action: Empty Trash
+  const handleEmptyTrash = () => {
+    setConfirmDialog({
+      isOpen: true,
+      title: 'Empty Trash?',
+      message: 'All notes in trash will be permanently deleted from MongoDB. This action cannot be undone.',
+      confirmText: 'Empty Trash',
+      isDanger: true,
+      onConfirm: async () => {
+        try {
+          await noteService.emptyTrash();
+          setConfirmDialog({ isOpen: false });
+          fetchNotes();
+          fetchStats();
+          success('Trash emptied');
+        } catch (err) {
+          toastError(err.response?.data?.message || 'Failed to empty trash');
+        }
+      },
+      onCancel: () => setConfirmDialog({ isOpen: false })
+    });
   };
 
   const handleResetFilters = () => {
@@ -299,6 +335,8 @@ export const WorkspacePage = () => {
               onDeleteNote={handleDeleteNote}
               onRestoreNote={handleRestoreNote}
               onPermanentDeleteNote={handlePermanentDelete}
+              onDuplicateNote={handleDuplicateNote}
+              onEmptyTrash={handleEmptyTrash}
               activeFilter={activeFilter}
             />
           </div>

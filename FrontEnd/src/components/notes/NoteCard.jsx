@@ -13,7 +13,8 @@ import {
   Archive,
   Trash2,
   RotateCcw,
-  Palette
+  Palette,
+  Copy
 } from 'lucide-react';
 
 const iconMap = {
@@ -36,7 +37,8 @@ export const NoteCard = ({
   onDelete,
   onRestore,
   onPermanentDelete,
-  onChangeColor
+  onChangeColor,
+  onDuplicate
 }) => {
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef(null);
@@ -186,6 +188,18 @@ export const NoteCard = ({
                     <Archive className="w-3.5 h-3.5 text-charcoal-500" />
                     <span>{note.isArchived ? 'Unarchive' : 'Archive note'}</span>
                   </button>
+                  {onDuplicate && (
+                    <button
+                      onClick={() => {
+                        onDuplicate(note._id);
+                        setMenuOpen(false);
+                      }}
+                      className="w-full text-left px-3 py-1.5 hover:bg-cream-100 dark:hover:bg-charcoal-700/70 flex items-center space-x-2 text-charcoal-700 dark:text-cream-200"
+                    >
+                      <Copy className="w-3.5 h-3.5 text-charcoal-500" />
+                      <span>Duplicate note</span>
+                    </button>
+                  )}
                   <div className="my-1 border-t border-warm-border dark:border-charcoal-700/70" />
                   <button
                     onClick={() => {

@@ -251,6 +251,10 @@ cd BackEnd && npm test
 
 ---
 
+ANSHUMAN GARG
+PARTH SOHAL
+SAMARJEET SINGH
+
 ## 📄 License
 MIT © Notely Team
 # Notes-Making-App

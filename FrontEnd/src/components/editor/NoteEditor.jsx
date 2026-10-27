@@ -237,7 +237,10 @@ export const NoteEditor = ({
     minute: '2-digit'
   });
 
-  const wordCount = editor ? editor.storage.characterCount?.words?.() || editor.getText().split(/\s+/).filter(Boolean).length : 0;
+  const plainText = editor ? editor.getText() : note.plainText || '';
+  const wordCount = plainText.split(/\s+/).filter(Boolean).length;
+  const charCount = plainText.length;
+  const readingTime = Math.max(1, Math.ceil(wordCount / 200));
 
   const colorPalettes = [
     { id: 'default', name: 'Warm Cream', bg: 'bg-[#FBF9F5] dark:bg-charcoal-900', dot: 'bg-warm-border' },
@@ -461,8 +464,22 @@ export const NoteEditor = ({
         </div>
 
         {/* TipTap Editor Content */}
-        <div className="prose prose-stone dark:prose-invert max-w-none focus:outline-none">
+        <div className="prose prose-stone dark:prose-invert max-w-none focus:outline-none min-h-[300px]">
           <EditorContent editor={editor} />
+        </div>
+
+        {/* Live Document Statistics Bar */}
+        <div className="mt-12 pt-4 border-t border-warm-border/60 dark:border-charcoal-800 flex items-center justify-between text-[11px] text-charcoal-400 dark:text-charcoal-500 font-mono">
+          <div className="flex items-center space-x-3">
+            <span>{wordCount} {wordCount === 1 ? 'word' : 'words'}</span>
+            <span>•</span>
+            <span>{charCount} characters</span>
+            <span>•</span>
+            <span>~{readingTime} min read</span>
+          </div>
+          <div>
+            <span>Updated {formattedDate}</span>
+          </div>
         </div>
       </div>
     </div>

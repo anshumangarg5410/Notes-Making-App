@@ -243,6 +243,8 @@ export const WorkspacePage = () => {
       },
       onCancel: () => setConfirmDialog({ isOpen: false })
     });
+  };
+
   // Action: Duplicate Note
   const handleDuplicateNote = async (noteId) => {
     try {

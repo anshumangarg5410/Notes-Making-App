@@ -138,6 +138,22 @@ const permanentDeleteNote = async (req, res, next) => {
   }
 };
 
+// @desc    Empty trash (delete all trashed notes for user)
+// @route   DELETE /api/notes/trash/empty
+// @access  Private
+const emptyTrash = async (req, res, next) => {
+  try {
+    const result = await noteService.emptyTrash(req.user._id);
+    res.status(200).json({
+      success: true,
+      message: `Trash emptied successfully`,
+      deletedCount: result.deletedCount
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 // @desc    Toggle pin note
 // @route   PATCH /api/notes/:id/pin
 // @access  Private
@@ -224,6 +240,7 @@ module.exports = {
   deleteNote,
   restoreNote,
   permanentDeleteNote,
+  emptyTrash,
   togglePin,
   toggleFavorite,
   toggleArchive,

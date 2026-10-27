@@ -8,6 +8,7 @@ const {
   deleteNote,
   restoreNote,
   permanentDeleteNote,
+  emptyTrash,
   togglePin,
   toggleFavorite,
   toggleArchive,
@@ -23,6 +24,7 @@ router.route('/')
   .post(createNote);
 
 router.get('/stats', getNoteStats);
+router.delete('/trash/empty', emptyTrash);
 
 router.route('/:id')
   .get(getNoteById)

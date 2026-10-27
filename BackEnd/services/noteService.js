@@ -167,6 +167,14 @@ class NoteService {
   }
 
   /**
+   * Empty trash (permanently delete all soft-deleted notes for user)
+   */
+  async emptyTrash(userId) {
+    const result = await Note.deleteMany({ userId, isDeleted: true });
+    return result;
+  }
+
+  /**
    * Toggle pinned status
    */
   async togglePin(userId, noteId) {

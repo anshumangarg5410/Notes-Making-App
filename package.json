@@ -1,0 +1,33 @@
+{
+  "name": "notely-notes-workspace",
+  "version": "1.0.0",
+  "description": "Notely - Full-Stack MERN Notes & Knowledge Base Application with JWT Authentication",
+  "private": true,
+  "scripts": {
+    "install:backend": "npm install --prefix BackEnd",
+    "install:frontend": "npm install --prefix FrontEnd",
+    "install:all": "npm install && npm run install:backend && npm run install:frontend",
+    "server": "npm run dev --prefix BackEnd",
+    "client": "npm run dev --prefix FrontEnd",
+    "dev": "concurrently -n \"SERVER,CLIENT\" -c \"yellow,cyan\" \"npm run server\" \"npm run client\"",
+    "build:client": "npm run build --prefix FrontEnd",
+    "build": "npm run build:client",
+    "test:backend": "npm test --prefix BackEnd",
+    "test": "npm run test:backend",
+    "start": "npm start --prefix BackEnd"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.2"
+  },
+  "keywords": [
+    "mern",
+    "notes",
+    "tiptap",
+    "jwt",
+    "mongodb",
+    "react",
+    "express"
+  ],
+  "author": "Notely Team",
+  "license": "MIT"
+}

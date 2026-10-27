@@ -23,7 +23,8 @@ import {
   ArrowLeft,
   FileText,
   Plus,
-  X
+  X,
+  Download
 } from 'lucide-react';
 import { EditorToolbar } from './EditorToolbar';
 
@@ -43,10 +44,37 @@ export const NoteEditor = ({
   const [newTagInput, setNewTagInput] = useState('');
   const [showTagInput, setShowTagInput] = useState(false);
   const [showColorPicker, setShowColorPicker] = useState(false);
+  const [showExportMenu, setShowExportMenu] = useState(false);
 
   const pendingSaveTimeoutRef = useRef(null);
   const isInitialMount = useRef(true);
   const currentNoteIdRef = useRef(note?._id);
+
+  // Export note as Markdown or Plain Text
+  const handleExport = (format) => {
+    setShowExportMenu(false);
+    const contentText = editor ? editor.getText() : note?.plainText || '';
+    let fileContent = '';
+    let filename = `${(title || 'Untitled').replace(/[^a-zA-Z0-9_-]/g, '_')}`;
+
+    if (format === 'markdown') {
+      fileContent = `# ${title || 'Untitled'}\n\n${contentText}`;
+      filename += '.md';
+    } else {
+      fileContent = `${title || 'Untitled'}\n\n${contentText}`;
+      filename += '.txt';
+    }
+
+    const blob = new Blob([fileContent], { type: 'text/plain;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
 
   // TipTap Editor instance
   const editor = useEditor({
@@ -330,6 +358,33 @@ export const NoteEditor = ({
           >
             <Archive className="w-4 h-4" />
           </button>
+
+          {/* Export */}
+          <div className="relative">
+            <button
+              onClick={() => setShowExportMenu((prev) => !prev)}
+              className="p-1.5 rounded-lg text-charcoal-500 hover:text-charcoal-800 dark:hover:text-cream-100 hover:bg-cream-200/60 dark:hover:bg-charcoal-800 transition-colors"
+              title="Export note"
+            >
+              <Download className="w-4 h-4" />
+            </button>
+            {showExportMenu && (
+              <div className="absolute right-0 top-8 bg-warm-card dark:bg-charcoal-800 border border-warm-border dark:border-charcoal-700 rounded-xl shadow-dropdown py-1.5 w-44 z-30 text-xs">
+                <button
+                  onClick={() => handleExport('markdown')}
+                  className="w-full text-left px-3 py-1.5 hover:bg-cream-100 dark:hover:bg-charcoal-700 text-charcoal-700 dark:text-cream-200"
+                >
+                  Export as Markdown (.md)
+                </button>
+                <button
+                  onClick={() => handleExport('text')}
+                  className="w-full text-left px-3 py-1.5 hover:bg-cream-100 dark:hover:bg-charcoal-700 text-charcoal-700 dark:text-cream-200"
+                >
+                  Export as Text (.txt)
+                </button>
+              </div>
+            )}
+          </div>
 
           {/* Delete */}
           <button

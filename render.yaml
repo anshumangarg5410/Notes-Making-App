@@ -1,0 +1,10 @@
+services:
+  - type: web
+    name: notely-backend
+    env: node
+    plan: free
+    buildCommand: npm install --prefix BackEnd
+    startCommand: npm start --prefix BackEnd
+    envVars:
+      - key: NODE_ENV
+        value: production

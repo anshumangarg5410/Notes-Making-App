@@ -10,8 +10,9 @@
     "server": "npm run dev --prefix BackEnd",
     "client": "npm run dev --prefix FrontEnd",
     "dev": "concurrently -n \"SERVER,CLIENT\" -c \"yellow,cyan\" \"npm run server\" \"npm run client\"",
-    "build:client": "npm run build --prefix FrontEnd",
-    "build": "npm run build:client",
+    "build:backend": "npm run install:backend",
+    "build:client": "npm install --prefix FrontEnd && npm run build --prefix FrontEnd",
+    "build": "npm run install:backend",
     "test:backend": "npm test --prefix BackEnd",
     "test": "npm run test:backend",
     "start": "npm start --prefix BackEnd"

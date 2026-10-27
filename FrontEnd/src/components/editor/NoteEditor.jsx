@@ -243,17 +243,17 @@ export const NoteEditor = ({
   const readingTime = Math.max(1, Math.ceil(wordCount / 200));
 
   const colorPalettes = [
-    { id: 'default', name: 'Warm Cream', bg: 'bg-[#FBF9F5] dark:bg-charcoal-900', dot: 'bg-warm-border' },
-    { id: 'amber', name: 'Sunset Amber', bg: 'bg-amber-50/40 dark:bg-amber-950/20', dot: 'bg-amber-400' },
-    { id: 'rose', name: 'Soft Rose', bg: 'bg-rose-50/40 dark:bg-rose-950/20', dot: 'bg-rose-400' },
-    { id: 'emerald', name: 'Fresh Mint', bg: 'bg-emerald-50/40 dark:bg-emerald-950/20', dot: 'bg-emerald-400' },
-    { id: 'sky', name: 'Calm Sky', bg: 'bg-sky-50/40 dark:bg-sky-950/20', dot: 'bg-sky-400' },
-    { id: 'purple', name: 'Royal Lilac', bg: 'bg-purple-50/40 dark:bg-purple-950/20', dot: 'bg-purple-400' }
+    { id: 'default', name: 'Porcelain & Obsidian', bg: 'bg-[#F8FAFC] dark:bg-charcoal-950', dot: 'bg-indigo-500' },
+    { id: 'amber', name: 'Electric Amber', bg: 'bg-amber-50/50 dark:bg-amber-950/20', dot: 'bg-amber-400' },
+    { id: 'rose', name: 'Neon Rose', bg: 'bg-rose-50/50 dark:bg-rose-950/20', dot: 'bg-rose-400' },
+    { id: 'emerald', name: 'Cyber Mint', bg: 'bg-emerald-50/50 dark:bg-emerald-950/20', dot: 'bg-emerald-400' },
+    { id: 'sky', name: 'Electric Sky', bg: 'bg-sky-50/50 dark:bg-sky-950/20', dot: 'bg-sky-400' },
+    { id: 'purple', name: 'Royal Violet', bg: 'bg-purple-50/50 dark:bg-purple-950/20', dot: 'bg-purple-500' }
   ];
 
   return (
     <div className={`flex-1 flex flex-col h-full overflow-hidden transition-colors ${
-      colorPalettes.find((c) => c.id === color)?.bg || 'bg-warm-bg dark:bg-charcoal-900'
+      colorPalettes.find((c) => c.id === color)?.bg || 'bg-warm-bg dark:bg-charcoal-950'
     }`}>
       {/* Top Mobile Bar & Note Actions */}
       <div className="flex items-center justify-between px-6 py-2.5 border-b border-warm-border/60 dark:border-charcoal-800 bg-warm-bg/70 dark:bg-charcoal-900/70 backdrop-blur-sm select-none">
@@ -318,7 +318,7 @@ export const NoteEditor = ({
                     key={c.id}
                     onClick={() => handleSelectColor(c.id)}
                     className={`w-6 h-6 rounded-full border-2 transition-transform ${c.dot} ${
-                      color === c.id ? 'border-terracotta-500 scale-110' : 'border-transparent hover:scale-105'
+                      color === c.id ? 'border-indigo-500 scale-110' : 'border-transparent hover:scale-105'
                     }`}
                     title={c.name}
                   />
@@ -332,12 +332,12 @@ export const NoteEditor = ({
             onClick={() => onTogglePin(note._id)}
             className={`p-1.5 rounded-lg transition-colors ${
               note.isPinned
-                ? 'text-terracotta-500 bg-terracotta-100/60 dark:bg-terracotta-900/30'
+                ? 'text-indigo-500 bg-indigo-50 dark:bg-indigo-950/40'
                 : 'text-charcoal-500 hover:text-charcoal-800 dark:hover:text-cream-100 hover:bg-cream-200/60 dark:hover:bg-charcoal-800'
             }`}
             title={note.isPinned ? 'Unpin note' : 'Pin note'}
           >
-            <Pin className={`w-4 h-4 transform rotate-45 ${note.isPinned ? 'fill-terracotta-500' : ''}`} />
+            <Pin className={`w-4 h-4 transform rotate-45 ${note.isPinned ? 'fill-indigo-500 text-indigo-500' : ''}`} />
           </button>
 
           {/* Favorite */}

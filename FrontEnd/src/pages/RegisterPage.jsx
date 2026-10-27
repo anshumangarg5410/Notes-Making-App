@@ -48,7 +48,7 @@ export const RegisterPage = () => {
       <div className="w-full max-w-md bg-warm-card dark:bg-charcoal-900 border border-warm-border dark:border-charcoal-800 rounded-3xl shadow-card p-8 md:p-10">
         {/* Brand Header */}
         <div className="flex flex-col items-center text-center mb-8">
-          <div className="w-12 h-12 rounded-2xl bg-terracotta-100 dark:bg-terracotta-900/40 text-terracotta-500 flex items-center justify-center mb-3 shadow-xs">
+          <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-indigo-500 to-violet-600 text-white flex items-center justify-center mb-3 shadow-md shadow-indigo-500/25">
             <Feather className="w-6 h-6 transform -rotate-12" />
           </div>
           <h1 className="font-serif font-bold text-3xl text-charcoal-900 dark:text-cream-50">
@@ -73,7 +73,7 @@ export const RegisterPage = () => {
                 placeholder="Eleanor Vance"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                className="w-full pl-10 pr-4 py-2.5 bg-cream-50 dark:bg-charcoal-800 border border-warm-border dark:border-charcoal-700 rounded-xl text-sm text-charcoal-900 dark:text-cream-50 outline-none focus:ring-1 focus:ring-terracotta-500 transition-all"
+                className="w-full pl-10 pr-4 py-2.5 bg-cream-50 dark:bg-charcoal-800 border border-warm-border dark:border-charcoal-700 rounded-xl text-sm text-charcoal-900 dark:text-cream-50 outline-none focus:ring-1 focus:ring-indigo-500 transition-all"
               />
             </div>
           </div>
@@ -90,7 +90,7 @@ export const RegisterPage = () => {
                 placeholder="name@example.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full pl-10 pr-4 py-2.5 bg-cream-50 dark:bg-charcoal-800 border border-warm-border dark:border-charcoal-700 rounded-xl text-sm text-charcoal-900 dark:text-cream-50 outline-none focus:ring-1 focus:ring-terracotta-500 transition-all"
+                className="w-full pl-10 pr-4 py-2.5 bg-cream-50 dark:bg-charcoal-800 border border-warm-border dark:border-charcoal-700 rounded-xl text-sm text-charcoal-900 dark:text-cream-50 outline-none focus:ring-1 focus:ring-indigo-500 transition-all"
               />
             </div>
           </div>
@@ -108,7 +108,7 @@ export const RegisterPage = () => {
                 placeholder="At least 6 characters"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full pl-10 pr-4 py-2.5 bg-cream-50 dark:bg-charcoal-800 border border-warm-border dark:border-charcoal-700 rounded-xl text-sm text-charcoal-900 dark:text-cream-50 outline-none focus:ring-1 focus:ring-terracotta-500 transition-all"
+                className="w-full pl-10 pr-4 py-2.5 bg-cream-50 dark:bg-charcoal-800 border border-warm-border dark:border-charcoal-700 rounded-xl text-sm text-charcoal-900 dark:text-cream-50 outline-none focus:ring-1 focus:ring-indigo-500 transition-all"
               />
             </div>
           </div>
@@ -126,7 +126,7 @@ export const RegisterPage = () => {
                 placeholder="Re-enter password"
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
-                className="w-full pl-10 pr-4 py-2.5 bg-cream-50 dark:bg-charcoal-800 border border-warm-border dark:border-charcoal-700 rounded-xl text-sm text-charcoal-900 dark:text-cream-50 outline-none focus:ring-1 focus:ring-terracotta-500 transition-all"
+                className="w-full pl-10 pr-4 py-2.5 bg-cream-50 dark:bg-charcoal-800 border border-warm-border dark:border-charcoal-700 rounded-xl text-sm text-charcoal-900 dark:text-cream-50 outline-none focus:ring-1 focus:ring-indigo-500 transition-all"
               />
             </div>
           </div>
@@ -134,7 +134,7 @@ export const RegisterPage = () => {
           <button
             type="submit"
             disabled={loading}
-            className="w-full mt-2 py-3 px-4 bg-terracotta-500 hover:bg-terracotta-600 text-white rounded-xl font-medium text-sm flex items-center justify-center space-x-2 shadow-sm transition-all duration-200 active:scale-[0.98] disabled:opacity-50"
+            className="w-full mt-2 py-3 px-4 bg-gradient-to-r from-indigo-500 via-indigo-600 to-violet-600 hover:from-indigo-600 hover:to-violet-700 text-white rounded-xl font-medium text-sm flex items-center justify-center space-x-2 shadow-md shadow-indigo-500/20 hover:shadow-indigo-500/30 transition-all duration-200 active:scale-[0.98] disabled:opacity-50"
           >
             <span>{loading ? 'Creating account...' : 'Create Account'}</span>
             <ArrowRight className="w-4 h-4" />
@@ -146,7 +146,7 @@ export const RegisterPage = () => {
           Already have an account?{' '}
           <Link
             to="/login"
-            className="font-semibold text-terracotta-500 hover:text-terracotta-600 dark:hover:text-terracotta-400 hover:underline"
+            className="font-semibold text-indigo-600 hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300 hover:underline"
           >
             Sign in
           </Link>

@@ -53,14 +53,14 @@ export const Sidebar = ({
           {/* Header Brand */}
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center space-x-3">
-              <div className="w-9 h-9 rounded-xl bg-terracotta-100 dark:bg-terracotta-900/40 flex items-center justify-center text-terracotta-500 shadow-sm">
+              <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center text-white shadow-md shadow-indigo-500/25">
                 <Feather className="w-5 h-5 transform -rotate-12" />
               </div>
               <div>
                 <h1 className="font-serif font-bold text-2xl tracking-tight text-charcoal-900 dark:text-cream-50 leading-none">
                   Notely
                 </h1>
-                <p className="text-[10px] uppercase tracking-widest text-charcoal-400 dark:text-charcoal-500 font-medium mt-1">
+                <p className="text-[10px] uppercase tracking-widest text-indigo-500/80 dark:text-indigo-400 font-semibold mt-1">
                   Write • Organize • Think
                 </p>
               </div>
@@ -82,7 +82,7 @@ export const Sidebar = ({
               if (onCloseMobile) onCloseMobile();
             }}
             id="new-note-btn"
-            className="w-full mb-6 py-2.5 px-4 bg-terracotta-500 hover:bg-terracotta-600 text-white rounded-xl font-medium text-sm flex items-center justify-center space-x-2 shadow-sm transition-all duration-200 active:scale-[0.98] group"
+            className="w-full mb-6 py-2.5 px-4 bg-gradient-to-r from-indigo-500 via-indigo-600 to-violet-600 hover:from-indigo-600 hover:to-violet-700 text-white rounded-xl font-medium text-sm flex items-center justify-center space-x-2 shadow-md shadow-indigo-500/20 hover:shadow-indigo-500/30 transition-all duration-200 active:scale-[0.98] group"
           >
             <Plus className="w-4 h-4 stroke-[2.5] group-hover:rotate-90 transition-transform duration-200" />
             <span>New Note</span>
@@ -103,7 +103,7 @@ export const Sidebar = ({
                   }}
                   className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all duration-150 ${
                     isActive
-                      ? 'bg-terracotta-100/70 text-terracotta-700 dark:bg-terracotta-900/30 dark:text-terracotta-300'
+                      ? 'bg-indigo-500/10 text-indigo-600 dark:text-indigo-300 font-semibold border-l-2 border-indigo-500 pl-3'
                       : 'text-charcoal-600 dark:text-charcoal-300 hover:bg-cream-100/70 dark:hover:bg-charcoal-800/60'
                   }`}
                 >
@@ -111,7 +111,7 @@ export const Sidebar = ({
                     <Icon
                       className={`w-4 h-4 ${
                         isActive
-                          ? 'text-terracotta-500'
+                          ? 'text-indigo-500 dark:text-indigo-400'
                           : 'text-charcoal-400 dark:text-charcoal-500'
                       }`}
                     />
@@ -122,7 +122,7 @@ export const Sidebar = ({
                     <span
                       className={`text-xs px-2 py-0.5 rounded-full font-semibold ${
                         isActive
-                          ? 'bg-terracotta-200/80 text-terracotta-800 dark:bg-terracotta-800 dark:text-terracotta-200'
+                          ? 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/60 dark:text-indigo-200'
                           : 'bg-cream-200/80 text-charcoal-500 dark:bg-charcoal-800 dark:text-charcoal-400'
                       }`}
                     >

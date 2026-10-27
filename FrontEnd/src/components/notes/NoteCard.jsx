@@ -92,8 +92,8 @@ export const NoteCard = ({
       onClick={onSelect}
       className={`group relative p-3.5 rounded-2xl cursor-pointer transition-all duration-150 border text-left ${
         isSelected
-          ? 'bg-[#FBF1EB] dark:bg-terracotta-950/40 border-terracotta-300 dark:border-terracotta-700/60 shadow-sm'
-          : 'bg-warm-card dark:bg-charcoal-800/80 border-warm-border/70 dark:border-charcoal-700/60 hover:border-warm-border hover:shadow-subtle'
+          ? 'bg-indigo-50/80 dark:bg-indigo-950/40 border-indigo-500/60 dark:border-indigo-500/50 shadow-sm ring-1 ring-indigo-500/20'
+          : 'bg-warm-card dark:bg-charcoal-800/90 border-warm-border dark:border-charcoal-700/60 hover:border-indigo-300 dark:hover:border-indigo-700/50 hover:shadow-subtle'
       }`}
     >
       <div className="flex items-start justify-between gap-3">
@@ -101,8 +101,8 @@ export const NoteCard = ({
         <div
           className={`w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 transition-colors ${
             isSelected
-              ? 'bg-terracotta-200/60 dark:bg-terracotta-800/60 text-terracotta-700 dark:text-terracotta-300'
-              : 'bg-cream-100 dark:bg-charcoal-700 text-charcoal-600 dark:text-charcoal-300'
+              ? 'bg-indigo-500 text-white shadow-xs shadow-indigo-500/30'
+              : 'bg-cream-100 dark:bg-charcoal-700/80 text-charcoal-600 dark:text-charcoal-300'
           }`}
         >
           <IconComponent className="w-4 h-4" />
@@ -121,7 +121,7 @@ export const NoteCard = ({
               {note.title || 'Untitled Note'}
             </h3>
             {note.isPinned && (
-              <Pin className="w-3.5 h-3.5 text-terracotta-500 fill-terracotta-500 transform rotate-45 flex-shrink-0" />
+              <Pin className="w-3.5 h-3.5 text-indigo-500 fill-indigo-500 transform rotate-45 flex-shrink-0" />
             )}
             {note.isFavorite && (
               <Star className="w-3 h-3 text-amber-500 fill-amber-500 flex-shrink-0" />

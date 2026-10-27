@@ -54,7 +54,7 @@ export const Header = ({ onToggleSidebar, onOpenSettings, onToggleFocusMode, isF
 
         {/* Current breadcrumb or status */}
         <div className="hidden sm:flex items-center space-x-2 text-xs text-charcoal-400 dark:text-charcoal-500 font-medium">
-          <span className="w-2 h-2 rounded-full bg-terracotta-500" />
+          <span className="w-2 h-2 rounded-full bg-indigo-500 shadow-xs shadow-indigo-500/50" />
           <span>Workspace</span>
         </div>
       </div>
@@ -64,7 +64,7 @@ export const Header = ({ onToggleSidebar, onOpenSettings, onToggleFocusMode, isF
         {/* Theme Toggle (Sun / Moon) */}
         <button
           onClick={toggleTheme}
-          className="p-2 rounded-xl text-charcoal-600 dark:text-charcoal-300 hover:text-terracotta-500 dark:hover:text-terracotta-400 hover:bg-cream-200/60 dark:hover:bg-charcoal-800 transition-colors"
+          className="p-2 rounded-xl text-charcoal-600 dark:text-charcoal-300 hover:text-indigo-500 dark:hover:text-indigo-400 hover:bg-cream-200/60 dark:hover:bg-charcoal-800 transition-colors"
           title={isDark ? 'Switch to Light Theme' : 'Switch to Dark Theme'}
         >
           {isDark ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
@@ -75,8 +75,8 @@ export const Header = ({ onToggleSidebar, onOpenSettings, onToggleFocusMode, isF
           onClick={onToggleFocusMode}
           className={`p-2 rounded-xl transition-colors ${
             isFocusMode
-              ? 'text-terracotta-500 bg-terracotta-100/60 dark:bg-terracotta-900/40'
-              : 'text-charcoal-600 dark:text-charcoal-300 hover:text-terracotta-500 hover:bg-cream-200/60 dark:hover:bg-charcoal-800'
+              ? 'text-indigo-500 bg-indigo-50 dark:bg-indigo-950/40'
+              : 'text-charcoal-600 dark:text-charcoal-300 hover:text-indigo-500 hover:bg-cream-200/60 dark:hover:bg-charcoal-800'
           }`}
           title="Distraction-Free Focus Mode"
         >
@@ -89,7 +89,7 @@ export const Header = ({ onToggleSidebar, onOpenSettings, onToggleFocusMode, isF
             onClick={() => setProfileOpen((prev) => !prev)}
             className="flex items-center space-x-2 p-1.5 pl-2 rounded-xl hover:bg-cream-200/60 dark:hover:bg-charcoal-800 transition-colors"
           >
-            <div className="w-7 h-7 rounded-lg bg-terracotta-500 text-white font-semibold text-xs flex items-center justify-center shadow-xs">
+            <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-indigo-500 to-violet-600 text-white font-semibold text-xs flex items-center justify-center shadow-xs">
               {initials}
             </div>
             <span className="hidden lg:inline text-xs font-medium text-charcoal-700 dark:text-cream-100 max-w-[100px] truncate">

@@ -16,20 +16,21 @@ const {
   getNoteStats
 } = require('../controllers/noteController');
 const { protect } = require('../middleware/auth');
+const { validateNotePayload } = require('../middleware/noteValidator');
 
 // Protect all note routes
 router.use(protect);
 
 router.route('/')
   .get(getNotes)
-  .post(createNote);
+  .post(validateNotePayload, createNote);
 
 router.get('/stats', getNoteStats);
 router.delete('/trash/empty', emptyTrash);
 
 router.route('/:id')
   .get(getNoteById)
-  .put(updateNote)
+  .put(validateNotePayload, updateNote)
   .delete(deleteNote);
 
 router.post('/:id/duplicate', duplicateNote);

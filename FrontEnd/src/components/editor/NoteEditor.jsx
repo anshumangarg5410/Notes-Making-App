@@ -46,6 +46,9 @@ export const NoteEditor = ({
   const [showColorPicker, setShowColorPicker] = useState(false);
   const [showExportMenu, setShowExportMenu] = useState(false);
 
+  const colorPickerRef = useRef(null);
+  const exportMenuRef = useRef(null);
+
   const pendingSaveTimeoutRef = useRef(null);
   const isInitialMount = useRef(true);
   const currentNoteIdRef = useRef(note?._id);
@@ -138,6 +141,22 @@ export const NoteEditor = ({
       }
     };
   }, []);
+
+  // Close color picker and export dropdowns when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (colorPickerRef.current && !colorPickerRef.current.contains(e.target)) {
+        setShowColorPicker(false);
+      }
+      if (exportMenuRef.current && !exportMenuRef.current.contains(e.target)) {
+        setShowExportMenu(false);
+      }
+    };
+    if (showColorPicker || showExportMenu) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [showColorPicker, showExportMenu]);
 
   // Save implementation
   const performSave = useCallback(
@@ -256,7 +275,7 @@ export const NoteEditor = ({
       colorPalettes.find((c) => c.id === color)?.bg || 'bg-warm-bg dark:bg-charcoal-950'
     }`}>
       {/* Top Mobile Bar & Note Actions */}
-      <div className="flex items-center justify-between px-6 py-2.5 border-b border-warm-border/60 dark:border-charcoal-800 bg-warm-bg/70 dark:bg-charcoal-900/70 backdrop-blur-sm select-none">
+      <div className="relative z-30 flex items-center justify-between px-6 py-2.5 border-b border-warm-border/60 dark:border-charcoal-800 bg-warm-bg/70 dark:bg-charcoal-900/70 backdrop-blur-sm select-none">
         <div className="flex items-center space-x-2">
           {onBackToNotes && (
             <button
@@ -303,22 +322,29 @@ export const NoteEditor = ({
         {/* Quick Note Actions */}
         <div className="flex items-center space-x-1">
           {/* Color Picker Toggle */}
-          <div className="relative">
+          <div className="relative" ref={colorPickerRef}>
             <button
-              onClick={() => setShowColorPicker((prev) => !prev)}
-              className="p-1.5 rounded-lg text-charcoal-500 hover:text-charcoal-800 dark:hover:text-cream-100 hover:bg-cream-200/60 dark:hover:bg-charcoal-800 transition-colors"
+              onClick={() => {
+                setShowColorPicker((prev) => !prev);
+                setShowExportMenu(false);
+              }}
+              className={`p-1.5 rounded-lg transition-colors ${
+                showColorPicker
+                  ? 'text-indigo-500 bg-indigo-50 dark:bg-indigo-950/40'
+                  : 'text-charcoal-500 hover:text-charcoal-800 dark:hover:text-cream-100 hover:bg-cream-200/60 dark:hover:bg-charcoal-800'
+              }`}
               title="Canvas tint"
             >
               <Palette className="w-4 h-4" />
             </button>
             {showColorPicker && (
-              <div className="absolute right-0 top-8 bg-warm-card dark:bg-charcoal-800 border border-warm-border dark:border-charcoal-700 rounded-xl shadow-dropdown p-2 z-30 flex space-x-1.5">
+              <div className="absolute right-0 top-full mt-2 bg-warm-card dark:bg-charcoal-800 border border-warm-border dark:border-charcoal-700 rounded-xl shadow-dropdown p-2 z-50 flex space-x-1.5 animate-in fade-in zoom-in-95 duration-100">
                 {colorPalettes.map((c) => (
                   <button
                     key={c.id}
                     onClick={() => handleSelectColor(c.id)}
                     className={`w-6 h-6 rounded-full border-2 transition-transform ${c.dot} ${
-                      color === c.id ? 'border-indigo-500 scale-110' : 'border-transparent hover:scale-105'
+                      color === c.id ? 'border-indigo-500 scale-110 shadow-xs' : 'border-transparent hover:scale-105'
                     }`}
                     title={c.name}
                   />
@@ -363,25 +389,32 @@ export const NoteEditor = ({
           </button>
 
           {/* Export */}
-          <div className="relative">
+          <div className="relative" ref={exportMenuRef}>
             <button
-              onClick={() => setShowExportMenu((prev) => !prev)}
-              className="p-1.5 rounded-lg text-charcoal-500 hover:text-charcoal-800 dark:hover:text-cream-100 hover:bg-cream-200/60 dark:hover:bg-charcoal-800 transition-colors"
+              onClick={() => {
+                setShowExportMenu((prev) => !prev);
+                setShowColorPicker(false);
+              }}
+              className={`p-1.5 rounded-lg transition-colors ${
+                showExportMenu
+                  ? 'text-indigo-500 bg-indigo-50 dark:bg-indigo-950/40'
+                  : 'text-charcoal-500 hover:text-charcoal-800 dark:hover:text-cream-100 hover:bg-cream-200/60 dark:hover:bg-charcoal-800'
+              }`}
               title="Export note"
             >
               <Download className="w-4 h-4" />
             </button>
             {showExportMenu && (
-              <div className="absolute right-0 top-8 bg-warm-card dark:bg-charcoal-800 border border-warm-border dark:border-charcoal-700 rounded-xl shadow-dropdown py-1.5 w-44 z-30 text-xs">
+              <div className="absolute right-0 top-full mt-2 bg-warm-card dark:bg-charcoal-800 border border-warm-border dark:border-charcoal-700 rounded-xl shadow-dropdown py-1.5 w-44 z-50 text-xs animate-in fade-in zoom-in-95 duration-100">
                 <button
                   onClick={() => handleExport('markdown')}
-                  className="w-full text-left px-3 py-1.5 hover:bg-cream-100 dark:hover:bg-charcoal-700 text-charcoal-700 dark:text-cream-200"
+                  className="w-full text-left px-3 py-1.5 hover:bg-indigo-50 dark:hover:bg-charcoal-700 text-charcoal-700 dark:text-cream-200"
                 >
                   Export as Markdown (.md)
                 </button>
                 <button
                   onClick={() => handleExport('text')}
-                  className="w-full text-left px-3 py-1.5 hover:bg-cream-100 dark:hover:bg-charcoal-700 text-charcoal-700 dark:text-cream-200"
+                  className="w-full text-left px-3 py-1.5 hover:bg-indigo-50 dark:hover:bg-charcoal-700 text-charcoal-700 dark:text-cream-200"
                 >
                   Export as Text (.txt)
                 </button>

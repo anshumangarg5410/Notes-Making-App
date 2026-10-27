@@ -91,6 +91,8 @@ export const NoteCard = ({
     <div
       onClick={onSelect}
       className={`group relative p-3.5 rounded-2xl cursor-pointer transition-all duration-150 border text-left ${
+        menuOpen ? 'z-20 ' : ''
+      }${
         isSelected
           ? 'bg-indigo-50/80 dark:bg-indigo-950/40 border-indigo-500/60 dark:border-indigo-500/50 shadow-sm ring-1 ring-indigo-500/20'
           : 'bg-warm-card dark:bg-charcoal-800/90 border-warm-border dark:border-charcoal-700/60 hover:border-indigo-300 dark:hover:border-indigo-700/50 hover:shadow-subtle'

@@ -154,6 +154,27 @@ const emptyTrash = async (req, res, next) => {
   }
 };
 
+// @desc    Duplicate an existing note
+// @route   POST /api/notes/:id/duplicate
+// @access  Private
+const duplicateNote = async (req, res, next) => {
+  try {
+    const note = await noteService.duplicate(req.user._id, req.params.id);
+    if (!note) {
+      return res.status(404).json({
+        success: false,
+        message: 'Note not found or unauthorized'
+      });
+    }
+    res.status(201).json({
+      success: true,
+      data: note
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 // @desc    Toggle pin note
 // @route   PATCH /api/notes/:id/pin
 // @access  Private
@@ -241,6 +262,7 @@ module.exports = {
   restoreNote,
   permanentDeleteNote,
   emptyTrash,
+  duplicateNote,
   togglePin,
   toggleFavorite,
   toggleArchive,

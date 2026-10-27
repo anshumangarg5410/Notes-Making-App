@@ -175,6 +175,29 @@ class NoteService {
   }
 
   /**
+   * Duplicate note
+   */
+  async duplicate(userId, noteId) {
+    const source = await Note.findOne({ _id: noteId, userId });
+    if (!source) return null;
+
+    const copy = await Note.create({
+      userId,
+      title: `${source.title} (Copy)`,
+      content: source.content,
+      plainText: source.plainText,
+      tags: [...source.tags],
+      color: source.color,
+      icon: source.icon,
+      isPinned: false,
+      isFavorite: false,
+      isArchived: false,
+      isDeleted: false
+    });
+    return copy;
+  }
+
+  /**
    * Toggle pinned status
    */
   async togglePin(userId, noteId) {

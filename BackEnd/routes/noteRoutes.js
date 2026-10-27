@@ -9,6 +9,7 @@ const {
   restoreNote,
   permanentDeleteNote,
   emptyTrash,
+  duplicateNote,
   togglePin,
   toggleFavorite,
   toggleArchive,
@@ -31,6 +32,7 @@ router.route('/:id')
   .put(updateNote)
   .delete(deleteNote);
 
+router.post('/:id/duplicate', duplicateNote);
 router.patch('/:id/pin', togglePin);
 router.patch('/:id/favorite', toggleFavorite);
 router.patch('/:id/archive', toggleArchive);

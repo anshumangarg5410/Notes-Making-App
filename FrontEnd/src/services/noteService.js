@@ -51,6 +51,16 @@ export const noteService = {
     return response.data;
   },
 
+  async duplicateNote(id) {
+    const response = await api.post(`/notes/${id}/duplicate`);
+    return response.data;
+  },
+
+  async emptyTrash() {
+    const response = await api.delete('/notes/trash/empty');
+    return response.data;
+  },
+
   async getStats() {
     const response = await api.get('/notes/stats');
     return response.data;

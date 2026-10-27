@@ -15,21 +15,28 @@
    - [Filtering, Searching & Soft-Delete (Trash) Flow](#3-filtering-searching--soft-delete-trash-flow)
 5. [What Is Done Where (Directory Map)](#-what-is-done-where-directory-map)
 6. [Database Models & Schema Design](#-database-models--schema-design)
-7. [API Reference](#-api-reference)
+7. [API Reference & Payload Validation](#-api-reference)
 8. [Beginner's Guide: How to Build This from Scratch](#-beginners-guide-how-to-build-this-from-scratch)
 9. [Installation & Setup](#-installation--setup)
 10. [Database Seeding & Reset](#-database-seeding--reset)
-11. [Authors & License](#-authors--license)
+11. [Automated Testing Suite](#-automated-testing-suite)
+12. [Authors & License](#-authors--license)
 
 ---
 
 ## 🎯 Overview & Demo Credentials
 
-Notely combines the aesthetic of fine editorial print (warm cream tones, terracotta accents, and elegant typography) with modern web engineering:
+Notely combines the sleek aesthetic of modern developer workspaces (**Electric Indigo & Midnight Obsidian**, inspired by Linear and Raycast) with rock-solid full-stack web engineering:
 - **Instant Debounced Autosave**: Automatic background saving as you type (750ms debounce) with real-time status indicators (*Saved*, *Saving...*, *Unsaved changes*).
-- **Rich-Text Canvas**: Headings (H1–H3), bold, italic, underline, strike, blockquotes, bullet lists, ordered lists, task checkboxes, code blocks, tables, and links.
+- **Rich-Text Canvas**: Headings (H1–H3), bold, italic, underline, strike, blockquotes, bullet lists, ordered lists, task checkboxes, code blocks, tables, and links powered by TipTap.
 - **Organization & Filtering**: Pinned notes, favorites, categories/tags (`Study`, `Work`, `Personal`, `Ideas`), color-coded cards, and an archive/trash lifecycle.
+- **One-Click Note Duplication**: Rapid cloning of any note with title suffixes and preserved tags/canvas styling.
+- **Export to Markdown & Plain Text**: Download notes as `.md` or `.txt` directly from the editor.
+- **Live Document Metrics**: Live stats bar calculating word count, character count, and estimated reading time.
+- **Bulk Trash Cleanup**: Single-click Empty Trash endpoint with client-side confirmation dialog.
+- **Payload Validation**: Strict validation middleware on note creation and updates (title length, allowed colors, and tag counts).
 - **Strict User Privacy**: Every note query enforces user ownership at the database layer; User A can never inspect or mutate User B's notes.
+- **Fault Tolerance**: Wrapped in a top-level React `ErrorBoundary` for smooth error recovery without crashes.
 
 ### Ready-to-use Demo Account
 | Credential | Value |
@@ -53,6 +60,7 @@ Notely combines the aesthetic of fine editorial print (warm cream tones, terraco
 | **Axios** | HTTP Client | Request/response interceptors to automatically attach JWT headers and handle 401 session expirations. |
 | **Lucide React** | Icons | Consistent, featherweight iconography. |
 | **Context API** | State Management | Native React state management for `AuthContext`, `ThemeContext`, and `ToastContext` without excessive external libraries. |
+| **Error Boundary** | Fault Tolerance | Component-level error handling catching rendering errors with graceful reload options. |
 
 ### Backend
 | Technology | Role | Why It Was Chosen |
@@ -64,6 +72,7 @@ Notely combines the aesthetic of fine editorial print (warm cream tones, terraco
 | **bcryptjs** | Password Hashing | Secure one-way hashing with 10 salt rounds to protect user passwords against rainbow-table attacks. |
 | **express-rate-limit** | Security | Protects authentication endpoints against automated brute-force attacks. |
 | **cookie-parser** | Middleware | Parses HTTP cookies for seamless cookie-based JWT sessions. |
+| **Jest & Supertest** | Automated Testing | Comprehensive unit and API integration testing suite validating auth, notes, validation, and error edge cases. |
 
 ---
 
@@ -219,11 +228,12 @@ NotesMaking/
 │   │   └── db.js                 # Database connection logic (reads MONGO_URI)
 │   ├── controllers/
 │   │   ├── authController.js     # Register, Login, Logout, getMe handlers
-│   │   ├── noteController.js     # CRUD, search, tags, pin, archive, trash operations
+│   │   ├── noteController.js     # CRUD, search, tags, pin, archive, trash, duplicate operations
 │   │   └── userController.js     # User profile updates and preferences
 │   ├── middleware/
 │   │   ├── auth.js               # Verifies JWT token and attaches req.user
 │   │   ├── errorHandler.js       # Centralized JSON error response handler
+│   │   ├── noteValidator.js      # Validates note title length, allowed colors, and tag limits
 │   │   └── rateLimiter.js        # Prevents brute-force requests on auth endpoints
 │   ├── models/
 │   │   ├── Note.js               # Note schema (title, TipTap content, tags, flags)
@@ -235,30 +245,34 @@ NotesMaking/
 │   │   └── userRoutes.js         # /api/users routes
 │   ├── scripts/
 │   │   └── resetAndSeed.js       # Wipes database and seeds demo user & notes
+│   ├── tests/
+│   │   ├── auth.test.js          # Integration tests for registration, login, profile
+│   │   └── notes.test.js         # Integration tests for CRUD, duplicate, empty trash, validation
 │   ├── utils/
 │   │   ├── generateToken.js      # Creates signed JWT and sets HTTP-only cookies
 │   │   └── seedNotes.js          # Onboarding notes template builder
 │   ├── .env                      # Secret configuration (MONGO_URI, JWT_SECRET, PORT)
 │   ├── .env.example              # Template configuration for developers
-│   ├── package.json              # Backend dependencies & npm scripts (start, dev, seed)
+│   ├── package.json              # Backend dependencies & npm scripts (start, dev, seed, test)
 │   └── server.js                 # Express app initialization, middleware, and route mounting
 │
 ├── FrontEnd/
 │   ├── src/
 │   │   ├── components/
 │   │   │   ├── common/
+│   │   │   │   ├── ErrorBoundary.jsx         # Global error fallback component catching runtime errors
 │   │   │   │   ├── Header.jsx                # Top bar with search, dark mode toggle, profile
-│   │   │   │   └── LandscapeIllustration.jsx # Editorial mountain sunset SVG in sidebar
+│   │   │   │   └── LandscapeIllustration.jsx # Cosmic Obsidian Nebula vector illustration in sidebar
 │   │   │   ├── editor/
 │   │   │   │   ├── EditorToolbar.jsx         # Buttons for Bold, Italic, H1-H3, Lists, Tables
-│   │   │   │   └── NoteEditor.jsx            # TipTap editor canvas with live autosave
+│   │   │   │   └── NoteEditor.jsx            # TipTap editor with autosave, export, and live stats bar
 │   │   │   ├── modals/
 │   │   │   │   ├── ConfirmDialog.jsx         # Modal for permanent deletion confirmation
 │   │   │   │   ├── FilterModal.jsx           # Tag, category, and color filter picker
 │   │   │   │   └── SettingsModal.jsx         # User account preferences
 │   │   │   ├── notes/
-│   │   │   │   ├── NoteCard.jsx              # Individual note card in list with color & tags
-│   │   │   │   └── NoteList.jsx              # Searchable, grouped list of notes
+│   │   │   │   ├── NoteCard.jsx              # Individual note card in list with color, tags, options
+│   │   │   │   └── NoteList.jsx              # Searchable, grouped list of notes with empty trash bar
 │   │   │   └── sidebar/
 │   │   │       └── Sidebar.jsx               # Navigation folders (All, Favorites, Tags, Trash)
 │   │   ├── context/
@@ -275,12 +289,12 @@ NotesMaking/
 │   │   │   ├── api.js                        # Axios base instance with token interceptors
 │   │   │   ├── authService.js                # API call wrappers for register, login, logout
 │   │   │   └── noteService.js                # API call wrappers for all note operations
-│   │   ├── App.jsx                           # Application routing & context providers
-│   │   ├── index.css                         # Tailwind CSS directives & custom color rules
+│   │   ├── App.jsx                           # Application routing, ErrorBoundary, & context providers
+│   │   ├── index.css                         # Tailwind CSS directives & Electric Indigo design tokens
 │   │   └── main.jsx                          # React DOM mount point
 │   ├── .env.example                          # Template for frontend environment
 │   ├── index.html                            # HTML entry point with Google Fonts
-│   ├── tailwind.config.js                    # Custom palette, typography, and theme tokens
+│   ├── tailwind.config.js                    # Electric Indigo & Midnight Obsidian tokens & palette
 │   └── vite.config.js                        # Vite bundler configuration
 │
 ├── .gitignore                                # Excludes node_modules, .env, and build artifacts
@@ -352,6 +366,7 @@ All protected endpoints require either an **HTTP-only cookie** (`token`) or an *
 | `GET` | `/api/notes` | Protected | Get all active notes (supports `?search=`, `?tag=`, `?folder=`) |
 | `GET` | `/api/notes/:id` | Protected | Fetch a single note by ID (user-isolated) |
 | `POST` | `/api/notes` | Protected | Create a new note |
+| `POST` | `/api/notes/:id/duplicate` | Protected | Duplicate note with '(Copy)' suffix & preserve tags/color |
 | `PUT` | `/api/notes/:id` | Protected | Update note title, content, color, or tags (autosave) |
 | `PATCH` | `/api/notes/:id/pin` | Protected | Toggle note pinned status |
 | `PATCH` | `/api/notes/:id/favorite` | Protected | Toggle note favorite status |
@@ -359,6 +374,12 @@ All protected endpoints require either an **HTTP-only cookie** (`token`) or an *
 | `PATCH` | `/api/notes/:id/trash` | Protected | Soft-delete note to trash (or restore) |
 | `DELETE` | `/api/notes/:id` | Protected | Permanently erase note from database |
 | `DELETE` | `/api/notes/trash/empty` | Protected | Empty all notes currently in trash |
+
+### Note Payload Validation Rules (`noteValidator.js`)
+All incoming `POST /api/notes` and `PUT /api/notes/:id` payloads are checked before hitting controller logic:
+- **`title`**: String, trimmed, maximum length of 200 characters.
+- **`color`**: Optional string, must be one of: `['default', 'cream', 'amber', 'rose', 'emerald', 'sky', 'purple']`.
+- **`tags`**: Optional array of strings, maximum 20 tags per note, maximum 30 characters per tag.
 
 ### System Endpoints
 | Method | Endpoint | Access | Description |
@@ -514,18 +535,41 @@ npm run seed
 ```
 
 This will:
-1. Connect to your active MongoDB database.
+1. Connect to your active MongoDB database (`notesMaking`).
 2. Clear all documents in `users` and `notes`.
 3. Create the demo account: `demo@notely.com` / `password123`.
-4. Seed 7 diverse, rich-text starter notes.
+4. Seed 7 diverse, rich-text starter notes with tags, colors, and formatting.
+
+---
+
+## 🚦 Automated Testing Suite
+
+The backend includes a comprehensive automated test suite powered by **Jest** and **Supertest** covering authentication, CRUD operations, duplicate endpoints, soft-delete & empty trash flows, and validation rules.
+
+Run all tests:
+```bash
+cd BackEnd
+npm test
+```
+
+Expected output:
+```text
+PASS tests/notes.test.js
+PASS tests/auth.test.js
+
+Test Suites: 2 passed, 2 total
+Tests:       15 passed, 15 total
+Snapshots:   0 total
+Time:        ~10s
+```
 
 ---
 
 ## 👥 Authors & License
 
-**Developed by:**
-- **Anshuman Garg**
-- **Parth Sohal**
-- **Samarjeet Singh**
+**Core Team:**
+- **Anshuman Garg** — `anshumangarg5410@gmail.com`
+- **Parth Sohal** — `sohalparth72@gmail.com`
+- **Samarjeet Singh** — `samarjeetd09@gmail.com`
 
 Released under the **MIT License**. Feel free to use, modify, and build upon this project!

@@ -234,8 +234,11 @@ export const WorkspacePage = () => {
     try {
       const res = await noteService.restoreNote(noteId);
       if (res.success) {
-        fetchNotes();
-        fetchStats();
+        if (selectedNote?._id === noteId) {
+          setSelectedNote(null);
+        }
+        await fetchNotes();
+        await fetchStats();
         success('Note restored from trash');
       }
     } catch (err) {

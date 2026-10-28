@@ -43,6 +43,11 @@ export const Header = ({ onToggleSidebar, onOpenSettings, onToggleFocusMode, isF
         .substring(0, 2)
     : 'U';
 
+  // Dynamic user display name fallback
+  const userDisplayName = user?.name
+    ? user.name.split(' ')[0]
+    : 'User';
+
   return (
     <header className="h-14 border-b border-warm-border dark:border-charcoal-800 bg-warm-bg dark:bg-charcoal-900 px-4 flex items-center justify-between select-none">
       <div className="flex items-center space-x-3">

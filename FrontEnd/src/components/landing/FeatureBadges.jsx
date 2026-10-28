@@ -47,12 +47,12 @@ export const FeatureBadges = () => {
   ];
 
   return (
-    <section className="py-16 md:py-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 select-none">
-      <div className="text-center max-w-2xl mx-auto mb-12 space-y-2">
+    <section id="features" className="py-20 md:py-24 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 select-none scroll-mt-20">
+      <div className="text-center max-w-2xl mx-auto mb-14 space-y-2.5">
         <h2 className="font-serif font-bold text-3xl sm:text-4xl text-[#1E1E1E] dark:text-[#FAF8F5]">
           More than just a note-taking app
         </h2>
-        <p className="text-xs sm:text-sm text-[#6E6C66] dark:text-[#9A9893]">
+        <p className="text-xs sm:text-sm text-[#6E6C66] dark:text-[#9A9893] max-w-xl mx-auto">
           Everything you need to capture ideas, organize your thoughts, and turn your notes into real knowledge.
         </p>
       </div>

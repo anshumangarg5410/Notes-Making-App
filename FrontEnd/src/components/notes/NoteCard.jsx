@@ -3,28 +3,88 @@ import {
   FileText,
   Lightbulb,
   Dumbbell,
-  Laptop,
+  Code,
   BookOpen,
   Plane,
-  Soup,
+  Utensils,
+  Cpu,
   Pin,
   Star,
   MoreVertical,
   Archive,
   Trash2,
   RotateCcw,
-  Palette,
   Copy
 } from 'lucide-react';
 
-const iconMap = {
-  document: FileText,
-  lightbulb: Lightbulb,
-  dumbbell: Dumbbell,
-  laptop: Laptop,
-  book: BookOpen,
-  plane: Plane,
-  bowl: Soup
+// Helper to determine category icon and color palette
+const getCategoryDetails = (note) => {
+  const title = (note.title || '').toLowerCase();
+  const tags = (note.tags || []).map((t) => t.toLowerCase());
+  const str = `${title} ${tags.join(' ')}`;
+
+  if (str.includes('machine learning') || str.includes('study') || str.includes('note')) {
+    return {
+      Icon: FileText,
+      bg: 'bg-orange-100 dark:bg-orange-950/60',
+      text: 'text-orange-600 dark:text-orange-400'
+    };
+  }
+  if (str.includes('idea') || str.includes('project')) {
+    return {
+      Icon: Lightbulb,
+      bg: 'bg-amber-100 dark:bg-amber-950/60',
+      text: 'text-amber-600 dark:text-amber-400'
+    };
+  }
+  if (str.includes('workout') || str.includes('gym') || str.includes('fit') || str.includes('health')) {
+    return {
+      Icon: Dumbbell,
+      bg: 'bg-rose-100 dark:bg-rose-950/60',
+      text: 'text-rose-600 dark:text-rose-400'
+    };
+  }
+  if (str.includes('web') || str.includes('code') || str.includes('development') || str.includes('react')) {
+    return {
+      Icon: Code,
+      bg: 'bg-purple-100 dark:bg-purple-950/60',
+      text: 'text-purple-600 dark:text-purple-400'
+    };
+  }
+  if (str.includes('book') || str.includes('read')) {
+    return {
+      Icon: BookOpen,
+      bg: 'bg-amber-100 dark:bg-amber-950/60',
+      text: 'text-amber-600 dark:text-amber-400'
+    };
+  }
+  if (str.includes('travel') || str.includes('trip') || str.includes('flight')) {
+    return {
+      Icon: Plane,
+      bg: 'bg-sky-100 dark:bg-sky-950/60',
+      text: 'text-sky-600 dark:text-sky-400'
+    };
+  }
+  if (str.includes('recipe') || str.includes('food') || str.includes('cook') || str.includes('meal')) {
+    return {
+      Icon: Utensils,
+      bg: 'bg-red-100 dark:bg-red-950/60',
+      text: 'text-red-600 dark:text-red-400'
+    };
+  }
+  if (str.includes('system') || str.includes('design') || str.includes('architecture')) {
+    return {
+      Icon: Cpu,
+      bg: 'bg-teal-100 dark:bg-teal-950/60',
+      text: 'text-teal-600 dark:text-teal-400'
+    };
+  }
+
+  return {
+    Icon: FileText,
+    bg: 'bg-orange-100 dark:bg-orange-950/60',
+    text: 'text-orange-600 dark:text-orange-400'
+  };
 };
 
 export const NoteCard = ({
@@ -37,7 +97,6 @@ export const NoteCard = ({
   onDelete,
   onRestore,
   onPermanentDelete,
-  onChangeColor,
   onDuplicate
 }) => {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -55,7 +114,7 @@ export const NoteCard = ({
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [menuOpen]);
 
-  // Format timestamp like "Today, 6:45 PM" or "Yesterday, 3:15 PM" or "Oct 20, 2026"
+  // Format timestamp like "Today, 10:21" or "Yesterday, 18:42" or "Oct 28"
   const formatCardDate = (dateStr) => {
     if (!dateStr) return '';
     const date = new Date(dateStr);
@@ -73,73 +132,68 @@ export const NoteCard = ({
       date.getMonth() === yesterday.getMonth() &&
       date.getFullYear() === yesterday.getFullYear();
 
-    const timeStr = date.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+    const timeStr = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false });
 
     if (isToday) return `Today, ${timeStr}`;
     if (isYesterday) return `Yesterday, ${timeStr}`;
 
     return date.toLocaleDateString([], {
       month: 'short',
-      day: 'numeric',
-      year: date.getFullYear() !== now.getFullYear() ? 'numeric' : undefined
+      day: 'numeric'
     });
   };
 
-  const IconComponent = iconMap[note.icon] || FileText;
+  const { Icon, bg: iconBg, text: iconColor } = getCategoryDetails(note);
 
   return (
     <div
       onClick={onSelect}
-      className={`group relative p-3.5 rounded-2xl cursor-pointer transition-all duration-150 border text-left ${
+      className={`group relative p-3 rounded-2xl cursor-pointer transition-all duration-150 border text-left ${
         menuOpen ? 'z-20 ' : ''
       }${
         isSelected
-          ? 'bg-indigo-50/80 dark:bg-indigo-950/40 border-indigo-500/60 dark:border-indigo-500/50 shadow-sm ring-1 ring-indigo-500/20'
-          : 'bg-warm-card dark:bg-charcoal-800/90 border-warm-border dark:border-charcoal-700/60 hover:border-indigo-300 dark:hover:border-indigo-700/50 hover:shadow-subtle'
+          ? 'bg-orange-50/80 dark:bg-orange-950/30 border-orange-400 dark:border-orange-500/60 shadow-xs ring-1 ring-orange-500/20'
+          : 'bg-white/80 dark:bg-charcoal-800/80 border-warm-border/80 dark:border-charcoal-700/60 hover:border-orange-300 dark:hover:border-orange-800/60 hover:shadow-xs'
       }`}
     >
-      <div className="flex items-start justify-between gap-3">
-        {/* Left Icon */}
+      <div className="flex items-start justify-between gap-2.5">
+        {/* Left Category Icon */}
         <div
-          className={`w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 transition-colors ${
-            isSelected
-              ? 'bg-indigo-500 text-white shadow-xs shadow-indigo-500/30'
-              : 'bg-cream-100 dark:bg-charcoal-700/80 text-charcoal-600 dark:text-charcoal-300'
-          }`}
+          className={`w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0 transition-colors ${iconBg} ${iconColor}`}
         >
-          <IconComponent className="w-4 h-4" />
+          <Icon className="w-4 h-4" />
         </div>
 
         {/* Content Preview */}
-        <div className="flex-1 min-w-0 pr-1">
+        <div className="flex-1 min-w-0 pr-0.5">
           <div className="flex items-center space-x-1.5">
             <h3
-              className={`font-semibold text-sm truncate leading-tight ${
+              className={`font-semibold text-xs truncate leading-tight ${
                 isSelected
-                  ? 'text-charcoal-900 dark:text-cream-50 font-medium'
+                  ? 'text-charcoal-900 dark:text-cream-50 font-bold'
                   : 'text-charcoal-800 dark:text-cream-100'
               }`}
             >
               {note.title || 'Untitled Note'}
             </h3>
             {note.isPinned && (
-              <Pin className="w-3.5 h-3.5 text-indigo-500 fill-indigo-500 transform rotate-45 flex-shrink-0" />
+              <Pin className="w-3 h-3 text-orange-500 fill-orange-500 transform rotate-45 flex-shrink-0" />
             )}
             {note.isFavorite && (
               <Star className="w-3 h-3 text-amber-500 fill-amber-500 flex-shrink-0" />
             )}
           </div>
 
-          <p className="text-xs text-charcoal-400 dark:text-charcoal-400 line-clamp-1 mt-1 leading-normal font-normal">
+          <p className="text-[11px] text-charcoal-400 dark:text-charcoal-400 line-clamp-1 mt-0.5 leading-normal font-normal">
             {note.plainText || 'No additional text'}
           </p>
 
-          <div className="flex items-center space-x-2 mt-2">
-            <span className="text-[11px] text-charcoal-400 dark:text-charcoal-500 font-medium">
+          <div className="flex items-center justify-between mt-2">
+            <span className="text-[10px] text-charcoal-400 dark:text-charcoal-500 font-medium">
               {formatCardDate(note.updatedAt || note.createdAt)}
             </span>
             {note.tags && note.tags.length > 0 && (
-              <span className="text-[10px] bg-cream-200/60 dark:bg-charcoal-700 text-charcoal-500 dark:text-charcoal-400 px-1.5 py-0.5 rounded-md font-medium truncate max-w-[80px]">
+              <span className="text-[10px] bg-cream-200/60 dark:bg-charcoal-700 text-charcoal-500 dark:text-charcoal-400 px-2 py-0.5 rounded-full font-medium truncate max-w-[90px]">
                 #{note.tags[0]}
               </span>
             )}
@@ -147,17 +201,17 @@ export const NoteCard = ({
         </div>
 
         {/* Three dots menu */}
-        <div className="relative" ref={menuRef} onClick={(e) => e.stopPropagation()}>
+        <div className="relative flex-shrink-0" ref={menuRef} onClick={(e) => e.stopPropagation()}>
           <button
             onClick={() => setMenuOpen((prev) => !prev)}
-            className="p-1 rounded-lg text-charcoal-400 hover:text-charcoal-700 dark:hover:text-cream-100 hover:bg-cream-200/50 dark:hover:bg-charcoal-700/60 transition-colors opacity-80 group-hover:opacity-100"
+            className="p-1 rounded-lg text-charcoal-400 hover:text-charcoal-700 dark:hover:text-cream-100 hover:bg-cream-200/50 dark:hover:bg-charcoal-700/60 transition-colors opacity-70 group-hover:opacity-100"
             title="Note options"
           >
-            <MoreVertical className="w-4 h-4" />
+            <MoreVertical className="w-3.5 h-3.5" />
           </button>
 
           {menuOpen && (
-            <div className="absolute right-0 top-7 w-44 bg-warm-card dark:bg-charcoal-800 border border-warm-border dark:border-charcoal-700 rounded-xl shadow-dropdown z-30 py-1.5 text-xs text-charcoal-700 dark:text-charcoal-200 animate-in fade-in zoom-in-95 duration-100">
+            <div className="absolute right-0 top-6 w-44 bg-warm-card dark:bg-charcoal-800 border border-warm-border dark:border-charcoal-700 rounded-xl shadow-dropdown z-30 py-1.5 text-xs text-charcoal-700 dark:text-charcoal-200 animate-in fade-in zoom-in-95 duration-100">
               {!note.isDeleted ? (
                 <>
                   <button
@@ -167,7 +221,7 @@ export const NoteCard = ({
                     }}
                     className="w-full text-left px-3 py-1.5 hover:bg-cream-100 dark:hover:bg-charcoal-700/70 flex items-center space-x-2"
                   >
-                    <Pin className="w-3.5 h-3.5 text-terracotta-500" />
+                    <Pin className="w-3.5 h-3.5 text-orange-500" />
                     <span>{note.isPinned ? 'Unpin note' : 'Pin note'}</span>
                   </button>
                   <button

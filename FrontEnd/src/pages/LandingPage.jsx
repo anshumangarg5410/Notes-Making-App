@@ -19,7 +19,7 @@ import codePencil from '../assets/landing/code-pencil.png';
 export const LandingPage = () => {
 
   return (
-    <div className="min-h-screen bg-[#FDFBF7] dark:bg-[#121316] text-[#2E2E2E] dark:text-[#F3F1EC] flex flex-col font-sans transition-colors selection:bg-orange-500/20">
+    <div className="min-h-screen bg-[#FDFBF7] dark:bg-[#121316] text-[#2E2E2E] dark:text-[#F3F1EC] flex flex-col font-sans transition-colors selection:bg-orange-500/20 scroll-smooth">
       <Navbar />
 
       {/* 1. Hero Section: Headline, CTAs & 3D Floating Dashboard Card */}

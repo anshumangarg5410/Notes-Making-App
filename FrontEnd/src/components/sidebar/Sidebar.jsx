@@ -181,15 +181,18 @@ export const Sidebar = ({
                         : 'text-charcoal-600 dark:text-charcoal-300 hover:bg-cream-200/60 dark:hover:bg-charcoal-800/60'
                     }`}
                   >
-                    <Folder className="w-3.5 h-3.5 text-charcoal-400 dark:text-charcoal-500 fill-current opacity-70" />
-                    <span className="truncate">{coll.label}</span>
+                    <div className="flex items-center space-x-2.5 min-w-0">
+                      <span className={`w-2 h-2 rounded-full flex-shrink-0 ${coll.color}`} />
+                      <Folder className="w-3.5 h-3.5 text-charcoal-400 dark:text-charcoal-500 fill-current opacity-70" />
+                      <span className="truncate">{coll.label}</span>
+                    </div>
                   </button>
                 );
               })}
 
               <button
                 onClick={() => onNewNote()}
-                className="w-full flex items-center space-x-2 px-3 py-1.5 rounded-xl text-xs text-charcoal-400 dark:text-charcoal-500 hover:text-charcoal-700 dark:hover:text-cream-200 transition-colors"
+                className="w-full flex items-center space-x-2 px-3 py-1.5 rounded-xl text-xs text-charcoal-400 dark:text-charcoal-500 hover:text-orange-600 dark:hover:text-orange-400 transition-colors"
               >
                 <Plus className="w-3.5 h-3.5" />
                 <span>New Collection</span>

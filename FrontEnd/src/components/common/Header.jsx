@@ -125,7 +125,9 @@ export const Header = ({ onToggleSidebar, onOpenSettings, onToggleFocusMode, isF
         <div className="relative ml-1 sm:ml-2" ref={dropdownRef}>
           <button
             onClick={() => setProfileOpen((prev) => !prev)}
-            className="flex items-center space-x-2 p-1.5 pl-2 rounded-xl hover:bg-cream-200/60 dark:hover:bg-charcoal-800 transition-colors"
+            aria-expanded={profileOpen}
+            aria-label="User account menu"
+            className="flex items-center space-x-2 p-1.5 pl-2 rounded-xl hover:bg-cream-200/60 dark:hover:bg-charcoal-800 transition-colors focus:outline-none focus:ring-1 focus:ring-orange-500/50"
           >
             <div className="w-7 h-7 rounded-full bg-gradient-to-br from-teal-600 to-cyan-700 text-white font-semibold text-xs flex items-center justify-center shadow-xs">
               {initials}
@@ -133,7 +135,7 @@ export const Header = ({ onToggleSidebar, onOpenSettings, onToggleFocusMode, isF
             <span className="hidden lg:inline text-xs font-medium text-charcoal-700 dark:text-cream-100 max-w-[100px] truncate">
               {userDisplayName}
             </span>
-            <ChevronDown className="w-3.5 h-3.5 text-charcoal-400" />
+            <ChevronDown className={`w-3.5 h-3.5 text-charcoal-400 transition-transform duration-150 ${profileOpen ? 'rotate-180' : ''}`} />
           </button>
 
           {profileOpen && (

@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { Search, SlidersHorizontal, FileQuestion, Trash2, Plus, ChevronDown } from 'lucide-react';
+import { Search, SlidersHorizontal, FileQuestion, Trash2, Plus, ChevronDown, X } from 'lucide-react';
 import { NoteCard } from './NoteCard';
 
 export const NoteList = ({
@@ -68,6 +68,21 @@ export const NoteList = ({
 
   const grouped = groupNotesByPeriod(filteredNotes);
 
+  const searchInputRef = React.useRef(null);
+
+  React.useEffect(() => {
+    const handleSearchKey = (e) => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        if (searchInputRef.current) {
+          searchInputRef.current.focus();
+        }
+      }
+    };
+    window.addEventListener('keydown', handleSearchKey);
+    return () => window.removeEventListener('keydown', handleSearchKey);
+  }, []);
+
   return (
     <div className="w-full md:w-80 lg:w-84 border-r border-warm-border dark:border-charcoal-800 bg-cream-50/70 dark:bg-charcoal-900/90 flex flex-col h-full flex-shrink-0 select-none">
       {/* Search Header */}
@@ -76,12 +91,22 @@ export const NoteList = ({
           <div className="relative flex-1">
             <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-charcoal-400 dark:text-charcoal-500" />
             <input
+              ref={searchInputRef}
               type="text"
-              placeholder="Search notes..."
+              placeholder="Search notes... (⌘K)"
               value={searchQuery}
               onChange={(e) => onSearchChange(e.target.value)}
-              className="w-full pl-9 pr-3 py-1.5 bg-white/90 dark:bg-charcoal-800 border border-warm-border/80 dark:border-charcoal-700/80 rounded-xl text-xs placeholder:text-charcoal-400 dark:placeholder:text-charcoal-500 text-charcoal-900 dark:text-cream-50 focus:outline-none focus:ring-1 focus:ring-orange-500 transition-all"
+              className="w-full pl-9 pr-7 py-1.5 bg-white/90 dark:bg-charcoal-800 border border-warm-border/80 dark:border-charcoal-700/80 rounded-xl text-xs placeholder:text-charcoal-400 dark:placeholder:text-charcoal-500 text-charcoal-900 dark:text-cream-50 focus:outline-none focus:ring-1 focus:ring-orange-500 transition-all"
             />
+            {searchQuery && (
+              <button
+                onClick={() => onSearchChange('')}
+                className="absolute right-2 top-1/2 -translate-y-1/2 text-charcoal-400 hover:text-charcoal-600 dark:hover:text-cream-200 p-0.5 rounded"
+                title="Clear search"
+              >
+                <X className="w-3 h-3" />
+              </button>
+            )}
           </div>
 
           <button

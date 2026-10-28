@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import {
   ArrowRight,
   Play,
@@ -10,10 +10,7 @@ import {
   Link2,
   Image as ImageIcon,
   CheckSquare,
-  Sparkles,
-  BookOpen,
-  Laptop,
-  Folder
+  Sparkles
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../context/ToastContext';
@@ -55,7 +52,7 @@ export const HeroSection = () => {
     }
   };
 
-  const handleQuickCapture = (type = 'Note') => {
+  const handleQuickCapture = () => {
     if (isAuthenticated) {
       navigate(`/notes?action=new&title=${encodeURIComponent(quickInput || 'Quick Idea')}`);
     } else {
@@ -64,7 +61,7 @@ export const HeroSection = () => {
   };
 
   return (
-    <section className="relative overflow-hidden pt-8 pb-16 md:pt-14 md:pb-24 bg-gradient-to-b from-[#FFF5EC] via-[#FDF9F4] to-[#FBF9F5] dark:from-[#1E1712] dark:via-[#161413] dark:to-[#121316] select-none transition-colors border-b border-[#F0EBE1] dark:border-[#262422]">
+    <section className="relative overflow-hidden min-h-[calc(100vh-4rem)] flex flex-col justify-center py-10 lg:py-14 bg-gradient-to-b from-[#FFF5EC] via-[#FDF9F4] to-[#FDFBF7] dark:from-[#1E1712] dark:via-[#161413] dark:to-[#121316] select-none transition-colors">
       {/* Background Graphic Layers */}
       <div
         role="presentation"
@@ -73,17 +70,19 @@ export const HeroSection = () => {
         style={{
           backgroundImage: `url(${heroBgLight})`,
           backgroundRepeat: 'no-repeat',
-          backgroundPosition: 'center'
+          backgroundPosition: 'center',
+          backgroundSize: 'cover'
         }}
       />
       <div
         role="presentation"
         aria-hidden="true"
-        className="absolute inset-0 bg-cover bg-center pointer-events-none opacity-0 dark:opacity-35 transition-opacity duration-300"
+        className="absolute inset-0 bg-cover bg-center pointer-events-none opacity-0 dark:opacity-40 transition-opacity duration-300"
         style={{
           backgroundImage: `url(${heroBgDark})`,
           backgroundRepeat: 'no-repeat',
-          backgroundPosition: 'center'
+          backgroundPosition: 'center',
+          backgroundSize: 'cover'
         }}
       />
 
@@ -91,7 +90,7 @@ export const HeroSection = () => {
       <div className="absolute top-10 left-1/4 w-[500px] h-[350px] bg-orange-400/15 dark:bg-orange-500/10 rounded-full blur-3xl pointer-events-none" />
       <div className="absolute top-20 right-10 w-[400px] h-[300px] bg-amber-400/15 dark:bg-amber-500/10 rounded-full blur-3xl pointer-events-none" />
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 w-full my-auto">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-8 items-center">
           
           {/* Left Column: Headline & Action Buttons */}
@@ -156,7 +155,6 @@ export const HeroSection = () => {
 
           {/* Right Column: Floating 3D Dashboard Mockup Card */}
           <div className="lg:col-span-7 relative">
-            {/* Tilted Floating Mockup Container */}
             <div className="relative rounded-3xl border border-[#E8E2D5] dark:border-[#2D2E36] bg-white dark:bg-[#181A20] shadow-2xl p-5 sm:p-7 space-y-5 transition-transform duration-300 hover:scale-[1.01]">
               
               {/* Header Greeting */}
@@ -194,28 +192,28 @@ export const HeroSection = () => {
                 />
                 <div className="flex items-center space-x-2 text-xs">
                   <button
-                    onClick={() => handleQuickCapture('Note')}
+                    onClick={() => handleQuickCapture()}
                     className="px-2.5 py-1 rounded-lg bg-white dark:bg-[#23252E] border border-[#E5DFD4] dark:border-[#2D303B] hover:border-orange-400 text-[#555] dark:text-[#CCC] flex items-center space-x-1"
                   >
                     <FileText className="w-3 h-3 text-orange-500" />
                     <span>Note</span>
                   </button>
                   <button
-                    onClick={() => handleQuickCapture('Link')}
+                    onClick={() => handleQuickCapture()}
                     className="px-2.5 py-1 rounded-lg bg-white dark:bg-[#23252E] border border-[#E5DFD4] dark:border-[#2D303B] hover:border-orange-400 text-[#555] dark:text-[#CCC] flex items-center space-x-1"
                   >
                     <Link2 className="w-3 h-3 text-blue-500" />
                     <span>Link</span>
                   </button>
                   <button
-                    onClick={() => handleQuickCapture('Image')}
+                    onClick={() => handleQuickCapture()}
                     className="px-2.5 py-1 rounded-lg bg-white dark:bg-[#23252E] border border-[#E5DFD4] dark:border-[#2D303B] hover:border-orange-400 text-[#555] dark:text-[#CCC] flex items-center space-x-1"
                   >
                     <ImageIcon className="w-3 h-3 text-emerald-500" />
                     <span>Image</span>
                   </button>
                   <button
-                    onClick={() => handleQuickCapture('Checklist')}
+                    onClick={() => handleQuickCapture()}
                     className="px-2.5 py-1 rounded-lg bg-white dark:bg-[#23252E] border border-[#E5DFD4] dark:border-[#2D303B] hover:border-orange-400 text-[#555] dark:text-[#CCC] flex items-center space-x-1"
                   >
                     <CheckSquare className="w-3 h-3 text-purple-500" />
@@ -318,6 +316,13 @@ export const HeroSection = () => {
 
         </div>
       </div>
+
+      {/* Bottom seamless ambient fade into subsequent page sections */}
+      <div
+        role="presentation"
+        aria-hidden="true"
+        className="absolute bottom-0 inset-x-0 h-28 bg-gradient-to-t from-[#FDFBF7] dark:from-[#121316] to-transparent pointer-events-none"
+      />
     </section>
   );
 };

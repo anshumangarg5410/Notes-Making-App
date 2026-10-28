@@ -55,6 +55,11 @@ export const Navbar = () => {
 
   const isCurrent = (path) => location.pathname === path;
 
+  // Dynamic user display name fallback
+  const userDisplayName = user?.name
+    ? user.name.split(' ')[0]
+    : 'User';
+
   return (
     <header className="sticky top-0 z-40 w-full backdrop-blur-md bg-warm-bg/90 dark:bg-charcoal-900/90 border-b border-warm-border dark:border-charcoal-800 transition-colors select-none">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">

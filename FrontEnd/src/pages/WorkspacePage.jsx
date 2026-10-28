@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { Sidebar } from '../components/sidebar/Sidebar';
 import { NoteList } from '../components/notes/NoteList';
 import { NoteEditor } from '../components/editor/NoteEditor';
@@ -11,6 +12,7 @@ import { useToast } from '../context/ToastContext';
 
 export const WorkspacePage = () => {
   const { success, error: toastError, info } = useToast();
+  const [searchParams, setSearchParams] = useSearchParams();
 
   // Navigation & filtering state
   const [activeFilter, setActiveFilter] = useState('all'); // 'all', 'favorites', 'study', 'work', 'personal', 'ideas', 'archived', 'trash'
@@ -101,6 +103,14 @@ export const WorkspacePage = () => {
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
+
+  // Listen for ?action=new in URL to create note immediately
+  useEffect(() => {
+    if (searchParams.get('action') === 'new') {
+      handleCreateNote();
+      setSearchParams({}, { replace: true });
+    }
+  }, [searchParams]);
 
   // Action: Create New Note
   const handleCreateNote = async () => {
@@ -194,18 +204,29 @@ export const WorkspacePage = () => {
     }
   };
 
-  // Action: Soft Delete (Move to Trash)
-  const handleDeleteNote = async (noteId) => {
-    try {
-      const res = await noteService.deleteNote(noteId);
-      if (res.success) {
-        fetchNotes();
-        fetchStats();
-        info('Note moved to trash');
-      }
-    } catch (err) {
-      toastError('Failed to delete note');
-    }
+  // Action: Soft Delete (Move to Trash) with confirmation
+  const handleDeleteNote = (noteId) => {
+    setConfirmDialog({
+      isOpen: true,
+      title: 'Move Note to Trash?',
+      message: 'This note will be moved to the trash folder. You can easily restore it anytime.',
+      confirmText: 'Move to Trash',
+      isDanger: false,
+      onConfirm: async () => {
+        try {
+          const res = await noteService.deleteNote(noteId);
+          if (res.success) {
+            setConfirmDialog({ isOpen: false });
+            fetchNotes();
+            fetchStats();
+            info('Note moved to trash');
+          }
+        } catch (err) {
+          toastError('Failed to delete note');
+        }
+      },
+      onCancel: () => setConfirmDialog({ isOpen: false })
+    });
   };
 
   // Action: Restore from Trash
@@ -297,6 +318,7 @@ export const WorkspacePage = () => {
         onOpenSettings={() => setIsSettingsOpen(true)}
         onToggleFocusMode={() => setIsFocusMode((prev) => !prev)}
         isFocusMode={isFocusMode}
+        onNewNote={handleCreateNote}
       />
 
       {/* Main 3-Panel Content Area */}
@@ -340,6 +362,7 @@ export const WorkspacePage = () => {
               onDuplicateNote={handleDuplicateNote}
               onEmptyTrash={handleEmptyTrash}
               activeFilter={activeFilter}
+              onNewNote={handleCreateNote}
             />
           </div>
         )}
@@ -359,6 +382,7 @@ export const WorkspacePage = () => {
             onToggleArchive={handleToggleArchive}
             onDeleteNote={handleDeleteNote}
             onBackToNotes={() => setSelectedNote(null)}
+            onNewNote={handleCreateNote}
           />
         </main>
       </div>

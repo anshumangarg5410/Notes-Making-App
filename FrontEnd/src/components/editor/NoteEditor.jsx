@@ -35,7 +35,8 @@ export const NoteEditor = ({
   onToggleFavorite,
   onToggleArchive,
   onDeleteNote,
-  onBackToNotes
+  onBackToNotes,
+  onNewNote
 }) => {
   const [title, setTitle] = useState(note?.title || '');
   const [saveStatus, setSaveStatus] = useState('saved'); // 'saved', 'saving', 'unsaved', 'error'
@@ -241,6 +242,15 @@ export const NoteEditor = ({
         <p className="text-xs text-charcoal-400 dark:text-charcoal-500 mt-1 max-w-sm">
           Pick a note from the left panel to continue writing, or create a fresh new page for your ideas.
         </p>
+        {onNewNote && (
+          <button
+            onClick={onNewNote}
+            className="mt-4 px-4 py-2 bg-gradient-to-r from-indigo-500 to-violet-600 hover:from-indigo-600 hover:to-violet-700 text-white rounded-xl text-xs font-semibold flex items-center space-x-1.5 shadow-md shadow-indigo-500/20 hover:shadow-indigo-500/30 transition-all active:scale-95"
+          >
+            <Plus className="w-3.5 h-3.5" />
+            <span>Create New Note</span>
+          </button>
+        )}
       </div>
     );
   }

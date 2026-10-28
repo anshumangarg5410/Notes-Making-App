@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import {
   Sun,
   Moon,
@@ -8,12 +9,14 @@ import {
   User as UserIcon,
   LogOut,
   Settings,
-  ChevronDown
+  ChevronDown,
+  Home,
+  Plus
 } from 'lucide-react';
 import { useTheme } from '../../context/ThemeContext';
 import { useAuth } from '../../context/AuthContext';
 
-export const Header = ({ onToggleSidebar, onOpenSettings, onToggleFocusMode, isFocusMode }) => {
+export const Header = ({ onToggleSidebar, onOpenSettings, onToggleFocusMode, isFocusMode, onNewNote }) => {
   const { theme, toggleTheme, isDark } = useTheme();
   const { user, logout } = useAuth();
   const [profileOpen, setProfileOpen] = useState(false);
@@ -52,15 +55,38 @@ export const Header = ({ onToggleSidebar, onOpenSettings, onToggleFocusMode, isF
           <Menu className="w-5 h-5" />
         </button>
 
+        {/* Home navigation link */}
+        <Link
+          to="/"
+          className="flex items-center space-x-1.5 px-2.5 py-1.5 rounded-xl text-xs font-semibold text-charcoal-600 dark:text-cream-200 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-cream-200/60 dark:hover:bg-charcoal-800 transition-colors"
+          title="Back to Home Landing Page"
+        >
+          <Home className="w-3.5 h-3.5" />
+          <span>Home</span>
+        </Link>
+
         {/* Current breadcrumb or status */}
         <div className="hidden sm:flex items-center space-x-2 text-xs text-charcoal-400 dark:text-charcoal-500 font-medium">
+          <span className="text-charcoal-300 dark:text-charcoal-600">/</span>
           <span className="w-2 h-2 rounded-full bg-indigo-500 shadow-xs shadow-indigo-500/50" />
-          <span>Workspace</span>
+          <span>Notes Workspace</span>
         </div>
       </div>
 
-      {/* Top Right Utility Icons (matching screenshot top-right) */}
+      {/* Top Right Utility Icons */}
       <div className="flex items-center space-x-1.5">
+        {/* Quick Add Note Button */}
+        {onNewNote && (
+          <button
+            onClick={onNewNote}
+            className="hidden sm:inline-flex items-center space-x-1.5 py-1.5 px-3 bg-gradient-to-r from-indigo-500 to-violet-600 hover:from-indigo-600 hover:to-violet-700 text-white rounded-xl font-medium text-xs shadow-xs hover:shadow-indigo-500/20 transition-all duration-150 active:scale-95 mr-1"
+            title="Create New Note"
+          >
+            <Plus className="w-3.5 h-3.5" />
+            <span>New Note</span>
+          </button>
+        )}
+
         {/* Theme Toggle (Sun / Moon) */}
         <button
           onClick={toggleTheme}

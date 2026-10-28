@@ -1,5 +1,5 @@
 import React from 'react';
-import { Search, SlidersHorizontal, FileQuestion, Trash2 } from 'lucide-react';
+import { Search, SlidersHorizontal, FileQuestion, Trash2, Plus } from 'lucide-react';
 import { NoteCard } from './NoteCard';
 
 export const NoteList = ({
@@ -18,7 +18,8 @@ export const NoteList = ({
   onPermanentDeleteNote,
   onDuplicateNote,
   onEmptyTrash,
-  activeFilter
+  activeFilter,
+  onNewNote
 }) => {
   // Helper to categorize notes into Today, Yesterday, This Week, Older
   const groupNotesByPeriod = (noteList) => {
@@ -133,6 +134,15 @@ export const NoteList = ({
                   ? 'No notes in archive'
                   : 'Click "+ New Note" to write your first thought.'}
               </p>
+              {onNewNote && activeFilter !== 'trash' && activeFilter !== 'archived' && !searchQuery && (
+                <button
+                  onClick={onNewNote}
+                  className="mt-3.5 px-3.5 py-1.5 bg-gradient-to-r from-indigo-500 to-violet-600 hover:from-indigo-600 hover:to-violet-700 text-white rounded-xl text-xs font-semibold inline-flex items-center space-x-1.5 shadow-sm transition-all"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                  <span>Create Note</span>
+                </button>
+              )}
             </div>
           </div>
         ) : (

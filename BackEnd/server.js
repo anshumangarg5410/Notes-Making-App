@@ -50,11 +50,16 @@ app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.use(cookieParser());
 
-// API Routes
-app.use('/api/health', require('./routes/healthRoutes'));
-app.use('/api/auth', require('./routes/authRoutes'));
-app.use('/api/notes', require('./routes/noteRoutes'));
-app.use('/api/users', require('./routes/userRoutes'));
+// API Routes (supports both /api/* and direct /* prefix for hosting compatibility)
+const healthRoutes = require('./routes/healthRoutes');
+const authRoutes = require('./routes/authRoutes');
+const noteRoutes = require('./routes/noteRoutes');
+const userRoutes = require('./routes/userRoutes');
+
+app.use(['/api/health', '/health'], healthRoutes);
+app.use(['/api/auth', '/auth'], authRoutes);
+app.use(['/api/notes', '/notes'], noteRoutes);
+app.use(['/api/users', '/users'], userRoutes);
 
 // Root diagnostic route
 app.get('/', (req, res) => {

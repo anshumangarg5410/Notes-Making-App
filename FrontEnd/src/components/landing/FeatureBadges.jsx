@@ -61,7 +61,7 @@ export const FeatureBadges = () => {
         {badges.map((item, idx) => (
           <div
             key={idx}
-            className={`p-4 rounded-2xl border ${item.color} flex flex-col items-center text-center space-y-2.5 transition-all duration-200 hover:scale-105 shadow-xs`}
+            className={`p-4 rounded-2xl border ${item.color} flex flex-col items-center text-center space-y-2.5 transition-all duration-300 hover:scale-[1.04] hover:-translate-y-0.5 hover:shadow-md cursor-default`}
           >
             <div className="w-14 h-14 rounded-2xl bg-white dark:bg-[#181A20] flex items-center justify-center p-2 shadow-xs border border-white/60 dark:border-white/10">
               <img src={item.img} alt={item.title} className="w-10 h-10 object-contain" />

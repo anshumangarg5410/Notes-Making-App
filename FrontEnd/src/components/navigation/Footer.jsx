@@ -4,7 +4,13 @@ import { Feather, Heart, Shield, Sparkles, CheckCircle2 } from 'lucide-react';
 
 export const Footer = () => {
   return (
-    <footer className="w-full bg-warm-card dark:bg-charcoal-900 border-t border-warm-border dark:border-charcoal-800 transition-colors select-none">
+    <footer
+      id="app-footer"
+      role="contentinfo"
+      className="w-full bg-[#FAF8F4] dark:bg-[#141518] border-t border-[#EAE5DA] dark:border-[#22242C] transition-colors select-none"
+    >
+      {/* Top Subtle Border Accent */}
+      <div className="w-full h-px bg-gradient-to-r from-transparent via-orange-500/20 to-transparent" />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-16">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8 lg:gap-12">
           {/* Brand Info */}

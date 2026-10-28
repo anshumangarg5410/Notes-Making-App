@@ -520,14 +520,17 @@ export const NoteEditor = ({
           {/* Live Document Statistics Bar */}
           <div className="mt-14 pt-4 border-t border-warm-border/60 dark:border-charcoal-800 flex items-center justify-between text-[11px] text-charcoal-400 dark:text-charcoal-500 font-mono">
             <div className="flex items-center space-x-3">
-              <span>{wordCount} words</span>
+              <span>{wordCount} {wordCount === 1 ? 'word' : 'words'}</span>
               <span>•</span>
               <span>{charCount} characters</span>
               <span>•</span>
               <span>~{readingTime} min read</span>
             </div>
-            <div>
-              <span>Updated {formattedDate}</span>
+            <div className="flex items-center space-x-2">
+              <span className={`w-1.5 h-1.5 rounded-full ${
+                saveStatus === 'saved' ? 'bg-emerald-500' : saveStatus === 'saving' ? 'bg-amber-400 animate-ping' : 'bg-charcoal-300'
+              }`} />
+              <span>{saveStatus === 'saving' ? 'Saving...' : `Updated ${formattedDate}`}</span>
             </div>
           </div>
         </div>

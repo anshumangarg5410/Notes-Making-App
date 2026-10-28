@@ -12,6 +12,9 @@ import {
   PenTool,
   Check
 } from 'lucide-react';
+import cardSageLeaves from '../../assets/landing/backgrounds/card-sage-leaves.png';
+import cardSandDunes from '../../assets/landing/backgrounds/card-sand-dunes.png';
+import cardAirplaneTrail from '../../assets/landing/backgrounds/card-airplane-trail.png';
 
 export const EverythingSection = () => {
   const items = [
@@ -58,19 +61,22 @@ export const EverythingSection = () => {
       icon: GraduationCap,
       role: 'Students & Learners',
       highlight: 'Turn lecture notes into active spaced repetition flashcards.',
-      tags: ['Flashcards', 'Quiz Gen', 'Exam Prep']
+      tags: ['Flashcards', 'Quiz Gen', 'Exam Prep'],
+      bg: cardSageLeaves
     },
     {
       icon: Terminal,
       role: 'Developers & Engineers',
       highlight: 'Document system designs, algorithm notes, and clean code snippets.',
-      tags: ['Code Blocks', 'Markdown', 'Fast Search']
+      tags: ['Code Blocks', 'Markdown', 'Fast Search'],
+      bg: cardSandDunes
     },
     {
       icon: PenTool,
       role: 'Researchers & Writers',
       highlight: 'Connect conceptual nodes and outline multi-chapter research papers.',
-      tags: ['Knowledge Graph', 'Bi-directional Links', 'Distraction-free']
+      tags: ['Knowledge Graph', 'Bi-directional Links', 'Distraction-free'],
+      bg: cardAirplaneTrail
     }
   ];
 
@@ -126,8 +132,13 @@ export const EverythingSection = () => {
           return (
             <div
               key={idx}
-              className="p-6 rounded-3xl bg-white dark:bg-[#181A20] border border-[#EAE5DA] dark:border-[#272935] space-y-3.5 hover:shadow-md transition-shadow"
+              className="p-6 rounded-3xl bg-white dark:bg-[#181A20] border border-[#EAE5DA] dark:border-[#272935] space-y-3.5 hover:shadow-md transition-shadow relative overflow-hidden"
             >
+              {/* Card Background Texture Watermark */}
+              <div
+                className="absolute top-0 right-0 w-24 h-24 bg-no-repeat bg-right-top opacity-25 dark:opacity-5 pointer-events-none rounded-tr-3xl"
+                style={{ backgroundImage: `url(${p.bg})`, backgroundSize: 'cover' }}
+              />
               <div className="flex items-center space-x-3">
                 <div className="w-10 h-10 rounded-xl bg-orange-50 dark:bg-orange-950/50 flex items-center justify-center text-orange-600 dark:text-orange-400">
                   <Icon className="w-5 h-5" />

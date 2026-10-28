@@ -19,6 +19,7 @@ import readingStudent from '../assets/landing/reading-student.png';
 import coffeeBooks from '../assets/landing/coffee-books.png';
 import codePencil from '../assets/landing/code-pencil.png';
 import paperAirplane from '../assets/shared/paper-airplane.png';
+import heroBgDark from '../assets/landing/backgrounds/hero-bg-dark.png';
 
 export const LandingPage = () => {
   const { isAuthenticated } = useAuth();
@@ -97,7 +98,12 @@ export const LandingPage = () => {
       {/* Call to Action Banner */}
       <section className="py-16 md:py-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 select-none">
         <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-orange-600 via-orange-500 to-amber-600 text-white p-8 sm:p-12 md:p-14 text-center space-y-6 shadow-2xl shadow-orange-500/20">
-          <img src={paperAirplane} alt="Paper airplane flying" className="w-14 h-14 mx-auto object-contain drop-shadow-md" />
+          {/* Background Ambient Glow & Curves Overlay */}
+          <div
+            className="absolute inset-0 bg-cover bg-center opacity-30 mix-blend-overlay pointer-events-none"
+            style={{ backgroundImage: `url(${heroBgDark})` }}
+          />
+          <img src={paperAirplane} alt="Paper airplane flying" className="w-14 h-14 mx-auto object-contain drop-shadow-md relative z-10" />
           
           <h2 className="font-serif font-extrabold text-3xl sm:text-4xl lg:text-5xl max-w-xl mx-auto leading-tight">
             Ready to give your ideas a permanent home?

@@ -34,3 +34,18 @@ FrontEnd/src/assets/
 ## Source & Processing
 - **Source**: User-provided clipart pack sheet & design mockup.
 - **Processing**: Cropped at native pixel boundaries, converted border backgrounds to transparent alpha channels to ensure clean blending in both Light (Cream/Porcelain) and Dark (Charcoal/Obsidian) themes.
+
+### Background Graphics Inventory
+- `landing/backgrounds/hero-bg-light.png`: Full warm peach light mode hero background.
+- `landing/backgrounds/hero-bg-dark.png`: Full dark glowing amber & gold line wave background.
+- `landing/backgrounds/banner-cosmic-glow.png`: Cosmic dark starry night with glowing orange wave.
+- `landing/backgrounds/banner-coffee-notes.png`: Desk scene with coffee mug & notepad stationery.
+- `landing/backgrounds/banner-grid-peach.png`: Subtle grid texture banner.
+- `landing/backgrounds/banner-curves-light.png`: Warm peach curves banner with doodles & grid.
+- `landing/backgrounds/banner-mint-peach.png`: Mint to peach gradient curve banner.
+- `landing/backgrounds/banner-waves-coral.png`: Coral wave multi-layer curve banner.
+- `landing/backgrounds/banner-botanical-leaves.png`: Sage-green botanic leaves curve banner.
+- `landing/backgrounds/banner-notes-lightbulb.png`: Desk notepad & idea lightbulb banner.
+- `landing/backgrounds/card-*.png`: 7 cropped card textures for personas and workflows.
+- `reference/backgrounds-sheet.png`: Original user-uploaded master background sheet.
+- `reference/hero-*-original.png`: Original user-uploaded high-res hero backgrounds.

@@ -52,9 +52,10 @@ export const HeroSection = () => {
     }
   };
 
-  const handleQuickCapture = () => {
+  const handleQuickCapture = (captureType = 'Note') => {
+    const defaultTitle = quickInput ? quickInput : `New ${captureType}`;
     if (isAuthenticated) {
-      navigate(`/notes?action=new&title=${encodeURIComponent(quickInput || 'Quick Idea')}`);
+      navigate(`/notes?action=new&title=${encodeURIComponent(defaultTitle)}`);
     } else {
       handleStartWriting();
     }

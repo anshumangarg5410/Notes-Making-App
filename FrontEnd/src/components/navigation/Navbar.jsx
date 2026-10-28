@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import {
-  Feather,
+  Leaf,
   Plus,
   Sun,
   Moon,
@@ -68,14 +68,14 @@ export const Navbar = () => {
           to="/"
           className="flex items-center space-x-2.5 group focus:outline-none"
         >
-          <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center text-white shadow-md shadow-indigo-500/25 group-hover:scale-105 transition-transform duration-200">
-            <Feather className="w-5 h-5 transform -rotate-12" />
+          <div className="w-9 h-9 rounded-xl bg-orange-500/10 dark:bg-orange-500/20 border border-orange-500/30 flex items-center justify-center text-orange-500 shadow-sm group-hover:scale-105 transition-transform duration-200">
+            <Leaf className="w-5 h-5 fill-orange-500/20 text-orange-500 transform -rotate-12" />
           </div>
           <div>
             <span className="font-serif font-bold text-xl tracking-tight text-charcoal-900 dark:text-cream-50">
               Notely
             </span>
-            <span className="hidden sm:inline-block ml-2 text-[10px] font-semibold uppercase tracking-wider text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/60 px-2 py-0.5 rounded-full border border-indigo-100 dark:border-indigo-900/40">
+            <span className="hidden sm:inline-block ml-2 text-[10px] font-semibold uppercase tracking-wider text-orange-600 dark:text-orange-400 bg-orange-50 dark:bg-orange-950/60 px-2 py-0.5 rounded-full border border-orange-200/80 dark:border-orange-900/40">
               Notes
             </span>
           </div>
@@ -87,7 +87,7 @@ export const Navbar = () => {
             to="/"
             className={`px-3.5 py-2 rounded-xl text-xs font-semibold transition-colors flex items-center space-x-1.5 ${
               isCurrent('/')
-                ? 'text-indigo-600 dark:text-indigo-400 bg-indigo-50/80 dark:bg-indigo-950/40 font-bold'
+                ? 'text-orange-600 dark:text-orange-400 bg-orange-50/80 dark:bg-orange-950/40 font-bold'
                 : 'text-charcoal-600 dark:text-charcoal-300 hover:text-charcoal-900 dark:hover:text-cream-50 hover:bg-cream-100/60 dark:hover:bg-charcoal-800'
             }`}
           >
@@ -99,7 +99,7 @@ export const Navbar = () => {
             to="/notes"
             className={`px-3.5 py-2 rounded-xl text-xs font-semibold transition-colors flex items-center space-x-1.5 ${
               isCurrent('/notes')
-                ? 'text-indigo-600 dark:text-indigo-400 bg-indigo-50/80 dark:bg-indigo-950/40 font-bold'
+                ? 'text-orange-600 dark:text-orange-400 bg-orange-50/80 dark:bg-orange-950/40 font-bold'
                 : 'text-charcoal-600 dark:text-charcoal-300 hover:text-charcoal-900 dark:hover:text-cream-50 hover:bg-cream-100/60 dark:hover:bg-charcoal-800'
             }`}
           >
@@ -123,7 +123,7 @@ export const Navbar = () => {
           <button
             onClick={handleAddNote}
             id="nav-add-note-btn"
-            className="py-2 px-3.5 bg-gradient-to-r from-indigo-500 via-indigo-600 to-violet-600 hover:from-indigo-600 hover:to-violet-700 text-white rounded-xl font-medium text-xs flex items-center space-x-1.5 shadow-md shadow-indigo-500/20 hover:shadow-indigo-500/30 transition-all duration-200 active:scale-[0.98] group"
+            className="py-2 px-3.5 bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white rounded-xl font-medium text-xs flex items-center space-x-1.5 shadow-sm shadow-orange-500/20 hover:shadow-orange-500/30 transition-all duration-200 active:scale-[0.98] group"
           >
             <Plus className="w-3.5 h-3.5 stroke-[2.5] group-hover:rotate-90 transition-transform duration-200" />
             <span>Add Note</span>
@@ -132,7 +132,7 @@ export const Navbar = () => {
           {/* Theme Toggle */}
           <button
             onClick={toggleTheme}
-            className="p-2 rounded-xl text-charcoal-600 dark:text-charcoal-300 hover:text-indigo-500 dark:hover:text-indigo-400 hover:bg-cream-100 dark:hover:bg-charcoal-800 transition-colors"
+            className="p-2 rounded-xl text-charcoal-600 dark:text-charcoal-300 hover:text-orange-500 dark:hover:text-orange-400 hover:bg-cream-100 dark:hover:bg-charcoal-800 transition-colors"
             title={isDark ? 'Switch to Light Theme' : 'Switch to Dark Theme'}
             aria-label="Toggle Theme"
           >
@@ -144,20 +144,20 @@ export const Navbar = () => {
             <div className="flex items-center pl-2 space-x-2 border-l border-warm-border dark:border-charcoal-800">
               <Link
                 to="/notes"
-                className="flex items-center space-x-2 py-1 px-2 rounded-xl hover:bg-cream-100 dark:hover:bg-charcoal-800 transition-colors"
+                className="flex items-center space-x-2 p-1 pl-1.5 rounded-xl hover:bg-cream-100 dark:hover:bg-charcoal-800 transition-colors"
                 title="Go to Notes Workspace"
               >
-                <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-indigo-500 to-violet-600 text-white font-semibold text-xs flex items-center justify-center shadow-xs">
+                <div className="w-7 h-7 rounded-full bg-gradient-to-br from-teal-600 to-cyan-700 text-white font-semibold text-xs flex items-center justify-center shadow-xs">
                   {initials}
                 </div>
-                <span className="text-xs font-medium text-charcoal-800 dark:text-cream-100 max-w-[90px] truncate">
-                  {user?.name || 'My Notes'}
+                <span className="text-xs font-medium text-charcoal-700 dark:text-cream-100 max-w-[90px] truncate">
+                  {userDisplayName}
                 </span>
               </Link>
               <button
                 onClick={logout}
-                className="p-2 rounded-xl text-charcoal-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/20 transition-colors"
-                title="Sign out"
+                className="p-2 text-charcoal-400 hover:text-red-500 dark:hover:text-red-400 rounded-xl hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors"
+                title="Log out"
               >
                 <LogOut className="w-4 h-4" />
               </button>
@@ -166,13 +166,13 @@ export const Navbar = () => {
             <div className="flex items-center space-x-2 pl-2 border-l border-warm-border dark:border-charcoal-800">
               <Link
                 to="/login"
-                className="px-3.5 py-2 text-xs font-medium text-charcoal-700 dark:text-cream-100 hover:text-indigo-600 dark:hover:text-indigo-400 rounded-xl transition-colors"
+                className="px-3 py-1.5 text-xs font-semibold text-charcoal-700 dark:text-cream-200 hover:text-orange-600 dark:hover:text-orange-400 hover:bg-cream-100/60 dark:hover:bg-charcoal-800 rounded-xl transition-colors"
               >
                 Sign In
               </Link>
               <Link
                 to="/register"
-                className="px-3.5 py-2 bg-charcoal-900 dark:bg-cream-50 text-white dark:text-charcoal-950 hover:bg-charcoal-800 dark:hover:bg-cream-100 text-xs font-semibold rounded-xl shadow-xs transition-colors"
+                className="px-3 py-1.5 text-xs font-semibold bg-charcoal-900 hover:bg-charcoal-800 dark:bg-cream-100 dark:hover:bg-white text-white dark:text-charcoal-900 rounded-xl shadow-xs transition-colors"
               >
                 Get Started
               </Link>
@@ -180,83 +180,80 @@ export const Navbar = () => {
           )}
         </div>
 
-        {/* Mobile Hamburger Button */}
-        <div className="flex items-center space-x-2 md:hidden">
+        {/* Mobile Hamburger Trigger */}
+        <div className="flex items-center space-x-1 md:hidden">
           <button
             onClick={toggleTheme}
-            className="p-2 rounded-xl text-charcoal-600 dark:text-charcoal-300 hover:bg-cream-100 dark:hover:bg-charcoal-800 transition-colors"
+            className="p-2 rounded-xl text-charcoal-600 dark:text-charcoal-300"
             aria-label="Toggle Theme"
           >
             {isDark ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
           </button>
           <button
             onClick={() => setMobileMenuOpen((prev) => !prev)}
-            className="p-2 rounded-xl text-charcoal-700 dark:text-cream-100 hover:bg-cream-100 dark:hover:bg-charcoal-800 transition-colors"
-            aria-label="Toggle Menu"
+            className="p-2 rounded-xl text-charcoal-600 dark:text-charcoal-300 hover:bg-cream-100 dark:hover:bg-charcoal-800 transition-colors"
+            aria-label="Toggle mobile menu"
           >
-            {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+            {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
           </button>
         </div>
       </div>
 
-      {/* Mobile Menu Drawer */}
+      {/* Mobile Drawer */}
       {mobileMenuOpen && (
-        <div className="md:hidden border-t border-warm-border dark:border-charcoal-800 bg-warm-bg dark:bg-charcoal-900 px-4 pt-3 pb-5 space-y-3 shadow-lg animate-in slide-in-from-top-2 duration-150">
-          <nav className="space-y-1">
+        <div className="md:hidden border-t border-warm-border dark:border-charcoal-800 bg-warm-bg dark:bg-charcoal-900 px-4 py-4 space-y-3 animate-in slide-in-from-top duration-150">
+          <nav className="flex flex-col space-y-1">
             <Link
               to="/"
               onClick={() => setMobileMenuOpen(false)}
-              className="flex items-center space-x-2.5 px-3 py-2 rounded-xl text-sm font-medium text-charcoal-800 dark:text-cream-100 hover:bg-cream-100 dark:hover:bg-charcoal-800"
+              className="flex items-center space-x-3 px-3 py-2.5 rounded-xl text-sm font-semibold text-charcoal-700 dark:text-cream-200 hover:bg-cream-100 dark:hover:bg-charcoal-800"
             >
-              <Home className="w-4 h-4 text-indigo-500" />
+              <Home className="w-4 h-4" />
               <span>Home</span>
             </Link>
             <Link
               to="/notes"
               onClick={() => setMobileMenuOpen(false)}
-              className="flex items-center space-x-2.5 px-3 py-2 rounded-xl text-sm font-medium text-charcoal-800 dark:text-cream-100 hover:bg-cream-100 dark:hover:bg-charcoal-800"
+              className="flex items-center space-x-3 px-3 py-2.5 rounded-xl text-sm font-semibold text-charcoal-700 dark:text-cream-200 hover:bg-cream-100 dark:hover:bg-charcoal-800"
             >
-              <FileText className="w-4 h-4 text-indigo-500" />
+              <FileText className="w-4 h-4" />
               <span>My Notes</span>
             </Link>
             <a
               href="/#features"
               onClick={handleFeaturesClick}
-              className="flex items-center space-x-2.5 px-3 py-2 rounded-xl text-sm font-medium text-charcoal-800 dark:text-cream-100 hover:bg-cream-100 dark:hover:bg-charcoal-800"
+              className="flex items-center space-x-3 px-3 py-2.5 rounded-xl text-sm font-semibold text-charcoal-700 dark:text-cream-200 hover:bg-cream-100 dark:hover:bg-charcoal-800"
             >
-              <Sparkles className="w-4 h-4 text-indigo-500" />
+              <Sparkles className="w-4 h-4" />
               <span>Features</span>
             </a>
           </nav>
 
-          <div className="pt-2 border-t border-warm-border dark:border-charcoal-800 space-y-2">
+          <div className="pt-3 border-t border-warm-border dark:border-charcoal-800 space-y-2">
             <button
               onClick={handleAddNote}
-              className="w-full py-2.5 px-4 bg-gradient-to-r from-indigo-500 to-violet-600 text-white rounded-xl text-sm font-medium flex items-center justify-center space-x-2 shadow-md shadow-indigo-500/20"
+              className="w-full py-2.5 bg-gradient-to-r from-orange-500 to-amber-500 text-white rounded-xl text-sm font-medium flex items-center justify-center space-x-2 shadow-sm"
             >
               <Plus className="w-4 h-4" />
-              <span>Add Note</span>
+              <span>New Note</span>
             </button>
 
             {isAuthenticated ? (
-              <div className="flex items-center justify-between pt-2 px-1">
+              <div className="flex items-center justify-between p-2 rounded-xl bg-cream-100/60 dark:bg-charcoal-800">
                 <div className="flex items-center space-x-2">
-                  <div className="w-7 h-7 rounded-lg bg-indigo-500 text-white font-semibold text-xs flex items-center justify-center">
+                  <div className="w-7 h-7 rounded-full bg-gradient-to-br from-teal-600 to-cyan-700 text-white font-semibold text-xs flex items-center justify-center">
                     {initials}
                   </div>
-                  <span className="text-xs font-medium text-charcoal-700 dark:text-cream-200">
-                    {user?.name}
+                  <span className="text-xs font-semibold text-charcoal-800 dark:text-cream-100">
+                    {userDisplayName}
                   </span>
                 </div>
                 <button
-                  onClick={() => {
-                    logout();
-                    setMobileMenuOpen(false);
-                  }}
-                  className="text-xs font-semibold text-red-600 dark:text-red-400 hover:underline flex items-center space-x-1"
+                  onClick={logout}
+                  className="p-1.5 text-charcoal-500 hover:text-red-500 transition-colors"
+                  title="Logout"
                 >
-                  <LogOut className="w-3.5 h-3.5" />
-                  <span>Sign Out</span>
+                  <LogOut className="w-4 h-4" />
                 </button>
               </div>
             ) : (
@@ -264,16 +261,16 @@ export const Navbar = () => {
                 <Link
                   to="/login"
                   onClick={() => setMobileMenuOpen(false)}
-                  className="py-2 text-center text-xs font-semibold border border-warm-border dark:border-charcoal-700 rounded-xl text-charcoal-700 dark:text-cream-200"
+                  className="py-2 text-center text-xs font-semibold rounded-xl border border-warm-border dark:border-charcoal-700 text-charcoal-700 dark:text-cream-200"
                 >
                   Sign In
                 </Link>
                 <Link
                   to="/register"
                   onClick={() => setMobileMenuOpen(false)}
-                  className="py-2 text-center text-xs font-semibold bg-charcoal-900 dark:bg-cream-50 text-white dark:text-charcoal-950 rounded-xl"
+                  className="py-2 text-center text-xs font-semibold rounded-xl bg-charcoal-900 text-white dark:bg-cream-100 dark:text-charcoal-900"
                 >
-                  Get Started
+                  Register
                 </Link>
               </div>
             )}

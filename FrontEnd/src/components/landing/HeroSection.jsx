@@ -27,7 +27,10 @@ export const HeroSection = () => {
   const [demoLoading, setDemoLoading] = useState(false);
   const [quickInput, setQuickInput] = useState('');
 
-  const displayName = user?.name ? user.name.split(' ')[0] : 'Anshuman';
+  // Dynamic greeting: user name if authenticated, otherwise friendly fallback
+  const userGreeting = isAuthenticated && user?.name
+    ? `Good morning, ${user.name.split(' ')[0]} 👋`
+    : 'Hello, User 👋';
 
   const handleStartWriting = () => {
     if (isAuthenticated) {
@@ -160,7 +163,7 @@ export const HeroSection = () => {
               <div className="flex items-center justify-between pb-3 border-b border-[#F0EBE0] dark:border-[#252731]">
                 <div>
                   <h3 className="font-serif font-bold text-lg sm:text-xl text-[#222] dark:text-[#FAF8F5]">
-                    Good morning, {displayName} 👋
+                    {userGreeting}
                   </h3>
                   <p className="text-xs text-[#88857E] dark:text-[#7A7C85]">
                     Capture ideas, connect knowledge

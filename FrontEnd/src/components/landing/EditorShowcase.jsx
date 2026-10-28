@@ -8,6 +8,7 @@ import {
   Save,
   CheckSquare
 } from 'lucide-react';
+import bannerGridPeach from '../../assets/landing/backgrounds/banner-grid-peach.png';
 
 export const EditorShowcase = () => {
   return (
@@ -16,7 +17,24 @@ export const EditorShowcase = () => {
         
         {/* Left: Interactive Note Canvas Preview */}
         <div className="lg:col-span-7">
-          <div className="rounded-3xl border border-[#E7E3D8] dark:border-[#2C2E38] bg-white dark:bg-[#181A20] shadow-xl overflow-hidden p-6 sm:p-8 space-y-5">
+          <div className="rounded-3xl border border-[#E7E3D8] dark:border-[#2C2E38] bg-white dark:bg-[#181A20] shadow-xl overflow-hidden p-6 sm:p-8 space-y-5 relative">
+            {/* Subtle Grid Watermark Layer */}
+            <div
+              role="presentation"
+              aria-hidden="true"
+              className="absolute top-0 right-0 w-80 h-32 bg-no-repeat bg-right-top opacity-30 dark:opacity-5 pointer-events-none rounded-tr-3xl transition-opacity duration-300"
+              style={{
+                backgroundImage: `url(${bannerGridPeach})`,
+                backgroundSize: 'contain',
+                backgroundPosition: 'top right',
+                backgroundRepeat: 'no-repeat'
+              }}
+            />
+            {/* Ambient Warm Corner Glow */}
+            <div
+              className="absolute -bottom-10 -right-10 w-44 h-44 bg-amber-500/10 rounded-full blur-2xl pointer-events-none"
+              aria-hidden="true"
+            />
             {/* Toolbar Header */}
             <div className="flex items-center justify-between pb-3 border-b border-[#F0EBE0] dark:border-[#242630] text-xs text-[#88857E] dark:text-[#7A7C85]">
               <div className="flex items-center space-x-2">

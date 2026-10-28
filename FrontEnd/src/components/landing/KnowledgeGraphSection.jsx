@@ -8,6 +8,7 @@ import {
   ZoomOut,
   Info
 } from 'lucide-react';
+import bannerCosmicGlow from '../../assets/landing/backgrounds/banner-cosmic-glow.png';
 
 export const KnowledgeGraphSection = () => {
   const [activeNode, setActiveNode] = useState('Graph Algorithms');
@@ -120,6 +121,23 @@ export const KnowledgeGraphSection = () => {
         {/* Left: Interactive Knowledge Graph Mockup */}
         <div className="lg:col-span-7">
           <div className="relative rounded-3xl bg-[#121318] border border-[#262833] shadow-2xl p-4 sm:p-6 overflow-hidden">
+            {/* Cosmic Starry Amber Wave Background Layer */}
+            <div
+              role="presentation"
+              aria-hidden="true"
+              className="absolute inset-0 bg-cover bg-bottom opacity-35 pointer-events-none transition-opacity duration-300"
+              style={{
+                backgroundImage: `url(${bannerCosmicGlow})`,
+                backgroundRepeat: 'no-repeat',
+                backgroundPosition: 'bottom center',
+                backgroundSize: 'cover'
+              }}
+            />
+            {/* Ambient Nebula Glow Behind Canvas */}
+            <div
+              className="absolute -top-10 -left-10 w-44 h-44 bg-orange-500/10 rounded-full blur-2xl pointer-events-none"
+              aria-hidden="true"
+            />
             
             {/* Window controls */}
             <div className="flex items-center justify-between pb-3 border-b border-[#22242F] text-xs text-[#8E92A0]">

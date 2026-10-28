@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Feather, ArrowRight, Lock, Mail, User } from 'lucide-react';
+import { Feather, ArrowRight, Lock, Mail, User, ArrowLeft } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 
@@ -34,7 +34,7 @@ export const RegisterPage = () => {
       const res = await register(name, email, password, confirmPassword);
       if (res.success) {
         success('Account created successfully! Welcome to Notely.');
-        navigate('/', { replace: true });
+        navigate('/notes', { replace: true });
       }
     } catch (err) {
       toastError(err.response?.data?.message || 'Registration failed');
@@ -45,6 +45,17 @@ export const RegisterPage = () => {
 
   return (
     <div className="min-h-screen bg-warm-bg dark:bg-charcoal-950 flex flex-col justify-center items-center px-4 py-12 select-none">
+      {/* Back to Home link */}
+      <div className="w-full max-w-md mb-3 flex items-center justify-start">
+        <Link
+          to="/"
+          className="inline-flex items-center space-x-1.5 text-xs font-semibold text-charcoal-500 hover:text-indigo-600 dark:text-charcoal-400 dark:hover:text-indigo-400 transition-colors"
+        >
+          <ArrowLeft className="w-3.5 h-3.5" />
+          <span>Back to Home</span>
+        </Link>
+      </div>
+
       <div className="w-full max-w-md bg-warm-card dark:bg-charcoal-900 border border-warm-border dark:border-charcoal-800 rounded-3xl shadow-card p-8 md:p-10">
         {/* Brand Header */}
         <div className="flex flex-col items-center text-center mb-8">

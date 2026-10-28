@@ -17,6 +17,8 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../context/ToastContext';
+import heroBgLight from '../../assets/landing/backgrounds/hero-bg-light.png';
+import heroBgDark from '../../assets/landing/backgrounds/hero-bg-dark.png';
 
 export const HeroSection = () => {
   const { isAuthenticated, login, user } = useAuth();
@@ -60,6 +62,28 @@ export const HeroSection = () => {
 
   return (
     <section className="relative overflow-hidden pt-8 pb-16 md:pt-14 md:pb-24 bg-gradient-to-b from-[#FFF5EC] via-[#FDF9F4] to-[#FBF9F5] dark:from-[#1E1712] dark:via-[#161413] dark:to-[#121316] select-none transition-colors border-b border-[#F0EBE1] dark:border-[#262422]">
+      {/* Background Graphic Layers */}
+      <div
+        role="presentation"
+        aria-hidden="true"
+        className="absolute inset-0 bg-cover bg-center pointer-events-none opacity-45 dark:opacity-0 transition-opacity duration-300"
+        style={{
+          backgroundImage: `url(${heroBgLight})`,
+          backgroundRepeat: 'no-repeat',
+          backgroundPosition: 'center'
+        }}
+      />
+      <div
+        role="presentation"
+        aria-hidden="true"
+        className="absolute inset-0 bg-cover bg-center pointer-events-none opacity-0 dark:opacity-35 transition-opacity duration-300"
+        style={{
+          backgroundImage: `url(${heroBgDark})`,
+          backgroundRepeat: 'no-repeat',
+          backgroundPosition: 'center'
+        }}
+      />
+
       {/* Ambient background glow */}
       <div className="absolute top-10 left-1/4 w-[500px] h-[350px] bg-orange-400/15 dark:bg-orange-500/10 rounded-full blur-3xl pointer-events-none" />
       <div className="absolute top-20 right-10 w-[400px] h-[300px] bg-amber-400/15 dark:bg-amber-500/10 rounded-full blur-3xl pointer-events-none" />

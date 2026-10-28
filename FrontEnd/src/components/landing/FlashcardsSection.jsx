@@ -9,6 +9,7 @@ import {
   ChevronRight,
   Eye
 } from 'lucide-react';
+import bannerCoffeeNotes from '../../assets/landing/backgrounds/banner-coffee-notes.png';
 
 export const FlashcardsSection = () => {
   const [isAnswerRevealed, setIsAnswerRevealed] = useState(false);
@@ -85,7 +86,18 @@ export const FlashcardsSection = () => {
 
           {/* Right: Flashcards Interactive Card */}
           <div className="lg:col-span-7">
-            <div className="rounded-3xl border border-[#E7E2D6] dark:border-[#2B2D38] bg-white dark:bg-[#181A20] shadow-xl overflow-hidden p-6 sm:p-8 space-y-6">
+            <div className="rounded-3xl border border-[#E7E2D6] dark:border-[#2B2D38] bg-white dark:bg-[#181A20] shadow-xl overflow-hidden p-6 sm:p-8 space-y-6 relative">
+              {/* Subtle Warm Background Watermark */}
+              <div
+                role="presentation"
+                aria-hidden="true"
+                className="absolute bottom-0 right-0 w-80 h-32 bg-no-repeat bg-right-bottom opacity-20 dark:opacity-5 pointer-events-none rounded-br-3xl transition-opacity duration-300"
+                style={{
+                  backgroundImage: `url(${bannerCoffeeNotes})`,
+                  backgroundSize: 'contain',
+                  backgroundPosition: 'bottom right'
+                }}
+              />
               
               {/* Flashcard Header */}
               <div className="flex items-center justify-between pb-3 border-b border-[#F0EBE0] dark:border-[#23252E]">

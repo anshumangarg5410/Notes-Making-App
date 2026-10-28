@@ -201,7 +201,7 @@ export const Navbar = () => {
 
       {/* Mobile Drawer */}
       {mobileMenuOpen && (
-        <div className="md:hidden border-t border-warm-border dark:border-charcoal-800 bg-warm-bg dark:bg-charcoal-900 px-4 py-4 space-y-3 animate-in slide-in-from-top duration-150">
+        <div className="md:hidden border-t border-warm-border dark:border-charcoal-800 bg-warm-bg/95 dark:bg-charcoal-900/95 backdrop-blur-md px-4 py-4 space-y-3 shadow-lg animate-in slide-in-from-top-2 duration-200">
           <nav className="flex flex-col space-y-1">
             <Link
               to="/"

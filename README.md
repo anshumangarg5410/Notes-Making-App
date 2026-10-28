@@ -36,6 +36,9 @@ Notely combines the sleek aesthetic of modern developer workspaces (**Electric I
 - **Bulk Trash Cleanup**: Single-click Empty Trash endpoint with client-side confirmation dialog.
 - **Payload Validation**: Strict validation middleware on note creation and updates (title length, allowed colors, and tag counts).
 - **Strict User Privacy**: Every note query enforces user ownership at the database layer; User A can never inspect or mutate User B's notes.
+- **Complete Website & Landing Page**: Modern, Notion/Strut-inspired landing page with interactive category boards, quick AI brainstorming companion, hero CTAs, and unified navigation.
+- **Dedicated Notes Dashboard**: Full-screen workspace (`/notes`) supporting real-time CRUD, delete confirmation dialogs, quick add note triggers, and actionable empty states.
+- **Curated Clipart Pack**: Integrated sticker illustrations (`hero-student`, `notebook-mascot`, `cloud-sync`, `doc-card`, etc.) with transparent alpha channels and structured asset inventory.
 - **Fault Tolerance**: Wrapped in a top-level React `ErrorBoundary` for smooth error recovery without crashes.
 
 ### Ready-to-use Demo Account

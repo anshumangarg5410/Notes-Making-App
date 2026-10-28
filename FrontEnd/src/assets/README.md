@@ -6,6 +6,14 @@ This directory organizes all illustrations, stickers, icons, and design referenc
 
 ```text
 FrontEnd/src/assets/
+├── dashboard/
+│   ├── dashboard-bg-light.png   # Light mode fluid cream/amber waves with green leaves
+│   ├── dashboard-bg-dark.png    # Dark mode obsidian background with glowing amber waves
+│   ├── editor-desk-light.png    # Light mode desk scene (coffee mug, books, plant, notepad)
+│   ├── editor-desk-dark.png     # Dark mode desk scene (night lamp, books, mug, notebook)
+│   ├── sidebar-quote-light.png  # Light mode quote card: "Small notes today, a brighter you tomorrow"
+│   └── sidebar-quote-dark.png   # Dark mode quote card: "Small notes today, a brighter you tomorrow"
+│
 ├── landing/
 │   ├── hero-student.png         # Student working on laptop with ideas
 │   ├── notebook-mascot.png      # Smiling notebook mascot with pencil
@@ -27,25 +35,22 @@ FrontEnd/src/assets/
 │   └── paper-airplane.png       # Fast note sharing & export symbol
 │
 └── reference/
-    ├── clipart-sheet.jpg        # Original high-res clipart illustration pack
-    └── design-mockup.png        # User-provided minimalist dashboard reference UI
+    ├── dashboard-mockup-light.jpg # User-provided Light mode main dashboard design mockup
+    ├── dashboard-mockup-dark.jpg  # User-provided Dark mode main dashboard design mockup
+    ├── dashboard-bg-split.png     # User-provided split light/dark wave background sheet
+    ├── clipart-sheet.jpg          # Original high-res clipart illustration pack
+    └── design-mockup.png          # User-provided minimalist dashboard reference UI
 ```
 
 ## Source & Processing
-- **Source**: User-provided clipart pack sheet & design mockup.
+- **Source**: User-provided dashboard mockups, background wave sheet, and clipart packs.
 - **Processing**: Cropped at native pixel boundaries, converted border backgrounds to transparent alpha channels to ensure clean blending in both Light (Cream/Porcelain) and Dark (Charcoal/Obsidian) themes.
 
 ### Background Graphics Inventory
+- `dashboard/dashboard-bg-light.png`: Full warm cream/amber fluid waves with leaves for main editor canvas.
+- `dashboard/dashboard-bg-dark.png`: Full obsidian with glowing amber wave trails for main editor canvas.
+- `dashboard/editor-desk-light.png`: Cozy desk stationery scene with coffee mug & plant.
+- `dashboard/editor-desk-dark.png`: Night mode glowing desk lamp scene with coffee mug & notepad.
+- `dashboard/sidebar-quote-light.png` & `dashboard/sidebar-quote-dark.png`: Motivational quote illustration card.
 - `landing/backgrounds/hero-bg-light.png`: Full warm peach light mode hero background.
 - `landing/backgrounds/hero-bg-dark.png`: Full dark glowing amber & gold line wave background.
-- `landing/backgrounds/banner-cosmic-glow.png`: Cosmic dark starry night with glowing orange wave.
-- `landing/backgrounds/banner-coffee-notes.png`: Desk scene with coffee mug & notepad stationery.
-- `landing/backgrounds/banner-grid-peach.png`: Subtle grid texture banner.
-- `landing/backgrounds/banner-curves-light.png`: Warm peach curves banner with doodles & grid.
-- `landing/backgrounds/banner-mint-peach.png`: Mint to peach gradient curve banner.
-- `landing/backgrounds/banner-waves-coral.png`: Coral wave multi-layer curve banner.
-- `landing/backgrounds/banner-botanical-leaves.png`: Sage-green botanic leaves curve banner.
-- `landing/backgrounds/banner-notes-lightbulb.png`: Desk notepad & idea lightbulb banner.
-- `landing/backgrounds/card-*.png`: 7 cropped card textures for personas and workflows.
-- `reference/backgrounds-sheet.png`: Original user-uploaded master background sheet.
-- `reference/hero-*-original.png`: Original user-uploaded high-res hero backgrounds.

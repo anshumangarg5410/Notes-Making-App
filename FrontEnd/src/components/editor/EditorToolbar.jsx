@@ -194,7 +194,11 @@ export const EditorToolbar = ({ editor }) => {
         </button>
         <button
           onClick={insertTable}
-          className="p-1.5 rounded-lg text-charcoal-600 dark:text-charcoal-300 hover:bg-cream-200/60 dark:hover:bg-charcoal-800 transition-colors"
+          className={`p-1.5 rounded-lg transition-colors ${
+            editor.isActive('table')
+              ? 'bg-orange-100 text-orange-700 dark:bg-orange-950/60 dark:text-orange-300'
+              : 'text-charcoal-600 dark:text-charcoal-300 hover:bg-cream-200/60 dark:hover:bg-charcoal-800'
+          }`}
           title="Insert Table"
         >
           <TableIcon className="w-3.5 h-3.5" />

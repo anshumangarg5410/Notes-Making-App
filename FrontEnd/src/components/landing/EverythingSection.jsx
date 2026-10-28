@@ -165,6 +165,13 @@ export const EverythingSection = () => {
           );
         })}
       </div>
+
+      {/* Editorial Section Note */}
+      <div className="pt-8 text-center select-none" aria-hidden="true">
+        <p className="text-[11px] text-[#8E8B84] dark:text-[#7A7C85]">
+          Built with focus, privacy, and speed in mind &bull; Designed for your everyday ideas
+        </p>
+      </div>
     </section>
   );
 };

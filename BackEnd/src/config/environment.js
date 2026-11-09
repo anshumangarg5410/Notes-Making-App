@@ -40,3 +40,4 @@ if (!environment.database.uri && !environment.isTest) {
 }
 
 module.exports = environment;
+

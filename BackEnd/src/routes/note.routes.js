@@ -27,3 +27,4 @@ router.patch('/:id/favorite', noteController.toggleFavorite);
 router.patch('/:id/archive', noteController.toggleArchive);
 
 module.exports = router;
+

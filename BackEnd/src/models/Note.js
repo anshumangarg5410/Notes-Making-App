@@ -72,3 +72,4 @@ noteSchema.index({ userId: 1, title: 'text', plainText: 'text' });
 const Note = mongoose.model('Note', noteSchema);
 
 module.exports = Note;
+

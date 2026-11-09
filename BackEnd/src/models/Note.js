@@ -27,6 +27,17 @@ const noteSchema = new mongoose.Schema(
       type: [String],
       default: []
     },
+    folderId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Folder',
+      default: null,
+      index: true
+    },
+    folder: {
+      type: String,
+      default: '',
+      trim: true
+    },
     color: {
       type: String,
       default: 'default',

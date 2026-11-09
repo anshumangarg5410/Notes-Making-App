@@ -6,6 +6,7 @@ const morgan = require('morgan');
 const environment = require('./config/environment');
 const authRoutes = require('./routes/auth.routes');
 const noteRoutes = require('./routes/note.routes');
+const folderRoutes = require('./routes/folder.routes');
 const errorHandler = require('./middleware/errorHandler');
 
 const app = express();
@@ -54,6 +55,7 @@ app.get('/api/health', (req, res) => {
 // 6. API Route Handlers
 app.use('/api/auth', authRoutes);
 app.use('/api/notes', noteRoutes);
+app.use('/api/folders', folderRoutes);
 
 // Fallback for 404 Not Found on undefined API routes
 app.use('/api/*', (req, res) => {

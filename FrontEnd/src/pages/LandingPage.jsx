@@ -1,7 +1,7 @@
 import React from 'react';
 import { PencilNavbar } from '../components/landing/PencilNavbar';
 import { HeroSection } from '../components/landing/HeroSection';
-import { FeatureCards } from '../components/landing/FeatureCards';
+import { FeaturesOverview } from '../components/landing/FeaturesOverview';
 import { Footer } from '../components/footer/Footer';
 import { useTheme } from '../context/ThemeContext';
 import landingBgDark from '../assets/landing/hero-bg-dark.png';
@@ -17,12 +17,12 @@ export const LandingPage = () => {
       style={{
         backgroundImage: isDark
           ? `linear-gradient(rgba(9, 13, 22, 0.18), rgba(9, 13, 22, 0.3)), url(${landingBgDark})`
-          : 'radial-gradient(ellipse at 80% 10%, rgba(99, 102, 241, 0.12), transparent 40%), linear-gradient(180deg, #F8FAFC 0%, #F1F5F9 100%)',
-        backgroundColor: isDark ? '#090D16' : '#F8FAFC',
-        backgroundSize: isDark ? 'cover' : 'auto',
+          : 'radial-gradient(ellipse at 82% 4%, rgba(192, 132, 252, 0.16), transparent 38%), radial-gradient(ellipse at 8% 52%, rgba(251, 191, 36, 0.06), transparent 34%), linear-gradient(180deg, #FFFAFF 0%, #FBF7FF 55%, #F8F3FF 100%)',
+        backgroundColor: isDark ? '#090D16' : '#FFFAFF',
+        backgroundSize: 'cover',
         backgroundPosition: 'center',
         backgroundRepeat: 'no-repeat',
-        backgroundAttachment: isDark ? 'fixed' : 'scroll'
+        backgroundAttachment: 'fixed'
       }}
     >
       {/* Keep the fixed navbar from covering the landing page content. */}
@@ -36,8 +36,8 @@ export const LandingPage = () => {
         <HeroSection />
       </main>
 
-      {/* 3. Five Feature Cards */}
-      <FeatureCards />
+      {/* 3. NEW Features Overview Section (Interconnected Knowledge Universe) */}
+      <FeaturesOverview />
 
       {/* 4. Four-column footer */}
       <Footer />

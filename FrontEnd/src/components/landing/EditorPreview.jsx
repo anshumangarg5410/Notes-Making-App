@@ -37,7 +37,7 @@ export const EditorPreview = () => {
       </div>
 
       {/* Tablet Editor Mockup Container */}
-      <div className="relative rounded-2xl overflow-hidden filter drop-shadow-[0_20px_50px_rgba(0,0,0,0.7)] transition-transform duration-500 group-hover:scale-[1.015]">
+      <div className="relative rounded-[4px] overflow-hidden filter drop-shadow-[0_20px_50px_rgba(0,0,0,0.7)] transition-transform duration-500 group-hover:scale-[1.015]">
         <img
           src={editorPreviewDark}
           alt="NoteNest Application Interface"

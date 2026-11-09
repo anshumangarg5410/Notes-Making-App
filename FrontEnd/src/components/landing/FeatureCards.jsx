@@ -60,17 +60,17 @@ export const FeatureCards = () => {
             return (
               <div
                 key={card.id}
-                className="relative group rounded-2xl p-5 transition-all duration-300 cursor-default flex flex-col justify-between hover:-translate-y-1 hover:shadow-2xl select-none"
+                className="relative group rounded-[4px] p-5 transition-all duration-300 cursor-default flex flex-col justify-between hover:-translate-y-1 hover:shadow-2xl select-none"
                 style={{
                   backgroundColor: 'rgba(23, 17, 36, 0.75)',
                   backdropFilter: 'blur(10px)',
-                  border: `1.5px solid ${card.borderColor}`,
+                  border: `1px solid ${card.borderColor}`,
                   boxShadow: `0 8px 24px -4px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.08)`
                 }}
               >
                 {/* Subtle paper deckle edge / inner glow */}
                 <div
-                  className="absolute inset-0 rounded-2xl pointer-events-none opacity-30 group-hover:opacity-70 transition-opacity"
+                  className="absolute inset-0 rounded-[4px] pointer-events-none opacity-30 group-hover:opacity-70 transition-opacity"
                   style={{
                     boxShadow: `inset 0 0 16px ${card.glowColor}`
                   }}

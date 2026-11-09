@@ -8,7 +8,7 @@ export const QuickActions = ({
   onExport
 }) => {
   return (
-    <div className="rounded-3xl p-5 bg-[#181226]/90 border border-purple-500/20 shadow-xl select-none">
+    <div className="rounded-[4px] p-5 bg-[#181226]/90 border border-purple-500/20 shadow-xl select-none">
       {/* Header */}
       <div className="flex items-center gap-2.5 mb-4">
         <Zap className="w-4 h-4 text-purple-400" />
@@ -23,9 +23,9 @@ export const QuickActions = ({
         <button
           type="button"
           onClick={onNewNote}
-          className="flex flex-col items-center justify-center p-3.5 rounded-2xl bg-gradient-to-br from-[#9333ea] to-[#7c3aed] text-white shadow-[0_0_18px_rgba(147,51,234,0.4)] hover:shadow-[0_0_25px_rgba(147,51,234,0.65)] hover:scale-102 active:scale-98 transition-all cursor-pointer group"
+          className="flex flex-col items-center justify-center p-3.5 rounded-[3px] bg-gradient-to-br from-[#9333ea] to-[#7c3aed] border border-purple-400/40 text-white shadow-[0_0_14px_rgba(147,51,234,0.35)] hover:shadow-[0_0_20px_rgba(147,51,234,0.55)] hover:scale-102 active:scale-98 transition-all cursor-pointer group"
         >
-          <div className="w-8 h-8 rounded-xl bg-white/15 flex items-center justify-center mb-1.5 group-hover:rotate-90 transition-transform duration-300">
+          <div className="w-8 h-8 rounded-[3px] bg-white/15 flex items-center justify-center mb-1.5 group-hover:rotate-90 transition-transform duration-300">
             <Plus className="w-4 h-4 text-white" />
           </div>
           <span className="text-xs font-semibold">New Note</span>
@@ -35,9 +35,9 @@ export const QuickActions = ({
         <button
           type="button"
           onClick={onNewFolder}
-          className="flex flex-col items-center justify-center p-3.5 rounded-2xl bg-[#1c152a] border border-purple-500/20 hover:border-purple-400/50 hover:bg-[#251b38] text-stone-200 hover:text-white transition-all cursor-pointer group"
+          className="flex flex-col items-center justify-center p-3.5 rounded-[3px] bg-[#1c152a] border border-purple-500/20 hover:border-purple-400/50 hover:bg-[#251b38] text-stone-200 hover:text-white transition-all cursor-pointer group"
         >
-          <div className="w-8 h-8 rounded-xl bg-purple-950/70 border border-purple-500/30 flex items-center justify-center mb-1.5 text-purple-300 group-hover:scale-105 transition-transform">
+          <div className="w-8 h-8 rounded-[3px] bg-purple-950/70 border border-purple-500/30 flex items-center justify-center mb-1.5 text-purple-300 group-hover:scale-105 transition-transform">
             <FolderPlus className="w-4 h-4" />
           </div>
           <span className="text-xs font-medium">New Folder</span>
@@ -47,9 +47,9 @@ export const QuickActions = ({
         <button
           type="button"
           onClick={onImport}
-          className="flex flex-col items-center justify-center p-3.5 rounded-2xl bg-[#1c152a] border border-purple-500/20 hover:border-purple-400/50 hover:bg-[#251b38] text-stone-200 hover:text-white transition-all cursor-pointer group"
+          className="flex flex-col items-center justify-center p-3.5 rounded-[3px] bg-[#1c152a] border border-purple-500/20 hover:border-purple-400/50 hover:bg-[#251b38] text-stone-200 hover:text-white transition-all cursor-pointer group"
         >
-          <div className="w-8 h-8 rounded-xl bg-purple-950/70 border border-purple-500/30 flex items-center justify-center mb-1.5 text-purple-300 group-hover:-translate-y-0.5 transition-transform">
+          <div className="w-8 h-8 rounded-[3px] bg-purple-950/70 border border-purple-500/30 flex items-center justify-center mb-1.5 text-purple-300 group-hover:-translate-y-0.5 transition-transform">
             <Upload className="w-4 h-4" />
           </div>
           <span className="text-xs font-medium">Import</span>
@@ -59,9 +59,9 @@ export const QuickActions = ({
         <button
           type="button"
           onClick={onExport}
-          className="flex flex-col items-center justify-center p-3.5 rounded-2xl bg-[#1c152a] border border-purple-500/20 hover:border-purple-400/50 hover:bg-[#251b38] text-stone-200 hover:text-white transition-all cursor-pointer group"
+          className="flex flex-col items-center justify-center p-3.5 rounded-[3px] bg-[#1c152a] border border-purple-500/20 hover:border-purple-400/50 hover:bg-[#251b38] text-stone-200 hover:text-white transition-all cursor-pointer group"
         >
-          <div className="w-8 h-8 rounded-xl bg-purple-950/70 border border-purple-500/30 flex items-center justify-center mb-1.5 text-purple-300 group-hover:translate-y-0.5 transition-transform">
+          <div className="w-8 h-8 rounded-[3px] bg-purple-950/70 border border-purple-500/30 flex items-center justify-center mb-1.5 text-purple-300 group-hover:translate-y-0.5 transition-transform">
             <Download className="w-4 h-4" />
           </div>
           <span className="text-xs font-medium">Export</span>

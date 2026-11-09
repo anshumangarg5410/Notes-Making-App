@@ -249,7 +249,7 @@ export const NoteEditor = ({
   if (!note) {
     return (
       <div className="flex-1 flex flex-col items-center justify-center bg-cream-50/50 dark:bg-charcoal-900 text-charcoal-400 dark:text-charcoal-500 p-8 text-center select-none">
-        <div className="w-16 h-16 rounded-3xl bg-cream-100 dark:bg-charcoal-800 flex items-center justify-center mb-4">
+        <div className="w-16 h-16 rounded-[4px] bg-cream-100 dark:bg-charcoal-800 border border-warm-border/60 dark:border-charcoal-700 flex items-center justify-center mb-4">
           <FileText className="w-8 h-8 text-orange-500/80" />
         </div>
         <h3 className="font-serif font-semibold text-lg text-charcoal-700 dark:text-cream-200">
@@ -261,7 +261,7 @@ export const NoteEditor = ({
         {onNewNote && (
           <button
             onClick={onNewNote}
-            className="mt-4 px-4 py-2 bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white rounded-xl text-xs font-semibold flex items-center space-x-1.5 shadow-md shadow-orange-500/20 hover:shadow-orange-500/30 transition-all active:scale-95"
+            className="mt-4 px-4 py-2 bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 border border-orange-400/40 text-white rounded-[3px] text-xs font-semibold flex items-center space-x-1.5 shadow-md shadow-orange-500/20 hover:shadow-orange-500/30 transition-all active:scale-95"
           >
             <Plus className="w-3.5 h-3.5" />
             <span>Create New Note</span>
@@ -298,7 +298,7 @@ export const NoteEditor = ({
           {onBackToNotes && (
             <button
               onClick={onBackToNotes}
-              className="md:hidden p-1 rounded-lg text-charcoal-600 dark:text-cream-200 hover:bg-cream-200/60 dark:hover:bg-charcoal-800 mr-1"
+              className="md:hidden p-1 rounded-[3px] text-charcoal-600 dark:text-cream-200 hover:bg-cream-200/60 dark:hover:bg-charcoal-800 mr-1"
               title="Back to notes"
             >
               <ArrowLeft className="w-4 h-4" />
@@ -322,7 +322,7 @@ export const NoteEditor = ({
           {/* Share Button */}
           <button
             onClick={handleShare}
-            className="hidden sm:inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-xl border border-warm-border dark:border-charcoal-700 bg-white/80 dark:bg-charcoal-800 hover:bg-cream-100 dark:hover:bg-charcoal-700 text-charcoal-700 dark:text-cream-200 text-xs font-medium transition-colors shadow-xs"
+            className="hidden sm:inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-[3px] border border-warm-border dark:border-charcoal-700 bg-white/80 dark:bg-charcoal-800 hover:bg-cream-100 dark:hover:bg-charcoal-700 text-charcoal-700 dark:text-cream-200 text-xs font-medium transition-colors shadow-xs"
           >
             <Share2 className="w-3.5 h-3.5" />
             <span>Share</span>
@@ -331,7 +331,7 @@ export const NoteEditor = ({
           {/* Save Button */}
           <button
             onClick={() => performSave()}
-            className="inline-flex items-center space-x-1.5 px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white text-xs font-semibold shadow-xs hover:shadow-orange-500/20 active:scale-95 transition-all"
+            className="inline-flex items-center space-x-1.5 px-3.5 py-1.5 rounded-[3px] bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 border border-orange-400/40 text-white text-xs font-semibold shadow-xs hover:shadow-orange-500/20 active:scale-95 transition-all"
           >
             <Check className="w-3.5 h-3.5 stroke-[2.5]" />
             <span>Save</span>
@@ -341,14 +341,14 @@ export const NoteEditor = ({
           <div className="relative" ref={optionsDropdownRef}>
             <button
               onClick={() => setShowOptionsDropdown((prev) => !prev)}
-              className="p-1.5 rounded-xl text-charcoal-500 hover:text-charcoal-800 dark:hover:text-cream-100 hover:bg-cream-200/60 dark:hover:bg-charcoal-800 transition-colors"
+              className="p-1.5 rounded-[3px] text-charcoal-500 hover:text-charcoal-800 dark:hover:text-cream-100 hover:bg-cream-200/60 dark:hover:bg-charcoal-800 transition-colors"
               title="More options"
             >
               <MoreVertical className="w-4 h-4" />
             </button>
 
             {showOptionsDropdown && (
-              <div className="absolute right-0 top-full mt-1.5 w-48 bg-white dark:bg-charcoal-800 border border-warm-border dark:border-charcoal-700 rounded-2xl shadow-dropdown py-1.5 text-xs text-charcoal-700 dark:text-cream-200 z-50 animate-in fade-in zoom-in-95 duration-100">
+              <div className="absolute right-0 top-full mt-1.5 w-48 bg-white dark:bg-charcoal-800 border border-warm-border dark:border-charcoal-700 rounded-[3px] shadow-dropdown py-1.5 text-xs text-charcoal-700 dark:text-cream-200 z-50 animate-in fade-in zoom-in-95 duration-100">
                 <button
                   onClick={() => {
                     onTogglePin(note._id);
@@ -473,7 +473,7 @@ export const NoteEditor = ({
               {tags.map((tag) => (
                 <span
                   key={tag}
-                  className="inline-flex items-center space-x-1 px-2 py-0.5 rounded-full text-[11px] bg-white/80 dark:bg-charcoal-800 border border-warm-border/60 dark:border-charcoal-700 text-charcoal-600 dark:text-charcoal-300 font-medium shadow-2xs"
+                  className="inline-flex items-center space-x-1 px-2 py-0.5 rounded-[2px] text-[11px] bg-white/80 dark:bg-charcoal-800 border border-warm-border/60 dark:border-charcoal-700 text-charcoal-600 dark:text-charcoal-300 font-medium shadow-2xs"
                 >
                   <span>#{tag}</span>
                   <button
@@ -494,13 +494,13 @@ export const NoteEditor = ({
                     value={newTagInput}
                     onChange={(e) => setNewTagInput(e.target.value)}
                     onBlur={() => setShowTagInput(false)}
-                    className="px-2 py-0.5 text-xs bg-white dark:bg-charcoal-800 border border-warm-border dark:border-charcoal-700 rounded-md outline-none text-charcoal-800 dark:text-cream-100 w-24"
+                    className="px-2 py-0.5 text-xs bg-white dark:bg-charcoal-800 border border-warm-border dark:border-charcoal-700 rounded-[3px] outline-none text-charcoal-800 dark:text-cream-100 w-24"
                   />
                 </form>
               ) : (
                 <button
                   onClick={() => setShowTagInput(true)}
-                  className="inline-flex items-center space-x-1 px-2.5 py-0.5 rounded-full text-[11px] border border-dashed border-warm-border dark:border-charcoal-700 text-charcoal-500 hover:text-orange-600 dark:hover:text-orange-400 hover:bg-white/50 transition-colors"
+                  className="inline-flex items-center space-x-1 px-2.5 py-0.5 rounded-[2px] text-[11px] border border-dashed border-warm-border dark:border-charcoal-700 text-charcoal-500 hover:text-orange-600 dark:hover:text-orange-400 hover:bg-white/50 transition-colors"
                 >
                   <Plus className="w-3 h-3" />
                   <span>Add tags</span>
@@ -510,7 +510,7 @@ export const NoteEditor = ({
           </div>
 
           {/* Amber Accent Underline Bar */}
-          <div className="w-12 h-1 bg-amber-500 rounded-full mb-6 mt-1" />
+          <div className="w-12 h-1 bg-amber-500 rounded-[1px] mb-6 mt-1" />
 
           {/* TipTap Editor Content */}
           <div className="prose prose-stone dark:prose-invert max-w-none focus:outline-none min-h-[360px]">
@@ -536,10 +536,10 @@ export const NoteEditor = ({
         </div>
       </div>
 
-      {/* Floating Round AI Sparkle Button in Bottom-Right Corner */}
+      {/* Floating Rectangular AI Sparkle Button in Bottom-Right Corner */}
       <button
         onClick={() => info('Notely AI writing suggestions ready')}
-        className="fixed bottom-6 right-6 z-30 w-12 h-12 rounded-full bg-gradient-to-tr from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white flex items-center justify-center shadow-lg shadow-orange-500/35 hover:scale-105 active:scale-95 transition-all"
+        className="fixed bottom-6 right-6 z-30 w-10 h-10 rounded-[3px] bg-gradient-to-tr from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 border border-amber-400/50 text-white flex items-center justify-center shadow-lg shadow-orange-500/35 hover:scale-105 active:scale-95 transition-all"
         title="Notely AI Sparkle"
       >
         <Sparkles className="w-5 h-5 fill-white/20" />

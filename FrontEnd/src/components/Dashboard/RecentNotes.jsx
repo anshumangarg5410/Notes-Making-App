@@ -68,7 +68,7 @@ export const RecentNotes = ({
   };
 
   return (
-    <div className="rounded-3xl p-5 sm:p-6 bg-[#181226]/90 border border-purple-500/20 shadow-xl select-none">
+    <div className="rounded-[4px] p-5 sm:p-6 bg-[#181226]/90 border border-purple-500/20 shadow-xl select-none">
       {/* Panel Header */}
       <div className="flex items-center justify-between pb-4 border-b border-purple-500/15 mb-2">
         <div className="flex items-center gap-2.5">
@@ -97,12 +97,12 @@ export const RecentNotes = ({
             <div
               key={note._id}
               onClick={() => onSelectNote && onSelectNote(note)}
-              className="py-3 px-2 sm:px-3 rounded-2xl flex items-center justify-between gap-3 hover:bg-white/5 transition-colors cursor-pointer group relative"
+              className="py-3 px-2 sm:px-3 rounded-[3px] flex items-center justify-between gap-3 hover:bg-white/5 transition-colors cursor-pointer group relative"
             >
               {/* Left: Icon + Title + Snippet */}
               <div className="flex items-center gap-3.5 min-w-0 flex-1">
                 {/* Purple note icon */}
-                <div className="w-8 h-8 rounded-xl bg-purple-950/60 border border-purple-500/30 flex items-center justify-center text-purple-300 shrink-0 group-hover:scale-105 group-hover:border-purple-400 transition-all">
+                <div className="w-8 h-8 rounded-[3px] bg-purple-950/60 border border-purple-500/30 flex items-center justify-center text-purple-300 shrink-0 group-hover:scale-105 group-hover:border-purple-400 transition-all">
                   <FileText className="w-4 h-4" />
                 </div>
 
@@ -127,7 +127,7 @@ export const RecentNotes = ({
                         e.stopPropagation();
                         if (onSelectTag) onSelectTag(tag);
                       }}
-                      className={`px-2.5 py-0.5 rounded-full text-[11px] font-medium border transition-colors hover:scale-105 ${getTagColorClass(
+                      className={`px-2.5 py-0.5 rounded-[2px] text-[11px] font-medium border transition-colors hover:scale-105 ${getTagColorClass(
                         tag
                       )}`}
                     >
@@ -150,14 +150,14 @@ export const RecentNotes = ({
                       e.stopPropagation();
                       setActiveMenuId(isMenuOpen ? null : note._id);
                     }}
-                    className="p-1 rounded-lg text-stone-400 hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
+                    className="p-1 rounded-[3px] text-stone-400 hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
                   >
                     <MoreHorizontal className="w-4 h-4" />
                   </button>
 
                   {/* 3-Dot Dropdown */}
                   {isMenuOpen && (
-                    <div className="absolute right-0 mt-1 w-36 rounded-xl bg-[#201830] border border-purple-500/30 p-1.5 shadow-xl z-30 animate-in fade-in zoom-in-95 duration-100">
+                    <div className="absolute right-0 mt-1 w-36 rounded-[3px] bg-[#201830] border border-purple-500/30 p-1.5 shadow-xl z-30 animate-in fade-in zoom-in-95 duration-100">
                       <button
                         type="button"
                         onClick={(e) => {
@@ -165,7 +165,7 @@ export const RecentNotes = ({
                           if (onToggleFavorite) onToggleFavorite(note._id);
                           setActiveMenuId(null);
                         }}
-                        className="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-xs text-stone-200 hover:bg-white/10 transition-colors text-left"
+                        className="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-[3px] text-xs text-stone-200 hover:bg-white/10 transition-colors text-left"
                       >
                         <Star className={`w-3.5 h-3.5 ${note.isFavorite ? 'fill-amber-400 text-amber-400' : ''}`} />
                         <span>{note.isFavorite ? 'Unfavorite' : 'Favorite'}</span>
@@ -178,7 +178,7 @@ export const RecentNotes = ({
                           if (onSelectNote) onSelectNote(note);
                           setActiveMenuId(null);
                         }}
-                        className="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-xs text-stone-200 hover:bg-white/10 transition-colors text-left"
+                        className="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-[3px] text-xs text-stone-200 hover:bg-white/10 transition-colors text-left"
                       >
                         <ExternalLink className="w-3.5 h-3.5" />
                         <span>Open Editor</span>
@@ -193,7 +193,7 @@ export const RecentNotes = ({
                           if (onDeleteNote) onDeleteNote(note._id);
                           setActiveMenuId(null);
                         }}
-                        className="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-xs text-red-400 hover:bg-red-500/10 transition-colors text-left"
+                        className="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-[3px] text-xs text-red-400 hover:bg-red-500/10 transition-colors text-left"
                       >
                         <Trash2 className="w-3.5 h-3.5" />
                         <span>Delete</span>

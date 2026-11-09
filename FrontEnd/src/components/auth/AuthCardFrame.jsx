@@ -26,7 +26,7 @@ export const AuthCardFrame = ({
 
   return (
     <div
-      className={`relative w-full max-w-xl sm:max-w-2xl rounded-3xl transition-all duration-300 ${
+      className={`relative w-full max-w-xl sm:max-w-2xl rounded-[5px] transition-all duration-300 ${
         isDark
           ? 'bg-[#211d2e] text-[#f5f3f0] border border-purple-500/40 shadow-[0_0_50px_rgba(147,51,234,0.35),0_20px_40px_rgba(0,0,0,0.8)]'
           : 'bg-[#fbf7fd] text-[#26153b] border border-purple-300/80 shadow-[0_15px_45px_rgba(147,51,234,0.18),0_2px_10px_rgba(0,0,0,0.06)]'
@@ -76,7 +76,7 @@ export const AuthCardFrame = ({
             type="button"
             onClick={toggleTheme}
             title={isDark ? 'Switch to Light Theme' : 'Switch to Dark Theme'}
-            className={`p-1.5 rounded-full transition-all text-xs flex items-center gap-1 cursor-pointer ${
+            className={`p-1.5 rounded-[3px] transition-all text-xs flex items-center gap-1 cursor-pointer ${
               isDark
                 ? 'bg-purple-900/40 hover:bg-purple-800/60 text-purple-300 border border-purple-500/25'
                 : 'bg-purple-100 hover:bg-purple-200 text-purple-800 border border-purple-200'
@@ -89,7 +89,7 @@ export const AuthCardFrame = ({
         {/* Centered NoteNest Brand Logo */}
         <div className="flex items-center gap-2 cursor-pointer select-none">
           <div
-            className={`w-7 h-7 rounded-lg flex items-center justify-center ${
+            className={`w-7 h-7 rounded-[3px] flex items-center justify-center ${
               isDark
                 ? 'bg-gradient-to-br from-purple-500 to-indigo-600 text-white shadow-[0_0_12px_rgba(168,85,247,0.5)]'
                 : 'bg-gradient-to-br from-purple-600 to-indigo-600 text-white shadow-sm'
@@ -113,7 +113,7 @@ export const AuthCardFrame = ({
               type="button"
               onClick={onClose}
               aria-label="Close modal"
-              className={`p-1.5 rounded-full transition-colors cursor-pointer ${
+              className={`p-1.5 rounded-[3px] transition-colors cursor-pointer ${
                 isDark
                   ? 'text-stone-400 hover:text-white hover:bg-white/10'
                   : 'text-stone-500 hover:text-stone-900 hover:bg-purple-100/70'
@@ -166,7 +166,7 @@ export const AuthCardFrame = ({
       </div>
 
       {/* 5. Jagged Torn Paper Bottom Strip */}
-      <div className="absolute -bottom-1 left-0 right-0 w-full overflow-hidden rounded-b-3xl pointer-events-none select-none z-10">
+      <div className="absolute -bottom-1 left-0 right-0 w-full overflow-hidden rounded-b-[5px] pointer-events-none select-none z-10">
         <img
           src={isDark ? tornBottomDark : tornBottomLight}
           alt=""

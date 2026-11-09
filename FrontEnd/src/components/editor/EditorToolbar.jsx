@@ -39,7 +39,7 @@ export const EditorToolbar = ({ editor }) => {
       <div className="flex items-center space-x-0.5 pr-2 border-r border-warm-border/60 dark:border-charcoal-800">
         <button
           onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}
-          className={`px-2 py-1 rounded-lg text-xs font-serif font-bold transition-colors ${
+          className={`px-2 py-1 rounded-[3px] text-xs font-serif font-bold transition-colors ${
             editor.isActive('heading', { level: 1 })
               ? 'bg-orange-100 text-orange-700 dark:bg-orange-950/60 dark:text-orange-300'
               : 'text-charcoal-600 dark:text-charcoal-300 hover:bg-cream-200/60 dark:hover:bg-charcoal-800'
@@ -50,7 +50,7 @@ export const EditorToolbar = ({ editor }) => {
         </button>
         <button
           onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
-          className={`px-2 py-1 rounded-lg text-xs font-serif font-bold transition-colors ${
+          className={`px-2 py-1 rounded-[3px] text-xs font-serif font-bold transition-colors ${
             editor.isActive('heading', { level: 2 })
               ? 'bg-orange-100 text-orange-700 dark:bg-orange-950/60 dark:text-orange-300'
               : 'text-charcoal-600 dark:text-charcoal-300 hover:bg-cream-200/60 dark:hover:bg-charcoal-800'
@@ -61,7 +61,7 @@ export const EditorToolbar = ({ editor }) => {
         </button>
         <button
           onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()}
-          className={`px-2 py-1 rounded-lg text-xs font-serif font-bold transition-colors ${
+          className={`px-2 py-1 rounded-[3px] text-xs font-serif font-bold transition-colors ${
             editor.isActive('heading', { level: 3 })
               ? 'bg-orange-100 text-orange-700 dark:bg-orange-950/60 dark:text-orange-300'
               : 'text-charcoal-600 dark:text-charcoal-300 hover:bg-cream-200/60 dark:hover:bg-charcoal-800'
@@ -76,7 +76,7 @@ export const EditorToolbar = ({ editor }) => {
       <div className="flex items-center space-x-0.5 px-2 border-r border-warm-border/60 dark:border-charcoal-800">
         <button
           onClick={() => editor.chain().focus().toggleBold().run()}
-          className={`p-1.5 rounded-lg transition-colors ${
+          className={`p-1.5 rounded-[3px] transition-colors ${
             editor.isActive('bold')
               ? 'bg-orange-100 text-orange-700 dark:bg-orange-950/60 dark:text-orange-300'
               : 'text-charcoal-600 dark:text-charcoal-300 hover:bg-cream-200/60 dark:hover:bg-charcoal-800'
@@ -87,7 +87,7 @@ export const EditorToolbar = ({ editor }) => {
         </button>
         <button
           onClick={() => editor.chain().focus().toggleItalic().run()}
-          className={`p-1.5 rounded-lg transition-colors ${
+          className={`p-1.5 rounded-[3px] transition-colors ${
             editor.isActive('italic')
               ? 'bg-orange-100 text-orange-700 dark:bg-orange-950/60 dark:text-orange-300'
               : 'text-charcoal-600 dark:text-charcoal-300 hover:bg-cream-200/60 dark:hover:bg-charcoal-800'
@@ -98,7 +98,7 @@ export const EditorToolbar = ({ editor }) => {
         </button>
         <button
           onClick={() => editor.chain().focus().toggleUnderline().run()}
-          className={`p-1.5 rounded-lg transition-colors ${
+          className={`p-1.5 rounded-[3px] transition-colors ${
             editor.isActive('underline')
               ? 'bg-orange-100 text-orange-700 dark:bg-orange-950/60 dark:text-orange-300'
               : 'text-charcoal-600 dark:text-charcoal-300 hover:bg-cream-200/60 dark:hover:bg-charcoal-800'
@@ -109,7 +109,7 @@ export const EditorToolbar = ({ editor }) => {
         </button>
         <button
           onClick={() => editor.chain().focus().toggleStrike().run()}
-          className={`p-1.5 rounded-lg transition-colors ${
+          className={`p-1.5 rounded-[3px] transition-colors ${
             editor.isActive('strike')
               ? 'bg-orange-100 text-orange-700 dark:bg-orange-950/60 dark:text-orange-300'
               : 'text-charcoal-600 dark:text-charcoal-300 hover:bg-cream-200/60 dark:hover:bg-charcoal-800'
@@ -124,7 +124,7 @@ export const EditorToolbar = ({ editor }) => {
       <div className="flex items-center space-x-0.5 px-2 border-r border-warm-border/60 dark:border-charcoal-800">
         <button
           onClick={() => editor.chain().focus().toggleBulletList().run()}
-          className={`p-1.5 rounded-lg transition-colors ${
+          className={`p-1.5 rounded-[3px] transition-colors ${
             editor.isActive('bulletList')
               ? 'bg-orange-100 text-orange-700 dark:bg-orange-950/60 dark:text-orange-300'
               : 'text-charcoal-600 dark:text-charcoal-300 hover:bg-cream-200/60 dark:hover:bg-charcoal-800'
@@ -135,7 +135,7 @@ export const EditorToolbar = ({ editor }) => {
         </button>
         <button
           onClick={() => editor.chain().focus().toggleOrderedList().run()}
-          className={`p-1.5 rounded-lg transition-colors ${
+          className={`p-1.5 rounded-[3px] transition-colors ${
             editor.isActive('orderedList')
               ? 'bg-orange-100 text-orange-700 dark:bg-orange-950/60 dark:text-orange-300'
               : 'text-charcoal-600 dark:text-charcoal-300 hover:bg-cream-200/60 dark:hover:bg-charcoal-800'
@@ -146,7 +146,7 @@ export const EditorToolbar = ({ editor }) => {
         </button>
         <button
           onClick={() => editor.chain().focus().toggleTaskList().run()}
-          className={`p-1.5 rounded-lg transition-colors ${
+          className={`p-1.5 rounded-[3px] transition-colors ${
             editor.isActive('taskList')
               ? 'bg-orange-100 text-orange-700 dark:bg-orange-950/60 dark:text-orange-300'
               : 'text-charcoal-600 dark:text-charcoal-300 hover:bg-cream-200/60 dark:hover:bg-charcoal-800'
@@ -161,7 +161,7 @@ export const EditorToolbar = ({ editor }) => {
       <div className="flex items-center space-x-0.5 px-2 border-r border-warm-border/60 dark:border-charcoal-800">
         <button
           onClick={setLink}
-          className={`p-1.5 rounded-lg transition-colors ${
+          className={`p-1.5 rounded-[3px] transition-colors ${
             editor.isActive('link')
               ? 'bg-orange-100 text-orange-700 dark:bg-orange-950/60 dark:text-orange-300'
               : 'text-charcoal-600 dark:text-charcoal-300 hover:bg-cream-200/60 dark:hover:bg-charcoal-800'
@@ -172,7 +172,7 @@ export const EditorToolbar = ({ editor }) => {
         </button>
         <button
           onClick={() => editor.chain().focus().toggleBlockquote().run()}
-          className={`p-1.5 rounded-lg transition-colors ${
+          className={`p-1.5 rounded-[3px] transition-colors ${
             editor.isActive('blockquote')
               ? 'bg-orange-100 text-orange-700 dark:bg-orange-950/60 dark:text-orange-300'
               : 'text-charcoal-600 dark:text-charcoal-300 hover:bg-cream-200/60 dark:hover:bg-charcoal-800'
@@ -183,7 +183,7 @@ export const EditorToolbar = ({ editor }) => {
         </button>
         <button
           onClick={() => editor.chain().focus().toggleCodeBlock().run()}
-          className={`p-1.5 rounded-lg transition-colors ${
+          className={`p-1.5 rounded-[3px] transition-colors ${
             editor.isActive('codeBlock')
               ? 'bg-orange-100 text-orange-700 dark:bg-orange-950/60 dark:text-orange-300'
               : 'text-charcoal-600 dark:text-charcoal-300 hover:bg-cream-200/60 dark:hover:bg-charcoal-800'
@@ -194,7 +194,7 @@ export const EditorToolbar = ({ editor }) => {
         </button>
         <button
           onClick={insertTable}
-          className={`p-1.5 rounded-lg transition-colors ${
+          className={`p-1.5 rounded-[3px] transition-colors ${
             editor.isActive('table')
               ? 'bg-orange-100 text-orange-700 dark:bg-orange-950/60 dark:text-orange-300'
               : 'text-charcoal-600 dark:text-charcoal-300 hover:bg-cream-200/60 dark:hover:bg-charcoal-800'
@@ -210,7 +210,7 @@ export const EditorToolbar = ({ editor }) => {
         <button
           onClick={() => editor.chain().focus().undo().run()}
           disabled={!editor.can().undo()}
-          className="p-1.5 rounded-lg text-charcoal-600 dark:text-charcoal-300 hover:bg-cream-200/60 dark:hover:bg-charcoal-800 disabled:opacity-30 disabled:hover:bg-transparent transition-colors"
+          className="p-1.5 rounded-[3px] text-charcoal-600 dark:text-charcoal-300 hover:bg-cream-200/60 dark:hover:bg-charcoal-800 disabled:opacity-30 disabled:hover:bg-transparent transition-colors"
           title="Undo (Ctrl+Z)"
         >
           <Undo2 className="w-3.5 h-3.5" />
@@ -218,7 +218,7 @@ export const EditorToolbar = ({ editor }) => {
         <button
           onClick={() => editor.chain().focus().redo().run()}
           disabled={!editor.can().redo()}
-          className="p-1.5 rounded-lg text-charcoal-600 dark:text-charcoal-300 hover:bg-cream-200/60 dark:hover:bg-charcoal-800 disabled:opacity-30 disabled:hover:bg-transparent transition-colors"
+          className="p-1.5 rounded-[3px] text-charcoal-600 dark:text-charcoal-300 hover:bg-cream-200/60 dark:hover:bg-charcoal-800 disabled:opacity-30 disabled:hover:bg-transparent transition-colors"
           title="Redo (Ctrl+Y)"
         >
           <Redo2 className="w-3.5 h-3.5" />

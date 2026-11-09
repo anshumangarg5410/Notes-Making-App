@@ -13,7 +13,7 @@ export const PopularTags = ({
   onSelectTag
 }) => {
   return (
-    <div className="rounded-3xl p-5 sm:p-6 bg-[#181226]/90 border border-purple-500/20 shadow-xl select-none">
+    <div className="rounded-[4px] p-5 sm:p-6 bg-[#181226]/90 border border-purple-500/20 shadow-xl select-none">
       {/* Header */}
       <div className="flex items-center gap-2.5 mb-4">
         <Tag className="w-4 h-4 text-purple-400" />
@@ -29,7 +29,7 @@ export const PopularTags = ({
             key={tag.name}
             type="button"
             onClick={() => onSelectTag && onSelectTag(tag.name)}
-            className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-medium bg-[#1c142c] hover:bg-[#251a3a] border border-purple-500/25 hover:border-purple-400/60 text-stone-200 hover:text-white transition-all duration-200 cursor-pointer shadow-xs hover:scale-105 active:scale-95 group"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-[3px] text-xs font-medium bg-[#1c142c] hover:bg-[#251a3a] border border-purple-500/25 hover:border-purple-400/60 text-stone-200 hover:text-white transition-all duration-200 cursor-pointer shadow-xs hover:scale-102 active:scale-98 group"
           >
             <span className="text-purple-400 font-bold group-hover:text-purple-300">
               #

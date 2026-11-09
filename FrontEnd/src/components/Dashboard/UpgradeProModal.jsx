@@ -21,12 +21,12 @@ export const UpgradeProModal = ({ isOpen, onClose }) => {
         if (e.target === e.currentTarget) onClose();
       }}
     >
-      <div className="relative w-full max-w-md rounded-3xl p-6 bg-[#1b1429] border border-purple-500/40 text-white shadow-2xl animate-in zoom-in-95 duration-150 select-none text-center">
+      <div className="relative w-full max-w-md rounded-[5px] p-6 bg-[#1b1429] border border-purple-500/40 text-white shadow-2xl animate-in zoom-in-95 duration-150 select-none text-center">
         {/* Close Button */}
         <button
           type="button"
           onClick={onClose}
-          className="absolute top-4 right-4 p-1.5 rounded-full text-stone-400 hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
+          className="absolute top-4 right-4 p-1.5 rounded-[3px] text-stone-400 hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
         >
           <X className="w-5 h-5" />
         </button>
@@ -41,7 +41,7 @@ export const UpgradeProModal = ({ isOpen, onClose }) => {
         </div>
 
         {/* Heading */}
-        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-purple-900/40 border border-purple-500/30 text-xs font-semibold text-purple-200 mb-2">
+        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-[3px] bg-purple-900/40 border border-purple-500/30 text-xs font-semibold text-purple-200 mb-2">
           <Sparkles className="w-3.5 h-3.5 text-amber-400" />
           <span>NoteNest Pro Plan</span>
         </div>
@@ -53,7 +53,7 @@ export const UpgradeProModal = ({ isOpen, onClose }) => {
         </p>
 
         {/* Features List */}
-        <div className="my-5 space-y-2.5 text-left p-3.5 rounded-2xl bg-[#140e21] border border-purple-500/20">
+        <div className="my-5 space-y-2.5 text-left p-3.5 rounded-[4px] bg-[#140e21] border border-purple-500/20">
           {features.map((feat, idx) => {
             const Icon = feat.icon;
             return (
@@ -71,7 +71,7 @@ export const UpgradeProModal = ({ isOpen, onClose }) => {
         <button
           type="button"
           onClick={onClose}
-          className="w-full py-2.5 rounded-full font-semibold text-xs sm:text-sm bg-gradient-to-r from-[#9333ea] to-[#7c3aed] text-white shadow-[0_0_20px_rgba(147,51,234,0.4)] hover:shadow-[0_0_30px_rgba(147,51,234,0.65)] transition-all cursor-pointer"
+          className="w-full py-2.5 rounded-[3px] font-semibold text-xs sm:text-sm bg-gradient-to-r from-[#9333ea] to-[#7c3aed] border border-purple-400/40 text-white shadow-[0_0_15px_rgba(147,51,234,0.35)] hover:shadow-[0_0_22px_rgba(147,51,234,0.55)] transition-all cursor-pointer"
         >
           Got It, Thanks!
         </button>

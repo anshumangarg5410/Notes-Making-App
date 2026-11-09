@@ -6,6 +6,29 @@ export default {
   ],
   darkMode: 'class',
   theme: {
+    borderRadius: {
+      none: '0px',
+      xs: '2px',
+      sm: '2px',
+      DEFAULT: '3px',
+      md: '4px',
+      lg: '4px',
+      xl: '4px',
+      '2xl': '5px',
+      '3xl': '6px',
+      full: '9999px',
+      panel: 'var(--radius-panel, 4px)',
+      card: 'var(--radius-card, 4px)',
+      input: 'var(--radius-input, 3px)',
+      btn: 'var(--radius-button, 3px)',
+      button: 'var(--radius-button, 3px)',
+      dropdown: 'var(--radius-dropdown, 3px)',
+      modal: 'var(--radius-modal, 5px)',
+      tooltip: 'var(--radius-tooltip, 3px)',
+      tag: 'var(--radius-tag, 2px)',
+      nav: 'var(--radius-nav, 3px)',
+      icon: 'var(--radius-icon, 3px)',
+    },
     extend: {
       colors: {
         // Pristine, luminous cool-slate / snow tones for Light Mode

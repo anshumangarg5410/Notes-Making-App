@@ -153,7 +153,7 @@ export const Footer = () => {
             {/* Functional Newsletter Input Pill */}
             <form onSubmit={handleSubscribe} className="relative mt-2">
               <div
-                className={`flex items-center rounded-full p-1 border transition-all ${
+                className={`flex items-center rounded-[3px] p-1 border transition-all ${
                   isDark
                     ? 'bg-[#181228] border-purple-500/40 focus-within:border-purple-400 focus-within:shadow-[0_0_15px_rgba(168,85,247,0.35)]'
                     : 'bg-white border-purple-300 focus-within:border-purple-500 focus-within:shadow-[0_0_15px_rgba(147,51,234,0.2)]'
@@ -181,14 +181,14 @@ export const Footer = () => {
                   }`}
                 />
 
-                {/* Circular Purple Submit Button with Paper Plane Icon */}
+                {/* Rectangular Purple Submit Button with Paper Plane Icon */}
                 <button
                   type="submit"
                   aria-label="Subscribe to newsletter"
-                  className={`shrink-0 w-8 h-8 rounded-full flex items-center justify-center transition-all cursor-pointer ${
+                  className={`shrink-0 w-8 h-8 rounded-[3px] flex items-center justify-center transition-all cursor-pointer ${
                     isDark
-                      ? 'bg-[#9333ea] hover:bg-[#a855f7] text-white shadow-[0_0_12px_rgba(147,51,234,0.6)] hover:scale-105 active:scale-95'
-                      : 'bg-[#7c3aed] hover:bg-[#6d28d9] text-white shadow-md shadow-purple-500/30 hover:scale-105 active:scale-95'
+                      ? 'bg-[#9333ea] hover:bg-[#a855f7] border border-purple-400/40 text-white shadow-[0_0_10px_rgba(147,51,234,0.4)] hover:scale-102 active:scale-98'
+                      : 'bg-[#7c3aed] hover:bg-[#6d28d9] border border-purple-400/40 text-white shadow-sm hover:scale-102 active:scale-98'
                   }`}
                 >
                   <Send className="w-3.5 h-3.5 fill-current ml-0.5" />
@@ -299,10 +299,10 @@ export const Footer = () => {
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label={`Visit NoteNest on ${item.name}`}
-                  className={`w-8 h-8 rounded-full flex items-center justify-center border transition-all duration-200 cursor-pointer ${
+                  className={`w-8 h-8 rounded-[3px] flex items-center justify-center border transition-all duration-200 cursor-pointer ${
                     isDark
-                      ? 'bg-[#1b142c] border-purple-500/30 text-stone-300 hover:text-white hover:border-purple-400 hover:bg-[#281d42] hover:scale-108 hover:shadow-[0_0_10px_rgba(168,85,247,0.35)]'
-                      : 'bg-white border-purple-200 text-[#5c4a70] hover:text-[#26153b] hover:border-purple-400 hover:bg-purple-50 hover:scale-108 hover:shadow-sm'
+                      ? 'bg-[#1b142c] border-purple-500/30 text-stone-300 hover:text-white hover:border-purple-400 hover:bg-[#281d42] hover:scale-105 hover:shadow-[0_0_10px_rgba(168,85,247,0.35)]'
+                      : 'bg-white border-purple-200 text-[#5c4a70] hover:text-[#26153b] hover:border-purple-400 hover:bg-purple-50 hover:scale-105 hover:shadow-sm'
                   }`}
                 >
                   <Icon />

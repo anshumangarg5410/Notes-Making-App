@@ -96,16 +96,16 @@ export const ImportExportModal = ({
         if (e.target === e.currentTarget) onClose();
       }}
     >
-      <div className="relative w-full max-w-lg rounded-3xl p-6 bg-[#1b1429] border border-purple-500/30 text-white shadow-2xl animate-in zoom-in-95 duration-150 select-none">
+      <div className="relative w-full max-w-lg rounded-[5px] p-6 bg-[#1b1429] border border-purple-500/30 text-white shadow-2xl animate-in zoom-in-95 duration-150 select-none">
         {/* Header */}
         <div className="flex items-center justify-between pb-3 border-b border-purple-500/20 mb-4">
           <div className="flex items-center gap-2">
             {mode === 'import' ? (
-              <div className="w-8 h-8 rounded-xl bg-purple-900/50 border border-purple-500/30 flex items-center justify-center text-purple-300">
+              <div className="w-8 h-8 rounded-[3px] bg-purple-900/50 border border-purple-500/30 flex items-center justify-center text-purple-300">
                 <Upload className="w-4 h-4" />
               </div>
             ) : (
-              <div className="w-8 h-8 rounded-xl bg-purple-900/50 border border-purple-500/30 flex items-center justify-center text-purple-300">
+              <div className="w-8 h-8 rounded-[3px] bg-purple-900/50 border border-purple-500/30 flex items-center justify-center text-purple-300">
                 <Download className="w-4 h-4" />
               </div>
             )}
@@ -116,11 +116,11 @@ export const ImportExportModal = ({
 
           <div className="flex items-center gap-2">
             {/* Mode Toggle */}
-            <div className="flex items-center bg-[#120d1c] p-1 rounded-xl border border-purple-500/20 text-xs">
+            <div className="flex items-center bg-[#120d1c] p-1 rounded-[3px] border border-purple-500/20 text-xs">
               <button
                 type="button"
                 onClick={() => setMode('import')}
-                className={`px-3 py-1 rounded-lg font-medium transition-colors ${
+                className={`px-3 py-1 rounded-[3px] font-medium transition-colors ${
                   mode === 'import' ? 'bg-purple-600 text-white' : 'text-stone-400 hover:text-white'
                 }`}
               >
@@ -129,7 +129,7 @@ export const ImportExportModal = ({
               <button
                 type="button"
                 onClick={() => setMode('export')}
-                className={`px-3 py-1 rounded-lg font-medium transition-colors ${
+                className={`px-3 py-1 rounded-[3px] font-medium transition-colors ${
                   mode === 'export' ? 'bg-purple-600 text-white' : 'text-stone-400 hover:text-white'
                 }`}
               >
@@ -140,7 +140,7 @@ export const ImportExportModal = ({
             <button
               type="button"
               onClick={onClose}
-              className="p-1.5 rounded-full text-stone-400 hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
+              className="p-1.5 rounded-[3px] text-stone-400 hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
             >
               <X className="w-5 h-5" />
             </button>
@@ -157,7 +157,7 @@ export const ImportExportModal = ({
                 type="file"
                 accept=".md,.txt,.markdown"
                 onChange={handleFileUpload}
-                className="w-full text-xs text-stone-300 file:mr-3 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-purple-900/60 file:text-purple-200 hover:file:bg-purple-800 cursor-pointer"
+                className="w-full text-xs text-stone-300 file:mr-3 file:py-2 file:px-4 file:rounded-[3px] file:border-0 file:text-xs file:font-semibold file:bg-purple-900/60 file:text-purple-200 hover:file:bg-purple-800 cursor-pointer"
               />
             </div>
 
@@ -171,7 +171,7 @@ export const ImportExportModal = ({
                 placeholder="Title for the imported note"
                 value={importTitle}
                 onChange={(e) => setImportTitle(e.target.value)}
-                className="w-full px-3.5 py-2.5 rounded-xl text-xs sm:text-sm bg-[#120d1c] border border-purple-500/30 text-white placeholder-purple-300/40 outline-none focus:border-purple-400"
+                className="w-full px-3.5 py-2.5 rounded-[3px] text-xs sm:text-sm bg-[#120d1c] border border-purple-500/30 text-white placeholder-purple-300/40 outline-none focus:border-purple-400"
               />
             </div>
 
@@ -184,7 +184,7 @@ export const ImportExportModal = ({
                 placeholder="e.g. Projects, Documentation"
                 value={importTags}
                 onChange={(e) => setImportTags(e.target.value)}
-                className="w-full px-3.5 py-2.5 rounded-xl text-xs sm:text-sm bg-[#120d1c] border border-purple-500/30 text-white placeholder-purple-300/40 outline-none focus:border-purple-400"
+                className="w-full px-3.5 py-2.5 rounded-[3px] text-xs sm:text-sm bg-[#120d1c] border border-purple-500/30 text-white placeholder-purple-300/40 outline-none focus:border-purple-400"
               />
             </div>
 
@@ -197,7 +197,7 @@ export const ImportExportModal = ({
                 value={importContent}
                 onChange={(e) => setImportContent(e.target.value)}
                 placeholder="File contents will appear here or you can paste directly..."
-                className="w-full px-3.5 py-2.5 rounded-xl text-xs bg-[#120d1c] border border-purple-500/30 text-stone-300 outline-none focus:border-purple-400 font-mono"
+                className="w-full px-3.5 py-2.5 rounded-[3px] text-xs bg-[#120d1c] border border-purple-500/30 text-stone-300 outline-none focus:border-purple-400 font-mono"
               />
             </div>
 
@@ -205,13 +205,13 @@ export const ImportExportModal = ({
               <button
                 type="button"
                 onClick={onClose}
-                className="px-4 py-2 rounded-xl text-xs font-semibold text-stone-300 hover:bg-white/10 transition-colors"
+                className="px-4 py-2 rounded-[3px] text-xs font-semibold text-stone-300 hover:bg-white/10 transition-colors"
               >
                 Cancel
               </button>
               <button
                 type="submit"
-                className="px-5 py-2 rounded-xl text-xs font-semibold bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-md hover:from-purple-500 hover:to-indigo-500 transition-all cursor-pointer"
+                className="px-5 py-2 rounded-[3px] text-xs font-semibold bg-gradient-to-r from-purple-600 to-indigo-600 border border-purple-400/40 text-white shadow-md hover:from-purple-500 hover:to-indigo-500 transition-all cursor-pointer"
               >
                 Import Note
               </button>
@@ -227,9 +227,9 @@ export const ImportExportModal = ({
               <button
                 type="button"
                 onClick={() => handleExportDownload('json')}
-                className="p-4 rounded-2xl bg-[#140e21] border border-purple-500/25 hover:border-purple-400/60 hover:bg-[#1f1533] text-left transition-all cursor-pointer group"
+                className="p-4 rounded-[4px] bg-[#140e21] border border-purple-500/25 hover:border-purple-400/60 hover:bg-[#1f1533] text-left transition-all cursor-pointer group"
               >
-                <div className="w-8 h-8 rounded-xl bg-purple-950 flex items-center justify-center text-purple-300 mb-2">
+                <div className="w-8 h-8 rounded-[3px] bg-purple-950 flex items-center justify-center text-purple-300 mb-2">
                   <FileText className="w-4 h-4" />
                 </div>
                 <h4 className="text-xs font-bold text-white">Full JSON Backup</h4>
@@ -239,9 +239,9 @@ export const ImportExportModal = ({
               <button
                 type="button"
                 onClick={() => handleExportDownload('md')}
-                className="p-4 rounded-2xl bg-[#140e21] border border-purple-500/25 hover:border-purple-400/60 hover:bg-[#1f1533] text-left transition-all cursor-pointer group"
+                className="p-4 rounded-[4px] bg-[#140e21] border border-purple-500/25 hover:border-purple-400/60 hover:bg-[#1f1533] text-left transition-all cursor-pointer group"
               >
-                <div className="w-8 h-8 rounded-xl bg-indigo-950 flex items-center justify-center text-indigo-300 mb-2">
+                <div className="w-8 h-8 rounded-[3px] bg-indigo-950 flex items-center justify-center text-indigo-300 mb-2">
                   <Download className="w-4 h-4" />
                 </div>
                 <h4 className="text-xs font-bold text-white">Markdown Bundle</h4>

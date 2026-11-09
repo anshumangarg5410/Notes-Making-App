@@ -148,7 +148,7 @@ export const NoteCard = ({
   return (
     <div
       onClick={onSelect}
-      className={`group relative p-3 rounded-2xl cursor-pointer transition-all duration-150 border text-left ${
+      className={`group relative p-3 rounded-[4px] cursor-pointer transition-all duration-150 border text-left ${
         menuOpen ? 'z-20 ' : ''
       }${
         isSelected
@@ -159,7 +159,7 @@ export const NoteCard = ({
       <div className="flex items-start justify-between gap-2.5">
         {/* Left Category Icon */}
         <div
-          className={`w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0 transition-colors ${iconBg} ${iconColor}`}
+          className={`w-8 h-8 rounded-[3px] flex items-center justify-center flex-shrink-0 transition-colors ${iconBg} ${iconColor}`}
         >
           <Icon className="w-4 h-4" />
         </div>
@@ -193,7 +193,7 @@ export const NoteCard = ({
               {formatCardDate(note.updatedAt || note.createdAt)}
             </span>
             {note.tags && note.tags.length > 0 && (
-              <span className="text-[10px] bg-cream-200/60 dark:bg-charcoal-700 text-charcoal-500 dark:text-charcoal-400 px-2 py-0.5 rounded-full font-medium truncate max-w-[90px]">
+              <span className="text-[10px] bg-cream-200/60 dark:bg-charcoal-700 text-charcoal-500 dark:text-charcoal-400 px-2 py-0.5 rounded-[2px] font-medium truncate max-w-[90px]">
                 #{note.tags[0]}
               </span>
             )}
@@ -204,14 +204,14 @@ export const NoteCard = ({
         <div className="relative flex-shrink-0" ref={menuRef} onClick={(e) => e.stopPropagation()}>
           <button
             onClick={() => setMenuOpen((prev) => !prev)}
-            className="p-1 rounded-lg text-charcoal-400 hover:text-charcoal-700 dark:hover:text-cream-100 hover:bg-cream-200/50 dark:hover:bg-charcoal-700/60 transition-colors opacity-70 group-hover:opacity-100"
+            className="p-1 rounded-[3px] text-charcoal-400 hover:text-charcoal-700 dark:hover:text-cream-100 hover:bg-cream-200/50 dark:hover:bg-charcoal-700/60 transition-colors opacity-70 group-hover:opacity-100"
             title="Note options"
           >
             <MoreVertical className="w-3.5 h-3.5" />
           </button>
 
           {menuOpen && (
-            <div className="absolute right-0 top-6 w-44 bg-warm-card dark:bg-charcoal-800 border border-warm-border dark:border-charcoal-700 rounded-xl shadow-dropdown z-30 py-1.5 text-xs text-charcoal-700 dark:text-charcoal-200 animate-in fade-in zoom-in-95 duration-100">
+            <div className="absolute right-0 top-6 w-44 bg-warm-card dark:bg-charcoal-800 border border-warm-border dark:border-charcoal-700 rounded-[3px] shadow-dropdown z-30 py-1.5 text-xs text-charcoal-700 dark:text-charcoal-200 animate-in fade-in zoom-in-95 duration-100">
               {!note.isDeleted ? (
                 <>
                   <button

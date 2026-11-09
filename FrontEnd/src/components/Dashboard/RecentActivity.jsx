@@ -10,7 +10,7 @@ export const RecentActivity = ({
   ]
 }) => {
   return (
-    <div className="rounded-3xl p-5 bg-[#181226]/90 border border-purple-500/20 shadow-xl select-none">
+    <div className="rounded-[4px] p-5 bg-[#181226]/90 border border-purple-500/20 shadow-xl select-none">
       {/* Header with Activity / Pulse Icon */}
       <div className="flex items-center gap-2.5 mb-4 pb-2 border-b border-purple-500/15">
         <Activity className="w-4 h-4 text-purple-400" />

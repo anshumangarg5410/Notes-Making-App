@@ -33,7 +33,7 @@ export const LogoutModal = ({ onClose, onConfirm }) => {
 
   return (
     <div
-      className={`relative w-full max-w-md rounded-3xl p-6 sm:p-8 text-center transition-all duration-300 ${
+      className={`relative w-full max-w-md rounded-[5px] p-6 sm:p-8 text-center transition-all duration-300 ${
         isDark
           ? 'bg-[#211d2e] text-[#f5f3f0] border border-purple-500/40 shadow-[0_0_50px_rgba(147,51,234,0.35),0_20px_40px_rgba(0,0,0,0.8)]'
           : 'bg-[#fbf7fd] text-[#26153b] border border-purple-300/80 shadow-[0_15px_45px_rgba(147,51,234,0.18)]'
@@ -72,7 +72,7 @@ export const LogoutModal = ({ onClose, onConfirm }) => {
       <button
         type="button"
         onClick={onClose}
-        className={`absolute top-4 right-4 p-1.5 rounded-full transition-colors cursor-pointer ${
+        className={`absolute top-4 right-4 p-1.5 rounded-[3px] transition-colors cursor-pointer ${
           isDark
             ? 'text-stone-400 hover:text-white hover:bg-white/10'
             : 'text-stone-500 hover:text-stone-900 hover:bg-purple-100/70'
@@ -114,7 +114,7 @@ export const LogoutModal = ({ onClose, onConfirm }) => {
         <button
           type="button"
           onClick={onClose}
-          className={`w-full sm:w-auto px-5 py-2.5 rounded-full text-xs sm:text-sm font-semibold border transition-all cursor-pointer ${
+          className={`w-full sm:w-auto px-5 py-2.5 rounded-[3px] text-xs sm:text-sm font-semibold border transition-all cursor-pointer ${
             isDark
               ? 'border-purple-500/30 text-stone-200 hover:bg-white/10 hover:border-purple-400'
               : 'border-purple-300 text-purple-900 hover:bg-purple-100/60'
@@ -128,7 +128,7 @@ export const LogoutModal = ({ onClose, onConfirm }) => {
           type="button"
           onClick={handleLogout}
           disabled={loading}
-          className="w-full sm:w-auto px-6 py-2.5 rounded-full text-xs sm:text-sm font-semibold bg-gradient-to-r from-red-600 to-purple-600 hover:from-red-500 hover:to-purple-500 text-white shadow-[0_0_20px_rgba(239,68,68,0.35)] hover:shadow-[0_0_25px_rgba(239,68,68,0.5)] transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-60"
+          className="w-full sm:w-auto px-6 py-2.5 rounded-[3px] text-xs sm:text-sm font-semibold bg-gradient-to-r from-red-600 to-purple-600 hover:from-red-500 hover:to-purple-500 border border-red-500/40 text-white shadow-[0_0_15px_rgba(239,68,68,0.3)] hover:shadow-[0_0_22px_rgba(239,68,68,0.45)] transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-60"
         >
           {loading ? (
             <>
@@ -145,7 +145,7 @@ export const LogoutModal = ({ onClose, onConfirm }) => {
       </div>
 
       {/* Jagged Torn Paper Bottom Accent */}
-      <div className="absolute -bottom-1 left-0 right-0 w-full overflow-hidden rounded-b-3xl pointer-events-none select-none z-10">
+      <div className="absolute -bottom-1 left-0 right-0 w-full overflow-hidden rounded-b-[5px] pointer-events-none select-none z-10">
         <img
           src={isDark ? tornBottomDark : tornBottomLight}
           alt=""

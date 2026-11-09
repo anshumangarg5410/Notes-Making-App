@@ -12,7 +12,7 @@ export const FolderOverview = ({
   onViewAllFolders
 }) => {
   return (
-    <div className="rounded-3xl p-5 bg-[#181226]/90 border border-purple-500/20 shadow-xl select-none">
+    <div className="rounded-[4px] p-5 bg-[#181226]/90 border border-purple-500/20 shadow-xl select-none">
       {/* Header */}
       <div className="flex items-center justify-between pb-3 border-b border-purple-500/15 mb-2">
         <div className="flex items-center gap-2.5">
@@ -39,7 +39,7 @@ export const FolderOverview = ({
             key={folder.id}
             type="button"
             onClick={() => onSelectFolder && onSelectFolder(folder.name)}
-            className="w-full flex items-center justify-between p-2.5 rounded-xl text-left hover:bg-white/5 transition-colors cursor-pointer group"
+            className="w-full flex items-center justify-between p-2.5 rounded-[3px] text-left hover:bg-white/5 transition-colors cursor-pointer group"
           >
             <div className="flex items-center gap-3 min-w-0">
               <Folder className="w-4 h-4 text-purple-400/80 group-hover:text-purple-300 shrink-0 transition-colors" />

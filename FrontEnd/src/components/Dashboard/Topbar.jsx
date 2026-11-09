@@ -86,7 +86,7 @@ export const Topbar = ({
         <button
           type="button"
           onClick={onToggleMobileSidebar}
-          className="lg:hidden p-2 rounded-xl text-stone-300 hover:text-white hover:bg-white/5 transition-colors cursor-pointer"
+          className="lg:hidden p-2 rounded-[3px] text-stone-300 hover:text-white hover:bg-white/5 transition-colors cursor-pointer"
           title="Open menu"
         >
           <Menu className="w-5 h-5" />
@@ -104,11 +104,11 @@ export const Topbar = ({
               onChange={(e) => onSearchChange && onSearchChange(e.target.value)}
               onFocus={() => setSearchFocused(true)}
               onBlur={() => setTimeout(() => setSearchFocused(false), 200)}
-              className="w-full pl-10 pr-16 py-2 rounded-xl text-xs sm:text-sm bg-[#1b1528] border border-purple-500/25 text-white placeholder-purple-300/40 outline-none focus:border-purple-400 focus:ring-1 focus:ring-purple-400/40 transition-all shadow-inner"
+              className="w-full pl-10 pr-16 py-2 rounded-[3px] text-xs sm:text-sm bg-[#1b1528] border border-purple-500/25 text-white placeholder-purple-300/40 outline-none focus:border-purple-400 focus:ring-1 focus:ring-purple-400/40 transition-all shadow-inner"
             />
             {/* Keyboard shortcut badge */}
             <div className="absolute right-2.5 top-1/2 -translate-y-1/2 flex items-center gap-1 pointer-events-none">
-              <kbd className="hidden sm:inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-mono bg-purple-900/50 border border-purple-500/30 text-purple-200">
+              <kbd className="hidden sm:inline-flex items-center px-1.5 py-0.5 rounded-[2px] text-[10px] font-mono bg-purple-900/50 border border-purple-500/30 text-purple-200">
                 ⌘ K
               </kbd>
             </div>
@@ -116,7 +116,7 @@ export const Topbar = ({
 
           {/* Quick Search Dropdown Preview */}
           {searchFocused && searchQuery.trim() && (
-            <div className="absolute left-0 right-0 top-full mt-2 bg-[#181226] border border-purple-500/30 rounded-2xl p-2 shadow-2xl z-50 animate-in fade-in zoom-in-95 duration-150">
+            <div className="absolute left-0 right-0 top-full mt-2 bg-[#181226] border border-purple-500/30 rounded-[4px] p-2 shadow-2xl z-50 animate-in fade-in zoom-in-95 duration-150">
               <div className="text-[11px] font-semibold text-purple-300/70 px-3 py-1.5 uppercase tracking-wider">
                 Search Results ({searchResults.length})
               </div>
@@ -127,9 +127,9 @@ export const Topbar = ({
                       key={note._id}
                       type="button"
                       onClick={() => onSelectSearchResult && onSelectSearchResult(note)}
-                      className="w-full flex items-center gap-2.5 p-2 rounded-xl text-left hover:bg-white/5 transition-colors cursor-pointer group"
+                      className="w-full flex items-center gap-2.5 p-2 rounded-[3px] text-left hover:bg-white/5 transition-colors cursor-pointer group"
                     >
-                      <div className="w-6 h-6 rounded-lg bg-purple-950 border border-purple-500/30 flex items-center justify-center text-purple-300 group-hover:bg-purple-800 transition-colors">
+                      <div className="w-6 h-6 rounded-[3px] bg-purple-950 border border-purple-500/30 flex items-center justify-center text-purple-300 group-hover:bg-purple-800 transition-colors">
                         <FileText className="w-3.5 h-3.5" />
                       </div>
                       <div className="min-w-0 flex-1">
@@ -161,7 +161,7 @@ export const Topbar = ({
             type="button"
             onClick={() => setNotificationsOpen(!notificationsOpen)}
             title="Notifications"
-            className="p-2 rounded-xl text-stone-300 hover:text-white hover:bg-white/5 transition-colors relative cursor-pointer"
+            className="p-2 rounded-[3px] text-stone-300 hover:text-white hover:bg-white/5 transition-colors relative cursor-pointer"
           >
             <Bell className="w-5 h-5" />
             {/* Notification Badge Dot */}
@@ -170,20 +170,20 @@ export const Topbar = ({
 
           {/* Notifications Dropdown Drawer */}
           {notificationsOpen && (
-            <div className="absolute right-0 mt-2 w-72 sm:w-80 rounded-2xl bg-[#191326] border border-purple-500/30 p-3 shadow-2xl z-50 animate-in fade-in zoom-in-95 duration-150">
+            <div className="absolute right-0 mt-2 w-72 sm:w-80 rounded-[4px] bg-[#191326] border border-purple-500/30 p-3 shadow-2xl z-50 animate-in fade-in zoom-in-95 duration-150">
               <div className="flex items-center justify-between pb-2 border-b border-purple-500/20 px-1">
                 <span className="text-xs font-bold text-white">Notifications</span>
                 <span className="text-[10px] text-purple-300/70">2 new</span>
               </div>
               <div className="space-y-2 mt-2">
-                <div className="p-2.5 rounded-xl bg-purple-950/40 border border-purple-500/20 flex items-start gap-2.5">
+                <div className="p-2.5 rounded-[3px] bg-purple-950/40 border border-purple-500/20 flex items-start gap-2.5">
                   <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
                   <div className="text-xs">
                     <p className="font-semibold text-white">Cloud Sync Complete</p>
                     <p className="text-[11px] text-stone-300/70">All 48 notes are synced safely.</p>
                   </div>
                 </div>
-                <div className="p-2.5 rounded-xl bg-[#211933]/60 border border-purple-500/20 flex items-start gap-2.5">
+                <div className="p-2.5 rounded-[3px] bg-[#211933]/60 border border-purple-500/20 flex items-start gap-2.5">
                   <div className="w-2 h-2 rounded-full bg-purple-400 mt-1 shrink-0" />
                   <div className="text-xs">
                     <p className="font-semibold text-white">Welcome to NoteNest!</p>
@@ -200,7 +200,7 @@ export const Topbar = ({
           <button
             type="button"
             onClick={() => setProfileOpen(!profileOpen)}
-            className="flex items-center gap-2 p-1.5 pr-2.5 rounded-full hover:bg-white/5 border border-purple-500/20 transition-all cursor-pointer group"
+            className="flex items-center gap-2 p-1.5 pr-2.5 rounded-[3px] hover:bg-white/5 border border-purple-500/20 transition-all cursor-pointer group"
           >
             {/* Avatar Initials Circle with Purple Gradient */}
             <div className="w-7 h-7 rounded-full bg-gradient-to-tr from-[#9333ea] to-[#c084fc] text-white text-xs font-bold flex items-center justify-center shadow-[0_0_10px_rgba(147,51,234,0.5)]">
@@ -218,7 +218,7 @@ export const Topbar = ({
 
           {/* Profile Menu Dropdown */}
           {profileOpen && (
-            <div className="absolute right-0 mt-2 w-52 rounded-2xl bg-[#191326] border border-purple-500/30 p-2 shadow-2xl z-50 animate-in fade-in zoom-in-95 duration-150">
+            <div className="absolute right-0 mt-2 w-52 rounded-[4px] bg-[#191326] border border-purple-500/30 p-2 shadow-2xl z-50 animate-in fade-in zoom-in-95 duration-150">
               <div className="px-3 py-2 border-b border-purple-500/20 mb-1">
                 <p className="text-xs font-bold text-white truncate">{displayName}</p>
                 <p className="text-[11px] text-stone-400 truncate">{user?.email || 'anshuman@example.com'}</p>
@@ -231,7 +231,7 @@ export const Topbar = ({
                     setProfileOpen(false);
                     if (onOpenSettings) onOpenSettings();
                   }}
-                  className="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-xs text-stone-300 hover:text-white hover:bg-white/5 transition-colors cursor-pointer text-left"
+                  className="w-full flex items-center gap-2 px-3 py-2 rounded-[3px] text-xs text-stone-300 hover:text-white hover:bg-white/5 transition-colors cursor-pointer text-left"
                 >
                   <User className="w-3.5 h-3.5 text-purple-400" />
                   <span>Profile</span>
@@ -243,7 +243,7 @@ export const Topbar = ({
                     setProfileOpen(false);
                     if (onOpenSettings) onOpenSettings();
                   }}
-                  className="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-xs text-stone-300 hover:text-white hover:bg-white/5 transition-colors cursor-pointer text-left"
+                  className="w-full flex items-center gap-2 px-3 py-2 rounded-[3px] text-xs text-stone-300 hover:text-white hover:bg-white/5 transition-colors cursor-pointer text-left"
                 >
                   <Settings className="w-3.5 h-3.5 text-purple-400" />
                   <span>Settings</span>
@@ -257,7 +257,7 @@ export const Topbar = ({
                     setProfileOpen(false);
                     openLogout();
                   }}
-                  className="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-xs text-red-400 hover:text-red-300 hover:bg-red-500/10 transition-colors cursor-pointer text-left"
+                  className="w-full flex items-center gap-2 px-3 py-2 rounded-[3px] text-xs text-red-400 hover:text-red-300 hover:bg-red-500/10 transition-colors cursor-pointer text-left"
                 >
                   <LogOut className="w-3.5 h-3.5 text-red-400" />
                   <span>Logout</span>

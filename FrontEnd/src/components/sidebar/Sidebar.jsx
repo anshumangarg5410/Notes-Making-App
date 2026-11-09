@@ -60,7 +60,7 @@ export const Sidebar = ({
           {/* Header Brand */}
           <div className="flex items-center justify-between mb-5">
             <Link to="/" className="flex items-center space-x-2.5 group">
-              <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-[#8b5cf6] to-[#6d28d9] text-white flex items-center justify-center shadow-[0_0_12px_rgba(139,92,246,0.5)] group-hover:scale-105 transition-transform">
+              <div className="w-8 h-8 rounded-[4px] bg-gradient-to-br from-[#8b5cf6] to-[#6d28d9] text-white flex items-center justify-center shadow-[0_0_12px_rgba(139,92,246,0.5)] group-hover:scale-105 transition-transform">
                 <BookOpen className="w-4 h-4" />
               </div>
               <div>
@@ -76,7 +76,7 @@ export const Sidebar = ({
             {/* Mobile Close Button */}
             <button
               onClick={onCloseMobile}
-              className="p-1.5 rounded-lg text-charcoal-400 hover:text-white hover:bg-white/10 md:hidden cursor-pointer"
+              className="p-1.5 rounded-[3px] text-charcoal-400 hover:text-white hover:bg-white/10 md:hidden cursor-pointer"
             >
               <X className="w-5 h-5" />
             </button>
@@ -89,7 +89,7 @@ export const Sidebar = ({
               if (onCloseMobile) onCloseMobile();
             }}
             id="new-note-btn"
-            className="w-full mb-4 py-2.5 px-4 bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white rounded-2xl font-medium text-sm flex items-center justify-center space-x-2 shadow-sm shadow-orange-500/25 hover:shadow-orange-500/35 transition-all duration-200 active:scale-[0.98] group"
+            className="w-full mb-4 py-2.5 px-4 bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white rounded-[3px] border border-orange-400/40 font-medium text-sm flex items-center justify-center space-x-2 shadow-sm shadow-orange-500/25 hover:shadow-orange-500/35 transition-all duration-200 active:scale-[0.98] group"
           >
             <Plus className="w-4 h-4 stroke-[2.5] group-hover:rotate-90 transition-transform duration-200" />
             <span>New Note</span>
@@ -108,7 +108,7 @@ export const Sidebar = ({
                     onSelectFilter(item.id);
                     if (onCloseMobile) onCloseMobile();
                   }}
-                  className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium transition-all duration-150 ${
+                  className={`w-full flex items-center justify-between px-3 py-2 rounded-[3px] text-xs font-medium transition-all duration-150 ${
                     isActive
                       ? 'bg-orange-500/10 text-orange-600 dark:text-orange-300 font-semibold border-l-2 border-orange-500 pl-2.5'
                       : 'text-charcoal-600 dark:text-charcoal-300 hover:bg-cream-200/60 dark:hover:bg-charcoal-800/60'
@@ -127,7 +127,7 @@ export const Sidebar = ({
 
                   {typeof item.count === 'number' && item.count > 0 && (
                     <span
-                      className={`text-[11px] px-2 py-0.5 rounded-full font-medium ${
+                      className={`text-[11px] px-2 py-0.5 rounded-[2px] font-medium ${
                         isActive
                           ? 'bg-orange-100 text-orange-700 dark:bg-orange-950/60 dark:text-orange-200'
                           : 'bg-cream-200/70 text-charcoal-400 dark:bg-charcoal-800 dark:text-charcoal-400'
@@ -149,7 +149,7 @@ export const Sidebar = ({
               </span>
               <button
                 onClick={() => onNewNote()}
-                className="p-1 rounded text-charcoal-400 hover:text-orange-500 dark:hover:text-orange-400 transition-colors"
+                className="p-1 rounded-[2px] text-charcoal-400 hover:text-orange-500 dark:hover:text-orange-400 transition-colors"
                 title="Add Collection"
               >
                 <Plus className="w-3.5 h-3.5" />
@@ -166,7 +166,7 @@ export const Sidebar = ({
                       onSelectFilter(coll.id);
                       if (onCloseMobile) onCloseMobile();
                     }}
-                    className={`w-full flex items-center space-x-2.5 px-3 py-1.5 rounded-xl text-xs font-medium transition-all ${
+                    className={`w-full flex items-center space-x-2.5 px-3 py-1.5 rounded-[3px] text-xs font-medium transition-all ${
                       isActive
                         ? 'bg-orange-500/10 text-orange-600 dark:text-orange-300 font-semibold'
                         : 'text-charcoal-600 dark:text-charcoal-300 hover:bg-cream-200/60 dark:hover:bg-charcoal-800/60'
@@ -183,7 +183,7 @@ export const Sidebar = ({
 
               <button
                 onClick={() => onNewNote()}
-                className="w-full flex items-center space-x-2 px-3 py-1.5 rounded-xl text-xs text-charcoal-400 dark:text-charcoal-500 hover:text-orange-600 dark:hover:text-orange-400 transition-colors"
+                className="w-full flex items-center space-x-2 px-3 py-1.5 rounded-[3px] text-xs text-charcoal-400 dark:text-charcoal-500 hover:text-orange-600 dark:hover:text-orange-400 transition-colors"
               >
                 <Plus className="w-3.5 h-3.5" />
                 <span>New Collection</span>
@@ -194,11 +194,11 @@ export const Sidebar = ({
 
         {/* Bottom Quote Sticker Card */}
         <div className="p-3 pt-0">
-          <div className="relative rounded-2xl overflow-hidden border border-warm-border dark:border-charcoal-800 shadow-xs bg-cream-100/60 dark:bg-charcoal-800/60 group">
+          <div className="relative rounded-[4px] overflow-hidden border border-warm-border dark:border-charcoal-800 shadow-xs bg-cream-100/60 dark:bg-charcoal-800/60 group">
             <img
               src={isDark ? sidebarQuoteDark : sidebarQuoteLight}
               alt="Small notes today, a brighter you tomorrow"
-              className="w-full h-auto object-cover rounded-xl transition-transform duration-300 group-hover:scale-[1.02]"
+              className="w-full h-auto object-cover rounded-[3px] transition-transform duration-300 group-hover:scale-[1.02]"
             />
           </div>
         </div>

@@ -74,7 +74,7 @@ export const HeroSection = () => {
               {isAuthenticated ? (
                 <Link
                   to="/notes"
-                  className="inline-flex items-center gap-2 px-6 py-3 rounded-full font-semibold text-sm sm:text-base bg-gradient-to-r from-[#8b5cf6] to-[#7c3aed] text-white shadow-[0_0_25px_rgba(139,92,246,0.55)] hover:shadow-[0_0_35px_rgba(139,92,246,0.8)] hover:scale-103 active:scale-98 transition-all cursor-pointer"
+                  className="inline-flex items-center gap-2 px-6 py-3 rounded-[3px] font-semibold text-sm sm:text-base bg-gradient-to-r from-[#8b5cf6] to-[#7c3aed] border border-purple-400/40 text-white shadow-[0_0_20px_rgba(139,92,246,0.4)] hover:shadow-[0_0_30px_rgba(139,92,246,0.65)] hover:scale-102 active:scale-98 transition-all cursor-pointer"
                 >
                   <span>Open Your Notes</span>
                   <ArrowRight className="w-4 h-4" />
@@ -83,7 +83,7 @@ export const HeroSection = () => {
                 <button
                   type="button"
                   onClick={() => openSignup()}
-                  className="inline-flex items-center gap-2 px-6 py-3 rounded-full font-semibold text-sm sm:text-base bg-gradient-to-r from-[#8b5cf6] to-[#7c3aed] text-white shadow-[0_0_25px_rgba(139,92,246,0.55)] hover:shadow-[0_0_35px_rgba(139,92,246,0.8)] hover:scale-103 active:scale-98 transition-all cursor-pointer"
+                  className="inline-flex items-center gap-2 px-6 py-3 rounded-[3px] font-semibold text-sm sm:text-base bg-gradient-to-r from-[#8b5cf6] to-[#7c3aed] border border-purple-400/40 text-white shadow-[0_0_20px_rgba(139,92,246,0.4)] hover:shadow-[0_0_30px_rgba(139,92,246,0.65)] hover:scale-102 active:scale-98 transition-all cursor-pointer"
                 >
                   <span>Get Started — It's Free</span>
                   <ArrowRight className="w-4 h-4" />
@@ -93,9 +93,9 @@ export const HeroSection = () => {
               {/* Secondary CTA: Watch Demo */}
               <button
                 onClick={() => setShowDemoModal(true)}
-                className="inline-flex items-center gap-2.5 px-6 py-3 rounded-full font-semibold text-sm sm:text-base bg-[#181324]/80 border border-purple-500/30 text-purple-200 hover:border-purple-400 hover:text-white transition-all cursor-pointer hover:bg-[#231b36]"
+                className="inline-flex items-center gap-2.5 px-6 py-3 rounded-[3px] font-semibold text-sm sm:text-base bg-[#181324]/80 border border-purple-500/30 text-purple-200 hover:border-purple-400 hover:text-white transition-all cursor-pointer hover:bg-[#231b36]"
               >
-                <div className="w-5 h-5 rounded-full flex items-center justify-center bg-purple-900/60 text-purple-300">
+                <div className="w-5 h-5 rounded-[2px] flex items-center justify-center bg-purple-900/60 text-purple-300">
                   <Play className="w-2.5 h-2.5 fill-current ml-0.5" />
                 </div>
                 <span>Watch Demo</span>
@@ -118,16 +118,16 @@ export const HeroSection = () => {
       {/* Interactive Demo Video / Feature Walkthrough Modal */}
       {showDemoModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-200">
-          <div className="relative w-full max-w-2xl rounded-3xl p-6 border border-purple-500/30 bg-[#151124] text-white shadow-[0_0_50px_rgba(168,85,247,0.3)]">
+          <div className="relative w-full max-w-2xl rounded-[5px] p-6 border border-purple-500/30 bg-[#151124] text-white shadow-[0_0_50px_rgba(168,85,247,0.3)]">
             <button
               onClick={() => setShowDemoModal(false)}
-              className="absolute top-4 right-4 p-2 rounded-xl text-stone-400 hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
+              className="absolute top-4 right-4 p-2 rounded-[3px] text-stone-400 hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
             >
               <X className="w-5 h-5" />
             </button>
 
             <div className="flex items-center gap-3 mb-4">
-              <div className="w-9 h-9 rounded-xl bg-purple-600/30 text-purple-300 flex items-center justify-center">
+              <div className="w-9 h-9 rounded-[3px] bg-purple-600/30 text-purple-300 flex items-center justify-center">
                 <Play className="w-4 h-4 fill-current ml-0.5" />
               </div>
               <div>
@@ -136,7 +136,7 @@ export const HeroSection = () => {
               </div>
             </div>
 
-            <div className="rounded-xl overflow-hidden border border-purple-500/20 aspect-video relative flex items-center justify-center bg-black/60">
+            <div className="rounded-[4px] overflow-hidden border border-purple-500/20 aspect-video relative flex items-center justify-center bg-black/60">
               <div className="text-center p-6 space-y-3">
                 <p className="text-sm text-purple-200">
                   Organize ideas into nested notebooks with markdown and local-first speed.
@@ -144,7 +144,7 @@ export const HeroSection = () => {
                 <Link
                   to="/register"
                   onClick={() => setShowDemoModal(false)}
-                  className="inline-block px-5 py-2 rounded-full bg-purple-600 hover:bg-purple-700 text-white font-semibold text-xs transition-colors"
+                  className="inline-block px-5 py-2 rounded-[3px] bg-purple-600 hover:bg-purple-700 text-white font-semibold text-xs transition-colors"
                 >
                   Start Writing Now
                 </Link>

@@ -32,7 +32,7 @@ export const SocialButtons = ({ isDark, actionLabel = 'continue with' }) => {
         <button
           type="button"
           onClick={() => handleSocialClick('google')}
-          className={`flex items-center justify-center gap-2 py-2 px-3.5 rounded-full text-xs sm:text-sm font-medium transition-all duration-200 cursor-pointer ${
+          className={`flex items-center justify-center gap-2 py-2 px-3.5 rounded-[3px] text-xs sm:text-sm font-medium transition-all duration-200 cursor-pointer ${
             isDark
               ? 'bg-[#181226] border border-purple-500/30 text-stone-200 hover:bg-[#251b3d] hover:border-purple-400/60 shadow-sm'
               : 'bg-white border border-purple-200 text-stone-700 hover:bg-purple-50 hover:border-purple-300 shadow-sm'
@@ -64,7 +64,7 @@ export const SocialButtons = ({ isDark, actionLabel = 'continue with' }) => {
         <button
           type="button"
           onClick={() => handleSocialClick('github')}
-          className={`flex items-center justify-center gap-2 py-2 px-3.5 rounded-full text-xs sm:text-sm font-medium transition-all duration-200 cursor-pointer ${
+          className={`flex items-center justify-center gap-2 py-2 px-3.5 rounded-[3px] text-xs sm:text-sm font-medium transition-all duration-200 cursor-pointer ${
             isDark
               ? 'bg-[#181226] border border-purple-500/30 text-stone-200 hover:bg-[#251b3d] hover:border-purple-400/60 shadow-sm'
               : 'bg-white border border-purple-200 text-stone-700 hover:bg-purple-50 hover:border-purple-300 shadow-sm'

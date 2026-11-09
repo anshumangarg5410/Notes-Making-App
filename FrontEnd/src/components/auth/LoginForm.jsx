@@ -103,7 +103,7 @@ export const LoginForm = ({ onSwitchToSignup, onSwitchToForgot, onSuccess }) => 
               placeholder="Enter your email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className={`w-full pl-10 pr-4 py-2.5 rounded-xl text-xs sm:text-sm outline-none transition-all duration-200 ${
+              className={`w-full pl-10 pr-4 py-2.5 rounded-[3px] text-xs sm:text-sm outline-none transition-all duration-200 ${
                 isDark
                   ? 'bg-[#181126] border border-purple-500/30 text-white placeholder-purple-300/40 focus:border-purple-400 focus:ring-1 focus:ring-purple-400/50'
                   : 'bg-white border border-purple-200 text-[#26153b] placeholder-purple-900/40 focus:border-purple-500 focus:ring-1 focus:ring-purple-500/40 shadow-xs'
@@ -126,7 +126,7 @@ export const LoginForm = ({ onSwitchToSignup, onSwitchToForgot, onSuccess }) => 
               placeholder="Enter your password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className={`w-full pl-10 pr-10 py-2.5 rounded-xl text-xs sm:text-sm outline-none transition-all duration-200 ${
+              className={`w-full pl-10 pr-10 py-2.5 rounded-[3px] text-xs sm:text-sm outline-none transition-all duration-200 ${
                 isDark
                   ? 'bg-[#181126] border border-purple-500/30 text-white placeholder-purple-300/40 focus:border-purple-400 focus:ring-1 focus:ring-purple-400/50'
                   : 'bg-white border border-purple-200 text-[#26153b] placeholder-purple-900/40 focus:border-purple-500 focus:ring-1 focus:ring-purple-500/40 shadow-xs'
@@ -135,7 +135,7 @@ export const LoginForm = ({ onSwitchToSignup, onSwitchToForgot, onSuccess }) => 
             <button
               type="button"
               onClick={() => setShowPassword(!showPassword)}
-              className={`absolute right-3 top-1/2 -translate-y-1/2 p-1 rounded transition-colors cursor-pointer ${
+              className={`absolute right-3 top-1/2 -translate-y-1/2 p-1 rounded-[2px] transition-colors cursor-pointer ${
                 isDark
                   ? 'text-purple-300/60 hover:text-white'
                   : 'text-purple-500/70 hover:text-purple-900'
@@ -157,7 +157,7 @@ export const LoginForm = ({ onSwitchToSignup, onSwitchToForgot, onSuccess }) => 
               type="checkbox"
               checked={rememberMe}
               onChange={(e) => setRememberMe(e.target.checked)}
-              className="w-3.5 h-3.5 rounded accent-purple-600 cursor-pointer"
+              className="w-3.5 h-3.5 rounded-[2px] accent-purple-600 cursor-pointer"
             />
             <span
               className={isDark ? 'text-stone-300/90' : 'text-stone-700 font-medium'}
@@ -183,7 +183,7 @@ export const LoginForm = ({ onSwitchToSignup, onSwitchToForgot, onSuccess }) => 
         <button
           type="submit"
           disabled={loading}
-          className="w-full py-2.5 sm:py-3 px-5 rounded-full font-semibold text-xs sm:text-sm bg-gradient-to-r from-[#9333ea] to-[#7c3aed] text-white shadow-[0_0_20px_rgba(147,51,234,0.4)] hover:shadow-[0_0_30px_rgba(147,51,234,0.65)] hover:scale-[1.01] active:scale-[0.99] transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-60"
+          className="w-full py-2.5 sm:py-3 px-5 rounded-[3px] font-semibold text-xs sm:text-sm bg-gradient-to-r from-[#9333ea] to-[#7c3aed] border border-purple-400/40 text-white shadow-[0_0_15px_rgba(147,51,234,0.35)] hover:shadow-[0_0_22px_rgba(147,51,234,0.55)] hover:scale-[1.01] active:scale-[0.99] transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-60"
         >
           {loading ? (
             <>

@@ -36,7 +36,7 @@ export const SyncStatus = () => {
   }
 
   return (
-    <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#181226]/90 border border-purple-500/25 text-xs text-stone-200 select-none shadow-xs">
+    <div className="inline-flex items-center gap-2 px-3 py-1 rounded-[3px] bg-[#181226]/90 border border-purple-500/25 text-xs text-stone-200 select-none shadow-xs">
       <span className={`w-2 h-2 rounded-full ${dotColor}`} />
       <span className="font-semibold text-white">{statusText}</span>
       <span className="text-purple-300/40">·</span>

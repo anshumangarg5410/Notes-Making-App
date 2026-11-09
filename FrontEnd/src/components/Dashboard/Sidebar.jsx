@@ -83,7 +83,7 @@ export const Sidebar = ({
               onClick={() => onSelectNav && onSelectNav('dashboard')}
               className="flex items-center gap-2.5 cursor-pointer group"
             >
-              <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-[#8b5cf6] to-[#6d28d9] text-white flex items-center justify-center shadow-[0_0_14px_rgba(139,92,246,0.5)] group-hover:scale-105 transition-transform">
+              <div className="w-8 h-8 rounded-[4px] bg-gradient-to-br from-[#8b5cf6] to-[#6d28d9] border border-purple-400/40 text-white flex items-center justify-center shadow-[0_0_14px_rgba(139,92,246,0.5)] group-hover:scale-105 transition-transform">
                 <BookOpen className="w-4 h-4" />
               </div>
               {!isCollapsed && (
@@ -100,7 +100,7 @@ export const Sidebar = ({
                 type="button"
                 onClick={onToggleCollapse}
                 title={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-                className="hidden lg:flex p-1.5 rounded-lg text-purple-300/60 hover:text-white hover:bg-white/5 transition-colors cursor-pointer"
+                className="hidden lg:flex p-1.5 rounded-[3px] text-purple-300/60 hover:text-white hover:bg-white/5 transition-colors cursor-pointer"
               >
                 {isCollapsed ? (
                   <ChevronsRight className="w-4 h-4" />
@@ -113,7 +113,7 @@ export const Sidebar = ({
               <button
                 type="button"
                 onClick={onCloseMobile}
-                className="lg:hidden p-1.5 rounded-lg text-stone-400 hover:text-white hover:bg-white/5 transition-colors cursor-pointer"
+                className="lg:hidden p-1.5 rounded-[3px] text-stone-400 hover:text-white hover:bg-white/5 transition-colors cursor-pointer"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -132,10 +132,10 @@ export const Sidebar = ({
                     type="button"
                     onClick={() => handleItemClick(item)}
                     title={isCollapsed ? item.label : undefined}
-                    className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs sm:text-sm font-medium transition-all duration-200 cursor-pointer ${
+                    className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-[3px] text-xs sm:text-sm font-medium transition-all duration-200 cursor-pointer ${
                       isActive
-                        ? 'bg-gradient-to-r from-[#8b5cf6] to-[#7c3aed] text-white shadow-[0_0_18px_rgba(139,92,246,0.45)] font-semibold'
-                        : 'text-stone-300 hover:text-white hover:bg-white/5'
+                        ? 'bg-gradient-to-r from-[#8b5cf6] to-[#7c3aed] border border-purple-400/40 text-white shadow-[0_0_14px_rgba(139,92,246,0.35)] font-semibold'
+                        : 'text-stone-300 hover:text-white hover:bg-white/5 border border-transparent'
                     } ${isCollapsed ? 'justify-center px-2' : 'justify-between'}`}
                   >
                     <div className="flex items-center gap-3 min-w-0">
@@ -171,7 +171,7 @@ export const Sidebar = ({
                             if (onSelectNav) onSelectNav('folder-' + f.name);
                             if (onCloseMobile) onCloseMobile();
                           }}
-                          className="w-full flex items-center justify-between py-1.5 px-2 rounded-lg text-xs text-stone-300 hover:text-white hover:bg-white/5 transition-colors cursor-pointer"
+                          className="w-full flex items-center justify-between py-1.5 px-2 rounded-[3px] text-xs text-stone-300 hover:text-white hover:bg-white/5 transition-colors cursor-pointer"
                         >
                           <span className="truncate">{f.name}</span>
                           <span className="text-[11px] text-purple-300/50">
@@ -191,7 +191,7 @@ export const Sidebar = ({
         <div className="p-4 border-t border-purple-500/15 space-y-4">
           {/* Storage Meter */}
           {!isCollapsed ? (
-            <div className="bg-[#181226]/80 border border-purple-500/20 rounded-2xl p-3">
+            <div className="bg-[#181226]/80 border border-purple-500/20 rounded-[4px] p-3">
               <div className="flex items-center justify-between text-xs mb-1.5">
                 <div className="flex items-center gap-1.5 text-stone-200 font-medium">
                   <Cloud className="w-3.5 h-3.5 text-purple-400" />
@@ -203,9 +203,9 @@ export const Sidebar = ({
               </div>
 
               {/* Progress Bar */}
-              <div className="w-full h-1.5 rounded-full bg-purple-950/60 overflow-hidden mb-1.5">
+              <div className="w-full h-1.5 rounded-[2px] bg-purple-950/60 overflow-hidden mb-1.5">
                 <div
-                  className="h-full rounded-full bg-gradient-to-r from-purple-500 to-indigo-500 transition-all duration-500"
+                  className="h-full rounded-[2px] bg-gradient-to-r from-purple-500 to-indigo-500 transition-all duration-500"
                   style={{ width: `${Math.min(100, storage.percentage)}%` }}
                 />
               </div>
@@ -216,7 +216,7 @@ export const Sidebar = ({
             </div>
           ) : (
             <div
-              className="flex justify-center p-2 rounded-xl bg-[#181226]/80 text-purple-400"
+              className="flex justify-center p-2 rounded-[3px] bg-[#181226]/80 text-purple-400 border border-purple-500/20"
               title={`${storage.percentage}% storage used`}
             >
               <Cloud className="w-4 h-4" />
@@ -225,7 +225,7 @@ export const Sidebar = ({
 
           {/* Upgrade to Pro Card */}
           {!isCollapsed && (
-            <div className="relative rounded-2xl p-4 bg-gradient-to-b from-[#1e1532] to-[#150f24] border border-purple-500/30 overflow-hidden shadow-lg group">
+            <div className="relative rounded-[4px] p-4 bg-gradient-to-b from-[#1e1532] to-[#150f24] border border-purple-500/30 overflow-hidden shadow-lg group">
               {/* Subtle background ambient purple glow */}
               <div className="absolute -top-10 -right-10 w-24 h-24 bg-purple-600/20 rounded-full blur-xl pointer-events-none" />
 
@@ -253,7 +253,7 @@ export const Sidebar = ({
               <button
                 type="button"
                 onClick={onOpenUpgradeModal}
-                className="w-full py-2 px-3 rounded-full text-xs font-semibold bg-gradient-to-r from-[#9333ea] to-[#7c3aed] hover:from-[#8b5cf6] hover:to-[#6d28d9] text-white shadow-[0_0_15px_rgba(147,51,234,0.4)] hover:shadow-[0_0_20px_rgba(147,51,234,0.6)] transition-all cursor-pointer flex items-center justify-center gap-1.5"
+                className="w-full py-2 px-3 rounded-[3px] text-xs font-semibold bg-gradient-to-r from-[#9333ea] to-[#7c3aed] hover:from-[#8b5cf6] hover:to-[#6d28d9] text-white border border-purple-400/50 shadow-[0_0_12px_rgba(147,51,234,0.35)] hover:shadow-[0_0_18px_rgba(147,51,234,0.55)] transition-all cursor-pointer flex items-center justify-center gap-1.5"
               >
                 <span>Upgrade Now</span>
                 <span className="text-sm">→</span>

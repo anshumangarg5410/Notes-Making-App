@@ -36,7 +36,7 @@ export const FilterModal = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-charcoal-950/40 backdrop-blur-sm animate-in fade-in duration-200">
-      <div className="bg-warm-card dark:bg-charcoal-800 border border-warm-border dark:border-charcoal-700 w-full max-w-md rounded-2xl shadow-dropdown p-6 space-y-6">
+      <div className="bg-warm-card dark:bg-charcoal-800 border border-warm-border dark:border-charcoal-700 w-full max-w-md rounded-[5px] shadow-dropdown p-6 space-y-6">
         {/* Header */}
         <div className="flex items-center justify-between pb-3 border-b border-warm-border dark:border-charcoal-700">
           <h3 className="font-serif font-bold text-lg text-charcoal-900 dark:text-cream-50">
@@ -44,7 +44,7 @@ export const FilterModal = ({
           </h3>
           <button
             onClick={onClose}
-            className="p-1 rounded-lg text-charcoal-400 hover:text-charcoal-700 dark:hover:text-cream-100 hover:bg-cream-100 dark:hover:bg-charcoal-700"
+            className="p-1 rounded-[3px] text-charcoal-400 hover:text-charcoal-700 dark:hover:text-cream-100 hover:bg-cream-100 dark:hover:bg-charcoal-700"
           >
             <X className="w-5 h-5" />
           </button>
@@ -60,7 +60,7 @@ export const FilterModal = ({
               <button
                 key={cat}
                 onClick={() => onSelectTag(cat)}
-                className={`px-3 py-1.5 rounded-xl text-xs font-medium transition-colors ${
+                className={`px-3 py-1.5 rounded-[3px] text-xs font-medium transition-colors ${
                   filterTag === cat
                     ? 'bg-terracotta-500 text-white shadow-xs'
                     : 'bg-cream-100 dark:bg-charcoal-700/60 text-charcoal-700 dark:text-charcoal-200 hover:bg-cream-200'
@@ -82,7 +82,7 @@ export const FilterModal = ({
               <button
                 key={c.id}
                 onClick={() => onSelectColor(c.id)}
-                className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-xl text-xs font-medium transition-colors border ${
+                className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-[3px] text-xs font-medium transition-colors border ${
                   filterColor === c.id
                     ? 'border-terracotta-500 bg-terracotta-50 dark:bg-terracotta-950/40 text-terracotta-700 dark:text-terracotta-300'
                     : 'border-warm-border dark:border-charcoal-700 bg-cream-50 dark:bg-charcoal-700/50 text-charcoal-700 dark:text-charcoal-200 hover:bg-cream-100'
@@ -103,7 +103,7 @@ export const FilterModal = ({
           <select
             value={sortBy}
             onChange={(e) => onSelectSort(e.target.value)}
-            className="w-full px-3 py-2 bg-cream-50 dark:bg-charcoal-700 border border-warm-border dark:border-charcoal-600 rounded-xl text-sm text-charcoal-800 dark:text-cream-50 outline-none focus:ring-1 focus:ring-terracotta-500"
+            className="w-full px-3 py-2 bg-cream-50 dark:bg-charcoal-700 border border-warm-border dark:border-charcoal-600 rounded-[3px] text-sm text-charcoal-800 dark:text-cream-50 outline-none focus:ring-1 focus:ring-terracotta-500"
           >
             {sortOptions.map((s) => (
               <option key={s.id} value={s.id}>
@@ -126,7 +126,7 @@ export const FilterModal = ({
           </button>
           <button
             onClick={onClose}
-            className="px-4 py-2 bg-terracotta-500 hover:bg-terracotta-600 text-white rounded-xl text-xs font-medium transition-colors shadow-sm"
+            className="px-4 py-2 bg-terracotta-500 hover:bg-terracotta-600 text-white rounded-[3px] text-xs font-medium transition-colors shadow-sm"
           >
             Apply Filters
           </button>

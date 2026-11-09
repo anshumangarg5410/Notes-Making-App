@@ -4,6 +4,18 @@
 
 @layer base {
   :root {
+    --radius-panel: 4px;
+    --radius-card: 4px;
+    --radius-input: 3px;
+    --radius-button: 3px;
+    --radius-dropdown: 3px;
+    --radius-modal: 5px;
+    --radius-tooltip: 3px;
+    --radius-tag: 2px;
+    --radius-nav: 3px;
+    --radius-icon: 3px;
+    --border-width: 1px;
+
     --bg-main: #F8FAFC;
     --bg-sidebar: #F1F5F9;
     --bg-card: #FFFFFF;
@@ -15,6 +27,18 @@
   }
 
   .dark {
+    --radius-panel: 4px;
+    --radius-card: 4px;
+    --radius-input: 3px;
+    --radius-button: 3px;
+    --radius-dropdown: 3px;
+    --radius-modal: 5px;
+    --radius-tooltip: 3px;
+    --radius-tag: 2px;
+    --radius-nav: 3px;
+    --radius-icon: 3px;
+    --border-width: 1px;
+
     --bg-main: #090D16;
     --bg-sidebar: #0E131F;
     --bg-card: #151C2C;
@@ -30,6 +54,39 @@
     color: var(--text-primary);
     overflow-x: hidden;
   }
+}
+
+/* Sharp geometric utility classes */
+.sharp-panel {
+  border-radius: var(--radius-panel);
+}
+
+.sharp-card {
+  border-radius: var(--radius-card);
+}
+
+.sharp-input {
+  border-radius: var(--radius-input);
+}
+
+.sharp-btn {
+  border-radius: var(--radius-button);
+}
+
+.sharp-dropdown {
+  border-radius: var(--radius-dropdown);
+}
+
+.sharp-modal {
+  border-radius: var(--radius-modal);
+}
+
+.sharp-tag {
+  border-radius: var(--radius-tag);
+}
+
+.sharp-nav {
+  border-radius: var(--radius-nav);
 }
 
 /* Custom minimal scrollbar */

@@ -34,11 +34,11 @@ export const NewFolderModal = ({ isOpen, onClose, onCreateFolder, existingFolder
         if (e.target === e.currentTarget) onClose();
       }}
     >
-      <div className="relative w-full max-w-md rounded-3xl p-6 bg-[#1b1429] border border-purple-500/30 text-white shadow-2xl animate-in zoom-in-95 duration-150 select-none">
+      <div className="relative w-full max-w-md rounded-[5px] p-6 bg-[#1b1429] border border-purple-500/30 text-white shadow-2xl animate-in zoom-in-95 duration-150 select-none">
         {/* Header */}
         <div className="flex items-center justify-between pb-3 border-b border-purple-500/20 mb-4">
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-xl bg-purple-900/50 border border-purple-500/30 flex items-center justify-center text-purple-300">
+            <div className="w-8 h-8 rounded-[3px] bg-purple-900/50 border border-purple-500/30 flex items-center justify-center text-purple-300">
               <FolderPlus className="w-4 h-4" />
             </div>
             <h3 className="font-bold text-base text-white">Create New Folder</h3>
@@ -47,7 +47,7 @@ export const NewFolderModal = ({ isOpen, onClose, onCreateFolder, existingFolder
           <button
             type="button"
             onClick={onClose}
-            className="p-1.5 rounded-full text-stone-400 hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
+            className="p-1.5 rounded-[3px] text-stone-400 hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
           >
             <X className="w-5 h-5" />
           </button>
@@ -66,7 +66,7 @@ export const NewFolderModal = ({ isOpen, onClose, onCreateFolder, existingFolder
               placeholder="e.g. Work Projects, Study Notes..."
               value={folderName}
               onChange={(e) => setFolderName(e.target.value)}
-              className="w-full px-3.5 py-2.5 rounded-xl text-xs sm:text-sm bg-[#120d1c] border border-purple-500/30 text-white placeholder-purple-300/40 outline-none focus:border-purple-400 focus:ring-1 focus:ring-purple-400/40"
+              className="w-full px-3.5 py-2.5 rounded-[3px] text-xs sm:text-sm bg-[#120d1c] border border-purple-500/30 text-white placeholder-purple-300/40 outline-none focus:border-purple-400 focus:ring-1 focus:ring-purple-400/40"
             />
           </div>
 
@@ -77,7 +77,7 @@ export const NewFolderModal = ({ isOpen, onClose, onCreateFolder, existingFolder
             <select
               value={parentFolder}
               onChange={(e) => setParentFolder(e.target.value)}
-              className="w-full px-3.5 py-2.5 rounded-xl text-xs sm:text-sm bg-[#120d1c] border border-purple-500/30 text-white outline-none focus:border-purple-400"
+              className="w-full px-3.5 py-2.5 rounded-[3px] text-xs sm:text-sm bg-[#120d1c] border border-purple-500/30 text-white outline-none focus:border-purple-400"
             >
               <option value="">None (Top Level)</option>
               {existingFolders.map((f) => (
@@ -93,13 +93,13 @@ export const NewFolderModal = ({ isOpen, onClose, onCreateFolder, existingFolder
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 rounded-xl text-xs font-semibold text-stone-300 hover:bg-white/10 transition-colors cursor-pointer"
+              className="px-4 py-2 rounded-[3px] text-xs font-semibold text-stone-300 hover:bg-white/10 transition-colors cursor-pointer"
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="px-5 py-2 rounded-xl text-xs font-semibold bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-md hover:from-purple-500 hover:to-indigo-500 transition-all cursor-pointer"
+              className="px-5 py-2 rounded-[3px] text-xs font-semibold bg-gradient-to-r from-purple-600 to-indigo-600 border border-purple-400/40 text-white shadow-md hover:from-purple-500 hover:to-indigo-500 transition-all cursor-pointer"
             >
               Create Folder
             </button>

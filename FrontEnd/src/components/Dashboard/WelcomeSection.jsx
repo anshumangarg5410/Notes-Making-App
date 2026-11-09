@@ -18,7 +18,7 @@ export const WelcomeSection = () => {
   const firstName = user?.name ? user.name.split(' ')[0] : 'Anshuman';
 
   return (
-    <div className="relative w-full rounded-3xl p-6 sm:p-8 bg-gradient-to-r from-[#181126] via-[#1c142c] to-[#160f24] border border-purple-500/25 overflow-hidden shadow-xl select-none">
+    <div className="relative w-full rounded-[4px] p-6 sm:p-8 bg-gradient-to-r from-[#181126] via-[#1c142c] to-[#160f24] border border-purple-500/25 overflow-hidden shadow-xl select-none">
       {/* Background ambient lighting */}
       <div className="absolute top-0 right-1/4 w-72 h-72 bg-purple-600/15 rounded-full blur-3xl pointer-events-none" />
 

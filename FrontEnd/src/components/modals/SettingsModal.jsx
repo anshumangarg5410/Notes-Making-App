@@ -70,7 +70,7 @@ export const SettingsModal = ({ isOpen, onClose }) => {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-charcoal-950/40 backdrop-blur-sm animate-in fade-in duration-200">
-      <div className="bg-warm-card dark:bg-charcoal-800 border border-warm-border dark:border-charcoal-700 w-full max-w-md rounded-2xl shadow-dropdown overflow-hidden">
+      <div className="bg-warm-card dark:bg-charcoal-800 border border-warm-border dark:border-charcoal-700 w-full max-w-md rounded-[5px] shadow-dropdown overflow-hidden">
         {/* Header */}
         <div className="flex items-center justify-between p-5 border-b border-warm-border dark:border-charcoal-700">
           <h3 className="font-serif font-bold text-lg text-charcoal-900 dark:text-cream-50">
@@ -78,7 +78,7 @@ export const SettingsModal = ({ isOpen, onClose }) => {
           </h3>
           <button
             onClick={onClose}
-            className="p-1 rounded-lg text-charcoal-400 hover:text-charcoal-700 dark:hover:text-cream-100 hover:bg-cream-100 dark:hover:bg-charcoal-700"
+            className="p-1 rounded-[3px] text-charcoal-400 hover:text-charcoal-700 dark:hover:text-cream-100 hover:bg-cream-100 dark:hover:bg-charcoal-700"
           >
             <X className="w-5 h-5" />
           </button>
@@ -123,7 +123,7 @@ export const SettingsModal = ({ isOpen, onClose }) => {
                   required
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  className="w-full px-3.5 py-2.5 bg-cream-50 dark:bg-charcoal-700 border border-warm-border dark:border-charcoal-600 rounded-xl text-sm text-charcoal-900 dark:text-cream-50 outline-none focus:ring-1 focus:ring-terracotta-500"
+                  className="w-full px-3.5 py-2.5 bg-cream-50 dark:bg-charcoal-700 border border-warm-border dark:border-charcoal-600 rounded-[3px] text-sm text-charcoal-900 dark:text-cream-50 outline-none focus:ring-1 focus:ring-terracotta-500"
                 />
               </div>
 
@@ -136,7 +136,7 @@ export const SettingsModal = ({ isOpen, onClose }) => {
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="w-full px-3.5 py-2.5 bg-cream-50 dark:bg-charcoal-700 border border-warm-border dark:border-charcoal-600 rounded-xl text-sm text-charcoal-900 dark:text-cream-50 outline-none focus:ring-1 focus:ring-terracotta-500"
+                  className="w-full px-3.5 py-2.5 bg-cream-50 dark:bg-charcoal-700 border border-warm-border dark:border-charcoal-600 rounded-[3px] text-sm text-charcoal-900 dark:text-cream-50 outline-none focus:ring-1 focus:ring-terracotta-500"
                 />
               </div>
 
@@ -144,14 +144,14 @@ export const SettingsModal = ({ isOpen, onClose }) => {
                 <button
                   type="button"
                   onClick={onClose}
-                  className="px-4 py-2 border border-warm-border dark:border-charcoal-600 text-charcoal-600 dark:text-cream-200 rounded-xl text-xs font-medium hover:bg-cream-100"
+                  className="px-4 py-2 border border-warm-border dark:border-charcoal-600 text-charcoal-600 dark:text-cream-200 rounded-[3px] text-xs font-medium hover:bg-cream-100"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={profileLoading}
-                  className="px-4 py-2 bg-terracotta-500 hover:bg-terracotta-600 text-white rounded-xl text-xs font-medium transition-colors shadow-sm disabled:opacity-50"
+                  className="px-4 py-2 bg-terracotta-500 hover:bg-terracotta-600 text-white rounded-[3px] text-xs font-medium transition-colors shadow-sm disabled:opacity-50"
                 >
                   {profileLoading ? 'Saving...' : 'Save Changes'}
                 </button>
@@ -168,7 +168,7 @@ export const SettingsModal = ({ isOpen, onClose }) => {
                   required
                   value={currentPassword}
                   onChange={(e) => setCurrentPassword(e.target.value)}
-                  className="w-full px-3.5 py-2.5 bg-cream-50 dark:bg-charcoal-700 border border-warm-border dark:border-charcoal-600 rounded-xl text-sm text-charcoal-900 dark:text-cream-50 outline-none focus:ring-1 focus:ring-terracotta-500"
+                  className="w-full px-3.5 py-2.5 bg-cream-50 dark:bg-charcoal-700 border border-warm-border dark:border-charcoal-600 rounded-[3px] text-sm text-charcoal-900 dark:text-cream-50 outline-none focus:ring-1 focus:ring-terracotta-500"
                 />
               </div>
 
@@ -182,7 +182,7 @@ export const SettingsModal = ({ isOpen, onClose }) => {
                   minLength={6}
                   value={newPassword}
                   onChange={(e) => setNewPassword(e.target.value)}
-                  className="w-full px-3.5 py-2.5 bg-cream-50 dark:bg-charcoal-700 border border-warm-border dark:border-charcoal-600 rounded-xl text-sm text-charcoal-900 dark:text-cream-50 outline-none focus:ring-1 focus:ring-terracotta-500"
+                  className="w-full px-3.5 py-2.5 bg-cream-50 dark:bg-charcoal-700 border border-warm-border dark:border-charcoal-600 rounded-[3px] text-sm text-charcoal-900 dark:text-cream-50 outline-none focus:ring-1 focus:ring-terracotta-500"
                 />
               </div>
 
@@ -196,7 +196,7 @@ export const SettingsModal = ({ isOpen, onClose }) => {
                   minLength={6}
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
-                  className="w-full px-3.5 py-2.5 bg-cream-50 dark:bg-charcoal-700 border border-warm-border dark:border-charcoal-600 rounded-xl text-sm text-charcoal-900 dark:text-cream-50 outline-none focus:ring-1 focus:ring-terracotta-500"
+                  className="w-full px-3.5 py-2.5 bg-cream-50 dark:bg-charcoal-700 border border-warm-border dark:border-charcoal-600 rounded-[3px] text-sm text-charcoal-900 dark:text-cream-50 outline-none focus:ring-1 focus:ring-terracotta-500"
                 />
               </div>
 
@@ -204,14 +204,14 @@ export const SettingsModal = ({ isOpen, onClose }) => {
                 <button
                   type="button"
                   onClick={onClose}
-                  className="px-4 py-2 border border-warm-border dark:border-charcoal-600 text-charcoal-600 dark:text-cream-200 rounded-xl text-xs font-medium hover:bg-cream-100"
+                  className="px-4 py-2 border border-warm-border dark:border-charcoal-600 text-charcoal-600 dark:text-cream-200 rounded-[3px] text-xs font-medium hover:bg-cream-100"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={passwordLoading}
-                  className="px-4 py-2 bg-terracotta-500 hover:bg-terracotta-600 text-white rounded-xl text-xs font-medium transition-colors shadow-sm disabled:opacity-50"
+                  className="px-4 py-2 bg-terracotta-500 hover:bg-terracotta-600 text-white rounded-[3px] text-xs font-medium transition-colors shadow-sm disabled:opacity-50"
                 >
                   {passwordLoading ? 'Updating...' : 'Update Password'}
                 </button>

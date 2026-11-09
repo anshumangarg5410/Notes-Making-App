@@ -48,12 +48,12 @@ export const StatisticsCards = ({
           <div
             key={card.id}
             onClick={() => onCardClick && onCardClick(card.id)}
-            className="relative rounded-2xl p-4 bg-[#181226]/90 border border-purple-500/20 hover:border-purple-400/50 hover:bg-[#1e1630] transition-all duration-200 cursor-pointer overflow-hidden group shadow-md"
+            className="relative rounded-[4px] p-4 bg-[#181226]/90 border border-purple-500/20 hover:border-purple-400/50 hover:bg-[#1e1630] transition-all duration-200 cursor-pointer overflow-hidden group shadow-md"
           >
             {/* Top row: Icon + Number & Label */}
             <div className="flex items-center gap-3.5 relative z-10">
               <div
-                className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 shadow-sm ${card.iconBg}`}
+                className={`w-10 h-10 rounded-[3px] flex items-center justify-center shrink-0 shadow-sm ${card.iconBg}`}
               >
                 <Icon className="w-5 h-5" />
               </div>

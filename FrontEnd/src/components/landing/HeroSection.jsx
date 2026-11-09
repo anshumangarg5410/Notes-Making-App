@@ -14,7 +14,7 @@ export const HeroSection = () => {
   const { isDark } = useTheme();
 
   return (
-    <section id="home" className="w-full pt-8 pb-10 px-4 sm:px-6 lg:px-8 relative z-20">
+    <section id="home" className="w-full py-2 sm:py-4 lg:py-4 px-4 sm:px-6 lg:px-8 relative z-20">
       <div className="max-w-7xl mx-auto">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-6 items-center">
 

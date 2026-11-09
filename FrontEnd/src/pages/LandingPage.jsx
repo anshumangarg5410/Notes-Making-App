@@ -1,6 +1,7 @@
 import React from 'react';
 import { PencilNavbar } from '../components/landing/PencilNavbar';
 import { HeroSection } from '../components/landing/HeroSection';
+import { FeatureCards } from '../components/landing/FeatureCards';
 import { FeaturesOverview } from '../components/landing/FeaturesOverview';
 import { EditorShowcase } from '../components/landing/EditorShowcase';
 import { Footer } from '../components/footer/Footer';
@@ -12,7 +13,7 @@ export const LandingPage = () => {
 
   return (
     <div
-      className={`min-h-screen w-full relative flex flex-col justify-between overflow-x-hidden transition-colors duration-300 ${
+      className={`min-h-screen w-full relative flex flex-col overflow-x-hidden transition-colors duration-300 ${
         isDark ? 'text-slate-100' : 'text-slate-900'
       }`}
       style={{
@@ -26,24 +27,35 @@ export const LandingPage = () => {
         backgroundAttachment: 'fixed'
       }}
     >
-      {/* Keep the fixed navbar from covering the landing page content. */}
-      <div aria-hidden="true" className="h-[92px] shrink-0 xl:h-[102px]" />
+      {/* ============================================================== */}
+      {/* 1. FULL-SCREEN HERO VIEWPORT (Covers 100vh on Initial Load)    */}
+      {/* ============================================================== */}
+      <div className="min-h-screen w-full flex flex-col justify-between relative">
+        {/* Fixed navbar height offset */}
+        <div aria-hidden="true" className="h-[92px] shrink-0 xl:h-[102px]" />
 
-      {/* 1. Neon Navigation Bar */}
-      <PencilNavbar />
+        {/* Floating Pencil Navbar */}
+        <PencilNavbar />
 
-      {/* 2. Hero Section (with Left Column and Right Editor Preview) */}
-      <main className="flex-1 flex flex-col justify-center">
-        <HeroSection />
-      </main>
+        {/* Hero Section (Left copy, CTA & Right Editor Preview) */}
+        <main className="flex-1 flex flex-col justify-center my-auto">
+          <HeroSection />
+        </main>
 
-      {/* 3. NEW Features Overview Section (Interconnected Knowledge Universe) */}
+        {/* Five Square Feature Cards at the bottom of the Hero screen */}
+        <FeatureCards />
+      </div>
+
+      {/* ============================================================== */}
+      {/* 2. DOWNSTREAM PAGES / SECTIONS (Scroll down to reveal)          */}
+      {/* ============================================================== */}
+      {/* Features Overview Section (Interconnected Knowledge Universe) */}
       <FeaturesOverview />
 
-      {/* 4. NEW Editor Showcase Section (Obsidian Rich-Text Editor Experience) */}
+      {/* Editor Showcase Section (Obsidian Rich-Text Editor Experience) */}
       <EditorShowcase />
 
-      {/* 5. Four-column footer */}
+      {/* Four-Column Footer */}
       <Footer />
     </div>
   );

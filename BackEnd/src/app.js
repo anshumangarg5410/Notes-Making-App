@@ -8,6 +8,7 @@ const authRoutes = require('./routes/auth.routes');
 const noteRoutes = require('./routes/note.routes');
 const folderRoutes = require('./routes/folder.routes');
 const trashRoutes = require('./routes/trash.routes');
+const userRoutes = require('./routes/user.routes');
 const errorHandler = require('./middleware/errorHandler');
 
 const app = express();
@@ -58,6 +59,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/notes', noteRoutes);
 app.use('/api/folders', folderRoutes);
 app.use('/api/trash', trashRoutes);
+app.use('/api/users', userRoutes);
 
 // Fallback for 404 Not Found on undefined API routes
 app.use('/api/*', (req, res) => {

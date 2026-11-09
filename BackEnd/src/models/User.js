@@ -38,6 +38,35 @@ const userSchema = new mongoose.Schema(
       type: String,
       default: ''
     },
+    username: {
+      type: String,
+      trim: true,
+      default: ''
+    },
+    bio: {
+      type: String,
+      trim: true,
+      default: 'Student • Developer • Building cool stuff with code.'
+    },
+    plan: {
+      type: String,
+      default: 'Pro Plan'
+    },
+    coverImage: {
+      type: String,
+      default: ''
+    },
+    preferences: {
+      type: mongoose.Schema.Types.Mixed,
+      default: {
+        theme: 'dark',
+        accentColor: 'purple',
+        offlineMode: true,
+        autoSync: true,
+        showNoteCount: true,
+        compactSidebar: false
+      }
+    },
     isEmailVerified: {
       type: Boolean,
       default: false

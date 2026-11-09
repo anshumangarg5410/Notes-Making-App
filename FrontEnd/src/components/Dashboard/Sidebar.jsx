@@ -13,7 +13,9 @@ import {
   ChevronsRight,
   BookOpen,
   X,
-  Sparkles
+  Sparkles,
+  Settings,
+  HelpCircle
 } from 'lucide-react';
 import upgradeProIcon from '../../assets/dashboard/upgrade-pro-icon-clean.png';
 
@@ -260,6 +262,26 @@ export const Sidebar = ({
               </button>
             </div>
           )}
+
+          {/* Sidebar Footer Icons */}
+          <div className="flex items-center gap-2 pt-2 text-gray-400 select-none">
+            <button
+              type="button"
+              onClick={() => onSelectNav?.('settings')}
+              className="p-1.5 rounded hover:text-white hover:bg-[#1e1e2d] transition-colors"
+              title="Settings"
+            >
+              <Settings className="w-4 h-4" />
+            </button>
+            <button
+              type="button"
+              onClick={() => onSelectNav?.('help')}
+              className="p-1.5 rounded hover:text-white hover:bg-[#1e1e2d] transition-colors"
+              title="Help & Support"
+            >
+              <HelpCircle className="w-4 h-4" />
+            </button>
+          </div>
         </div>
       </aside>
     </>

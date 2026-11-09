@@ -169,7 +169,9 @@ export const DashboardPage = ({ onOpenNoteInEditor = null }) => {
   // Handle Sidebar Nav
   const handleSelectNav = (navId) => {
     setActiveNav(navId);
-    if (navId === 'all-notes' || navId === 'favorites' || navId === 'trash') {
+    if (navId === 'folders') {
+      navigate('/folders');
+    } else if (navId === 'all-notes' || navId === 'favorites' || navId === 'trash') {
       navigate(`/notes?view=${navId}`);
     } else if (navId.startsWith('folder-')) {
       const folderName = navId.replace('folder-', '');
@@ -204,7 +206,7 @@ export const DashboardPage = ({ onOpenNoteInEditor = null }) => {
       onSelectTag={handleSelectTag}
       onSelectFolder={handleSelectFolder}
       onViewAllNotes={() => navigate('/notes?view=all')}
-      onViewAllFolders={() => navigate('/notes?view=folders')}
+      onViewAllFolders={() => navigate('/folders')}
     />
   );
 };

@@ -148,5 +148,42 @@ export const offlineService = {
       console.warn('processSyncQueue error:', err);
       return { synced: 0, pending: 0 };
     }
+  },
+
+  // Folder offline caching helpers
+  async getLocalFolders() {
+    try {
+      return await db.folders.toArray();
+    } catch (err) {
+      console.warn('Dexie getLocalFolders error:', err);
+      return [];
+    }
+  },
+
+  async cacheServerFolders(folders = []) {
+    try {
+      if (!Array.isArray(folders) || folders.length === 0) return;
+      await db.folders.bulkPut(
+        folders.map((f) => ({
+          ...f,
+          id: f._id || f.id
+        }))
+      );
+    } catch (err) {
+      console.warn('Dexie cacheServerFolders error:', err);
+    }
+  },
+
+  async saveLocalFolder(folderData) {
+    try {
+      const id = folderData._id || folderData.id || `folder_${Date.now()}`;
+      const record = { ...folderData, _id: id, id };
+      await db.folders.put(record);
+      return record;
+    } catch (err) {
+      console.warn('Dexie saveLocalFolder error:', err);
+      return folderData;
+    }
   }
 };
+

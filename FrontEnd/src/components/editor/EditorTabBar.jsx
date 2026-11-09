@@ -145,3 +145,4 @@ export const EditorTabBar = ({
     </div>
   );
 };
+

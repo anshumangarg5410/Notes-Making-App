@@ -10,6 +10,7 @@ import { LandingPage } from './pages/LandingPage';
 import { DashboardPage } from './pages/DashboardPage';
 import { WorkspacePage } from './pages/WorkspacePage';
 import { NoteEditorPage } from './pages/NoteEditorPage';
+import { FoldersPage } from './pages/FoldersPage';
 import { LoginPage } from './pages/LoginPage';
 import { RegisterPage } from './pages/RegisterPage';
 import { ErrorBoundary } from './components/common/ErrorBoundary';
@@ -45,6 +46,16 @@ export function App() {
                     element={
                       <ProtectedRoute>
                         <WorkspacePage />
+                      </ProtectedRoute>
+                    }
+                  />
+
+                  {/* Dedicated Folders Management Page (Exact Reference Design) */}
+                  <Route
+                    path="/folders"
+                    element={
+                      <ProtectedRoute>
+                        <FoldersPage />
                       </ProtectedRoute>
                     }
                   />

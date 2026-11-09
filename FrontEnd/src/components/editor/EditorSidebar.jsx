@@ -377,3 +377,4 @@ export const EditorSidebar = ({
     </aside>
   );
 };
+

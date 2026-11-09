@@ -39,3 +39,4 @@ tagSchema.index({ userId: 1, name: 1 }, { unique: true });
 const Tag = mongoose.model('Tag', tagSchema);
 
 module.exports = Tag;
+

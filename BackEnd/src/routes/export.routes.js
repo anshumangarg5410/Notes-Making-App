@@ -12,3 +12,4 @@ router.get('/notes/:id/print', exportController.exportPrintable);
 router.get('/bulk', exportController.bulkExport);
 
 module.exports = router;
+

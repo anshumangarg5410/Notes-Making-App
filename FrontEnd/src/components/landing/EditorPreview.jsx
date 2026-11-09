@@ -1,6 +1,6 @@
 import React from 'react';
 import editorPreviewDark from '../../assets/landing/editor-preview-dark.png';
-import editorPreviewLight from '../../assets/landing/editor-preview-light.png';
+import editorPreviewLight from '../../assets/landing/editor-preview-light-updated.png';
 import stickyHeartDark from '../../assets/landing/sticky-heart-dark.png';
 import binderClipDark from '../../assets/landing/binder-clip-dark.png';
 import { useTheme } from '../../context/ThemeContext';
@@ -9,7 +9,7 @@ export const EditorPreview = () => {
   const { isDark } = useTheme();
 
   return (
-    <div className="relative w-full max-w-2xl select-none group">
+    <div className="relative aspect-[13/9] w-full max-w-2xl select-none group">
       {/* Ambient Purple Light Bloom behind Editor */}
       <div
         className="absolute -inset-6 rounded-3xl blur-2xl opacity-50 pointer-events-none transition-opacity duration-500 group-hover:opacity-75"
@@ -43,13 +43,13 @@ export const EditorPreview = () => {
       </div>}
 
       {/* Tablet Editor Mockup Container */}
-      <div className={`relative rounded-xl overflow-hidden transition-transform duration-500 group-hover:scale-[1.015] ${
+      <div className={`absolute inset-0 rounded-xl overflow-hidden transition-transform duration-500 group-hover:scale-[1.015] ${
         isDark ? 'filter drop-shadow-[0_20px_50px_rgba(0,0,0,0.7)]' : 'filter drop-shadow-[0_20px_40px_rgba(15,23,42,0.18)]'
       }`}>
         <img
           src={isDark ? editorPreviewDark : editorPreviewLight}
           alt="NoteNest Application Interface"
-          className="w-full h-auto object-contain block select-none"
+          className="block h-full w-full object-contain select-none"
           loading="eager"
         />
 

@@ -9,3 +9,4 @@ router.use(authenticate);
 router.get('/', dashboardController.getDashboard);
 
 module.exports = router;
+

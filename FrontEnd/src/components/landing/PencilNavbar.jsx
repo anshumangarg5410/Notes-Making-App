@@ -124,7 +124,7 @@ export const PencilNavbar = () => {
                   aria-current={isActive ? 'location' : undefined}
                   className={`whitespace-nowrap rounded-xl px-2.5 py-2 text-xs font-medium transition-all duration-200 sm:px-3 sm:text-sm ${
                     isActive
-                      ? 'border border-indigo-400/60 bg-indigo-500/15 text-indigo-100 shadow-sm'
+                      ? `border border-indigo-400/60 bg-indigo-500/15 ${isDark ? 'text-indigo-100' : 'text-indigo-800'} shadow-sm`
                       : isDark
                         ? 'border border-transparent text-slate-300 hover:border-indigo-300/30 hover:bg-indigo-400/10 hover:text-white'
                         : 'border border-transparent text-slate-600 hover:border-indigo-300 hover:bg-indigo-50 hover:text-indigo-800'
@@ -232,7 +232,7 @@ export const PencilNavbar = () => {
                 aria-current={activeSection === link.id ? 'location' : undefined}
                 className={`rounded-lg px-3 py-2.5 text-left text-sm font-medium ${
                   activeSection === link.id
-                    ? 'bg-indigo-500/20 text-indigo-100'
+                    ? `bg-indigo-500/20 ${isDark ? 'text-indigo-100' : 'text-indigo-800'}`
                     : isDark
                       ? 'text-slate-300 hover:bg-white/5'
                       : 'text-slate-600 hover:bg-indigo-50'

@@ -11,3 +11,4 @@ router.post('/pull', syncController.pull);
 router.get('/status', syncController.status);
 
 module.exports = router;
+

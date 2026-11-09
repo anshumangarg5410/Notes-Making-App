@@ -65,3 +65,4 @@ activitySchema.index({ userId: 1, timestamp: -1 });
 const Activity = mongoose.model('Activity', activitySchema);
 
 module.exports = Activity;
+

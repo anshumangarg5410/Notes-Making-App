@@ -33,3 +33,4 @@ class SyncController {
 }
 
 module.exports = new SyncController();
+

@@ -42,3 +42,4 @@ class TrashCleanupJob {
 }
 
 module.exports = new TrashCleanupJob();
+

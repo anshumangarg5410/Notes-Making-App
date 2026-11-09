@@ -138,3 +138,4 @@ npm test
 A dedicated cleanup routine runs on boot and every 24 hours:
 - Automatically purges soft-deleted records older than 30 days based on server `deletedAt` timestamp.
 - Safely cleans up nested references without affecting active notes.
+

@@ -10,7 +10,9 @@ const router = express.Router();
 // Strict rate limiting for sensitive login & registration endpoints
 const strictAuthLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 15, // max 15 attempts per IP per window
+  max: process.env.NODE_ENV === 'production' ? 15 : 1000,
+  skipSuccessfulRequests: true,
+  skip: () => process.env.NODE_ENV !== 'production',
   standardHeaders: true,
   legacyHeaders: false,
   message: {
@@ -22,7 +24,8 @@ const strictAuthLimiter = rateLimit({
 // General rate limiter for token refresh & session verification
 const generalAuthLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 100,
+  max: process.env.NODE_ENV === 'production' ? 100 : 5000,
+  skip: () => process.env.NODE_ENV !== 'production',
   standardHeaders: true,
   legacyHeaders: false
 });

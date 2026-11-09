@@ -7,6 +7,7 @@ import { AuthModalProvider } from './context/AuthModalContext';
 import { AuthModal } from './components/auth/AuthModal';
 import { ProtectedRoute } from './routes/ProtectedRoute';
 import { LandingPage } from './pages/LandingPage';
+import { DashboardPage } from './pages/DashboardPage';
 import { WorkspacePage } from './pages/WorkspacePage';
 import { LoginPage } from './pages/LoginPage';
 import { RegisterPage } from './pages/RegisterPage';
@@ -27,7 +28,17 @@ export function App() {
                   {/* Public Landing Page */}
                   <Route path="/" element={<LandingPage />} />
 
-                  {/* Dedicated Protected Notes Dashboard */}
+                  {/* Main Application Dashboard (Exact Design Reference) */}
+                  <Route
+                    path="/dashboard"
+                    element={
+                      <ProtectedRoute>
+                        <DashboardPage />
+                      </ProtectedRoute>
+                    }
+                  />
+
+                  {/* Dedicated Protected Notes Workspace */}
                   <Route
                     path="/notes"
                     element={
@@ -38,7 +49,7 @@ export function App() {
                   />
 
                   {/* Legacy / Alias Route */}
-                  <Route path="/workspace" element={<Navigate to="/notes" replace />} />
+                  <Route path="/workspace" element={<Navigate to="/dashboard" replace />} />
 
                   {/* Public Auth Routes */}
                   <Route path="/login" element={<LoginPage />} />

@@ -7,6 +7,8 @@ import { Header } from '../components/common/Header';
 import { FilterModal } from '../components/modals/FilterModal';
 import { SettingsModal } from '../components/modals/SettingsModal';
 import { ConfirmDialog } from '../components/modals/ConfirmDialog';
+import { DashboardLayout } from '../components/Dashboard/DashboardLayout';
+import { dashboardService } from '../services/dashboardService';
 import { noteService } from '../services/noteService';
 import { useToast } from '../context/ToastContext';
 
@@ -14,8 +16,8 @@ export const WorkspacePage = () => {
   const { success, error: toastError, info } = useToast();
   const [searchParams, setSearchParams] = useSearchParams();
 
-  // Navigation & filtering state
-  const [activeFilter, setActiveFilter] = useState('all'); // 'all', 'favorites', 'study', 'work', 'personal', 'ideas', 'archived', 'trash'
+  // Navigation & filtering state - defaults to dashboard if no noteId or filter in URL
+  const [activeFilter, setActiveFilter] = useState(() => searchParams.get('filter') || (searchParams.get('noteId') ? 'all' : 'dashboard')); // 'all', 'favorites', 'study', 'work', 'personal', 'ideas', 'archived', 'trash'
   const [filterTag, setFilterTag] = useState('all');
   const [filterColor, setFilterColor] = useState('all');
   const [sortBy, setSortBy] = useState('updated_desc');
@@ -45,6 +47,20 @@ export const WorkspacePage = () => {
       console.warn('Failed to load stats:', err.message);
     }
   }, []);
+
+  // Dashboard initial state & data
+  const [dashboardData, setDashboardData] = useState({
+    notes: [],
+    stats: { totalNotes: 48, folders: 6, tags: 12, favorites: 9 },
+    folders: [],
+    tags: [],
+    activities: [],
+    storage: { usedMb: 245, totalGb: 2, percentage: 12 }
+  });
+
+  useEffect(() => {
+    dashboardService.getDashboardData().then(setDashboardData);
+  }, [notes]);
 
   // Fetch notes from server
   const fetchNotes = useCallback(async (preserveSelectionId = null) => {
@@ -312,6 +328,69 @@ export const WorkspacePage = () => {
     setFilterColor('all');
     setSortBy('updated_desc');
   };
+
+  // If activeFilter is 'dashboard', render the NoteNest Dashboard from the design reference
+  if (activeFilter === 'dashboard') {
+    return (
+      <DashboardLayout
+        notes={notes.length > 0 ? notes.slice(0, 5) : dashboardData.notes}
+        stats={{
+          totalNotes: stats.all || dashboardData.stats.totalNotes,
+          folders: dashboardData.folders.length || 6,
+          tags: dashboardData.tags.length || 12,
+          favorites: stats.favorites || dashboardData.stats.favorites
+        }}
+        folders={dashboardData.folders}
+        tags={dashboardData.tags}
+        activities={dashboardData.activities}
+        storage={dashboardData.storage}
+        activeNav="dashboard"
+        onSelectNav={(navId) => {
+          if (navId === 'all-notes' || navId === 'all') {
+            setActiveFilter('all');
+          } else if (navId === 'favorites') {
+            setActiveFilter('favorites');
+          } else if (navId === 'trash') {
+            setActiveFilter('trash');
+          } else if (navId.startsWith('folder-')) {
+            const fName = navId.replace('folder-', '');
+            setFilterTag(fName);
+            setActiveFilter('all');
+          }
+        }}
+        onSelectNote={(note) => {
+          setSelectedNote(note);
+          setActiveFilter('all');
+        }}
+        onNewNote={handleCreateNote}
+        onCreateFolder={(name) => {
+          const updated = [...dashboardData.folders, { id: 'f-' + Date.now(), name, count: 0 }];
+          localStorage.setItem('notenest_custom_folders', JSON.stringify(updated));
+          setDashboardData((prev) => ({ ...prev, folders: updated }));
+          dashboardService.logActivity(`Created folder "${name}"`, 'folder');
+        }}
+        onImportNote={async (noteData) => {
+          const res = await noteService.createNote(noteData);
+          if (res.success && res.data) {
+            setSelectedNote(res.data);
+            setActiveFilter('all');
+          }
+        }}
+        onToggleFavorite={handleToggleFavorite}
+        onDeleteNote={handleDeleteNote}
+        onSelectTag={(tag) => {
+          setFilterTag(tag);
+          setActiveFilter('all');
+        }}
+        onSelectFolder={(folder) => {
+          setFilterTag(folder);
+          setActiveFilter('all');
+        }}
+        onViewAllNotes={() => setActiveFilter('all')}
+        onViewAllFolders={() => setActiveFilter('folders')}
+      />
+    );
+  }
 
   return (
     <div className="flex flex-col h-screen overflow-hidden bg-warm-bg dark:bg-charcoal-900 text-charcoal-900 dark:text-cream-50 font-sans">

@@ -22,6 +22,12 @@ FrontEnd/src/assets/
 │   ├── torn-bottom-dark.png         # Jagged purple torn paper bottom accent (dark)
 │   └── torn-bottom-light.png        # Jagged purple torn paper bottom accent (light)
 │
+├── dashboard/
+│   ├── desk-illustration.png        # Workspace desk illustration for Welcome banner
+│   ├── desk-illustration-feathered.png # Seamless alpha desk illustration
+│   ├── upgrade-pro-icon.png         # Upgrade to Pro document graphic
+│   └── upgrade-pro-icon-clean.png   # Isolated transparent Pro icon
+│
 ├── landing/
 │   ├── hero-bg-dark.png             # Full dark paper texture background with ambient purple glow
 │   ├── wide_dark_moody_stationary_themed_background_des.png # Master dark moody background

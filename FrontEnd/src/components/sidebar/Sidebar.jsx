@@ -1,23 +1,17 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import {
-  Home,
+  LayoutDashboard,
   FileText,
   Star,
-  GraduationCap,
-  Briefcase,
-  User,
-  Lightbulb,
-  Archive,
+  Folder,
+  Tag,
   Trash2,
   Plus,
   X,
-  Folder,
-  Leaf
+  BookOpen
 } from 'lucide-react';
 import { useTheme } from '../../context/ThemeContext';
-import sidebarQuoteLight from '../../assets/dashboard/sidebar-quote-light.png';
-import sidebarQuoteDark from '../../assets/dashboard/sidebar-quote-dark.png';
 
 export const Sidebar = ({
   activeFilter,
@@ -30,15 +24,12 @@ export const Sidebar = ({
   const { isDark } = useTheme();
 
   const navItems = [
-    { id: 'home', label: 'Home', icon: Home, isNavToHome: true },
-    { id: 'all', label: 'All Notes', icon: FileText, count: stats.all ?? 24 },
-    { id: 'favorites', label: 'Favorites', icon: Star, count: stats.favorites ?? 5 },
-    { id: 'study', label: 'Study', icon: GraduationCap, count: stats.study ?? 8 },
-    { id: 'work', label: 'Work', icon: Briefcase, count: stats.work ?? 6 },
-    { id: 'personal', label: 'Personal', icon: User, count: stats.personal ?? 4 },
-    { id: 'ideas', label: 'Ideas', icon: Lightbulb, count: stats.ideas ?? 3 },
-    { id: 'archived', label: 'Archive', icon: Archive, count: stats.archive },
-    { id: 'trash', label: 'Trash', icon: Trash2, count: stats.trash }
+    { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
+    { id: 'all', label: 'All Notes', icon: FileText, count: stats.all ?? 48 },
+    { id: 'favorites', label: 'Favorites', icon: Star, count: stats.favorites ?? 9 },
+    { id: 'folders', label: 'Folders', icon: Folder, count: stats.folders ?? 6 },
+    { id: 'tags', label: 'Tags', icon: Tag, count: stats.tags ?? 12 },
+    { id: 'trash', label: 'Trash', icon: Trash2, count: stats.trash ?? 0 }
   ];
 
   const collections = [
@@ -69,15 +60,15 @@ export const Sidebar = ({
           {/* Header Brand */}
           <div className="flex items-center justify-between mb-5">
             <Link to="/" className="flex items-center space-x-2.5 group">
-              <div className="w-9 h-9 rounded-xl bg-orange-500/10 dark:bg-orange-500/20 border border-orange-500/30 flex items-center justify-center text-orange-500 shadow-sm group-hover:scale-105 transition-transform">
-                <Leaf className="w-5 h-5 fill-orange-500/20 text-orange-500 transform -rotate-12" />
+              <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-[#8b5cf6] to-[#6d28d9] text-white flex items-center justify-center shadow-[0_0_12px_rgba(139,92,246,0.5)] group-hover:scale-105 transition-transform">
+                <BookOpen className="w-4 h-4" />
               </div>
               <div>
-                <h1 className="font-serif font-bold text-xl tracking-tight text-charcoal-900 dark:text-cream-50 leading-none">
-                  Notely
+                <h1 className="font-serif font-bold text-lg tracking-tight text-white leading-none">
+                  NoteNest
                 </h1>
-                <p className="text-[9px] uppercase tracking-widest text-orange-600/80 dark:text-orange-400/90 font-semibold mt-1">
-                  Write • Organize • Think
+                <p className="text-[9px] uppercase tracking-widest text-purple-400 font-semibold mt-1">
+                  Your Ideas, Organized
                 </p>
               </div>
             </Link>
@@ -85,7 +76,7 @@ export const Sidebar = ({
             {/* Mobile Close Button */}
             <button
               onClick={onCloseMobile}
-              className="p-1.5 rounded-lg text-charcoal-400 hover:text-charcoal-700 dark:hover:text-cream-100 hover:bg-cream-200/50 dark:hover:bg-charcoal-800 md:hidden"
+              className="p-1.5 rounded-lg text-charcoal-400 hover:text-white hover:bg-white/10 md:hidden cursor-pointer"
             >
               <X className="w-5 h-5" />
             </button>

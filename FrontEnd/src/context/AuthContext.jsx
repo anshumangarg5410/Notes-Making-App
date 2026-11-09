@@ -15,7 +15,16 @@ export const AuthProvider = ({ children }) => {
           setUser(res.data);
         }
       } catch (err) {
-        setUser(null);
+        const cached = localStorage.getItem('notely_user');
+        if (cached) {
+          try {
+            setUser(JSON.parse(cached));
+          } catch (_) {
+            setUser(null);
+          }
+        } else {
+          setUser(null);
+        }
       } finally {
         setLoading(false);
       }

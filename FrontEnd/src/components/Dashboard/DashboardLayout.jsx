@@ -9,6 +9,8 @@ import { QuickActions } from './QuickActions';
 import { FolderOverview } from './FolderOverview';
 import { RecentActivity } from './RecentActivity';
 import { IntegratedTrashView } from './IntegratedTrashView';
+import { IntegratedFoldersView } from './IntegratedFoldersView';
+import { IntegratedSettingsView } from './IntegratedSettingsView';
 import { NewFolderModal } from './NewFolderModal';
 import { ImportExportModal } from './ImportExportModal';
 import { UpgradeProModal } from './UpgradeProModal';
@@ -100,6 +102,16 @@ export const DashboardLayout = ({
         >
           {activeNav === 'trash' ? (
             <IntegratedTrashView onBackToDashboard={() => onSelectNav && onSelectNav('dashboard')} />
+          ) : activeNav === 'folders' ? (
+            <IntegratedFoldersView
+              onBackToDashboard={() => onSelectNav && onSelectNav('dashboard')}
+              onOpenFolderInEditor={onSelectFolder}
+            />
+          ) : activeNav === 'settings' || activeNav === 'profile' ? (
+            <IntegratedSettingsView
+              onBackToDashboard={() => onSelectNav && onSelectNav('dashboard')}
+              initialTab={activeNav === 'profile' ? 'profile' : 'profile'}
+            />
           ) : (
             /* Main 2-Column Responsive Layout */
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 lg:gap-6 items-start">

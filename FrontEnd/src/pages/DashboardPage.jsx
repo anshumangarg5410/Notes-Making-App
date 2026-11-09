@@ -25,6 +25,10 @@ export const DashboardPage = ({ onOpenNoteInEditor = null }) => {
     const view = searchParams.get('view');
     if (view === 'trash') {
       setActiveNav('trash');
+    } else if (view === 'folders') {
+      setActiveNav('folders');
+    } else if (view === 'settings' || view === 'profile') {
+      setActiveNav(view);
     } else if (!view || view === 'dashboard') {
       setActiveNav('dashboard');
     }
@@ -185,11 +189,13 @@ export const DashboardPage = ({ onOpenNoteInEditor = null }) => {
     } else if (navId === 'trash') {
       setSearchParams({ view: 'trash' });
     } else if (navId === 'folders') {
-      navigate('/folders');
+      setSearchParams({ view: 'folders' });
+    } else if (navId === 'settings') {
+      setSearchParams({ view: 'settings' });
+    } else if (navId === 'profile') {
+      setSearchParams({ view: 'profile' });
     } else if (navId === 'all-notes' || navId === 'favorites') {
       navigate(`/notes?view=${navId}`);
-    } else if (navId === 'settings') {
-      navigate('/settings');
     } else if (navId.startsWith('folder-')) {
       const folderName = navId.replace('folder-', '');
       navigate(`/notes?folder=${folderName}`);
@@ -222,9 +228,9 @@ export const DashboardPage = ({ onOpenNoteInEditor = null }) => {
       onDeleteNote={handleDeleteNote}
       onSelectTag={handleSelectTag}
       onSelectFolder={handleSelectFolder}
-      onOpenSettings={() => navigate('/settings')}
+      onOpenSettings={() => handleSelectNav('settings')}
       onViewAllNotes={() => navigate('/notes?view=all')}
-      onViewAllFolders={() => navigate('/folders')}
+      onViewAllFolders={() => handleSelectNav('folders')}
     />
   );
 };

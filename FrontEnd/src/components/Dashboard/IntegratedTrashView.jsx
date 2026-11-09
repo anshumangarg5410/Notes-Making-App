@@ -439,3 +439,4 @@ export const IntegratedTrashView = ({ onBackToDashboard }) => {
 };
 
 export default IntegratedTrashView;
+

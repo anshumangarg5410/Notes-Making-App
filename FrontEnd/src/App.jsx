@@ -10,8 +10,6 @@ import { LandingPage } from './pages/LandingPage';
 import { DashboardPage } from './pages/DashboardPage';
 import { WorkspacePage } from './pages/WorkspacePage';
 import { NoteEditorPage } from './pages/NoteEditorPage';
-import { FoldersPage } from './pages/FoldersPage';
-import { SettingsPage } from './pages/SettingsPage';
 import { LoginPage } from './pages/LoginPage';
 import { RegisterPage } from './pages/RegisterPage';
 import { ErrorBoundary } from './components/common/ErrorBoundary';
@@ -51,17 +49,16 @@ export function App() {
                     }
                   />
 
-                  {/* Dedicated Folders Management Page (Exact Reference Design) */}
+                  {/* Unified Dashboard Integrated Routes */}
                   <Route
                     path="/folders"
                     element={
                       <ProtectedRoute>
-                        <FoldersPage />
+                        <Navigate to="/dashboard?view=folders" replace />
                       </ProtectedRoute>
                     }
                   />
 
-                  {/* Integrated Trash view within Dashboard */}
                   <Route
                     path="/trash"
                     element={
@@ -71,12 +68,20 @@ export function App() {
                     }
                   />
 
-                  {/* Profile & Settings Page (Exact Reference Design) */}
                   <Route
                     path="/settings"
                     element={
                       <ProtectedRoute>
-                        <SettingsPage />
+                        <Navigate to="/dashboard?view=settings" replace />
+                      </ProtectedRoute>
+                    }
+                  />
+
+                  <Route
+                    path="/profile"
+                    element={
+                      <ProtectedRoute>
+                        <Navigate to="/dashboard?view=profile" replace />
                       </ProtectedRoute>
                     }
                   />

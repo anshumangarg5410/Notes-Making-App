@@ -69,6 +69,37 @@
   font-style: normal;
 }
 
+/* Standard Bullet and Ordered Lists */
+.obsidian-editor .ProseMirror ul:not([data-type="taskList"]) {
+  list-style-type: disc;
+  padding-left: 1.5rem;
+  margin: 0.75rem 0;
+}
+
+.obsidian-editor .ProseMirror ol {
+  list-style-type: decimal;
+  padding-left: 1.5rem;
+  margin: 0.75rem 0;
+}
+
+.obsidian-editor .ProseMirror li {
+  margin-bottom: 0.35rem;
+}
+
+.obsidian-editor .ProseMirror li p {
+  margin-bottom: 0.2rem;
+}
+
+/* Images */
+.obsidian-editor .ProseMirror img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 6px;
+  border: 1px solid rgba(168, 85, 247, 0.3);
+  margin: 1rem 0;
+  display: block;
+}
+
 /* Task / Checklist */
 .obsidian-editor ul[data-type="taskList"] {
   list-style: none;

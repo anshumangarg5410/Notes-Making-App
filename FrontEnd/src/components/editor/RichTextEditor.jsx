@@ -3,6 +3,7 @@ import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import Underline from '@tiptap/extension-underline';
 import Link from '@tiptap/extension-link';
+import Image from '@tiptap/extension-image';
 import TaskList from '@tiptap/extension-task-list';
 import TaskItem from '@tiptap/extension-task-item';
 import Table from '@tiptap/extension-table';
@@ -42,7 +43,14 @@ export const RichTextEditor = ({
       Link.configure({
         openOnClick: false,
         HTMLAttributes: {
-          class: 'text-purple-400 underline underline-offset-2'
+          class: 'text-purple-400 underline underline-offset-2 cursor-pointer'
+        }
+      }),
+      Image.configure({
+        inline: false,
+        allowBase64: true,
+        HTMLAttributes: {
+          class: 'editor-image rounded-md border border-purple-500/30 max-h-96 my-3 object-cover shadow-md'
         }
       }),
       TaskList,
@@ -59,6 +67,52 @@ export const RichTextEditor = ({
       TableHeader,
       TableCell
     ],
+    editorProps: {
+      handlePaste: (view, event) => {
+        const items = event.clipboardData?.items;
+        if (items) {
+          for (const item of items) {
+            if (item.type.indexOf('image') === 0) {
+              const file = item.getAsFile();
+              if (file) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                  const src = e.target?.result;
+                  if (src && typeof src === 'string') {
+                    const node = view.state.schema.nodes.image.create({ src });
+                    const tr = view.state.tr.replaceSelectionWith(node);
+                    view.dispatch(tr);
+                  }
+                };
+                reader.readAsDataURL(file);
+                return true;
+              }
+            }
+          }
+        }
+        return false;
+      },
+      handleDrop: (view, event) => {
+        const files = event.dataTransfer?.files;
+        if (files && files.length > 0 && files[0].type.indexOf('image') === 0) {
+          const reader = new FileReader();
+          reader.onload = (e) => {
+            const src = e.target?.result;
+            if (src && typeof src === 'string') {
+              const coords = view.posAtCoords({ left: event.clientX, top: event.clientY });
+              if (coords) {
+                const node = view.state.schema.nodes.image.create({ src });
+                const tr = view.state.tr.insert(coords.pos, node);
+                view.dispatch(tr);
+              }
+            }
+          };
+          reader.readAsDataURL(files[0]);
+          return true;
+        }
+        return false;
+      }
+    },
     content: getInitialContent(),
     onUpdate: ({ editor: ed }) => {
       const html = ed.getHTML();
@@ -120,13 +174,19 @@ export const RichTextEditor = ({
       const reader = new FileReader();
       reader.onload = (uploadEvent) => {
         const src = uploadEvent.target?.result;
-        if (src) {
-          editor.chain().focus().insertContent(`<img src="${src}" class="rounded-[6px] border border-purple-500/30 max-h-80 my-3" />`).run();
+        if (src && typeof src === 'string') {
+          editor.chain().focus().setImage({ src }).run();
         }
       };
       reader.readAsDataURL(file);
     }
     e.target.value = '';
+  };
+
+  const handleInsertImageUrl = (src) => {
+    if (src && editor) {
+      editor.chain().focus().setImage({ src }).run();
+    }
   };
 
   return (
@@ -144,6 +204,7 @@ export const RichTextEditor = ({
       <EditorToolbar
         editor={editor}
         onInsertImage={() => fileInputRef.current?.click()}
+        onInsertImageUrl={handleInsertImageUrl}
       />
 
       {/* Main Document Canvas Scroll Area */}

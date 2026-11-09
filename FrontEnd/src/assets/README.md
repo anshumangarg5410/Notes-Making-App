@@ -7,6 +7,7 @@ This directory organizes all illustrations, stickers, icons, and design referenc
 ```text
 FrontEnd/src/assets/
 ├── landing/
+│   ├── hero-bg-dark.png             # Full dark paper texture background with ambient purple glow
 │   ├── pencil-navbar-dark.png       # Realistic wooden pencil navbar for dark mode
 │   ├── pencil-navbar-light.png      # Realistic wooden pencil navbar for light mode
 │   ├── editor-preview-dark.png      # Floating NoteNest tablet editor UI with paper layers (dark)

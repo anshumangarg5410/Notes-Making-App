@@ -6,6 +6,7 @@ import editorPreviewDark from '../../assets/landing/editor-preview-dark.png';
 import editorPreviewLight from '../../assets/landing/editor-preview-light.png';
 import stickyHeartDark from '../../assets/landing/sticky-heart-dark.png';
 import binderClipDark from '../../assets/landing/binder-clip-dark.png';
+import heroBgDark from '../../assets/landing/hero-bg-dark.png';
 
 export const HeroSection = () => {
   const { isDark } = useTheme();
@@ -17,7 +18,7 @@ export const HeroSection = () => {
       className="relative pt-24 pb-10 flex items-center overflow-hidden transition-colors duration-300"
       style={{
         background: isDark
-          ? 'radial-gradient(ellipse at 25% 45%, #2a164d 0%, #130f22 45%, #0c0916 100%)'
+          ? `radial-gradient(ellipse at 25% 45%, rgba(42,22,77,0.7) 0%, rgba(19,15,34,0.85) 45%, rgba(12,9,22,0.95) 100%), url(${heroBgDark}) center/cover no-repeat`
           : 'radial-gradient(ellipse at 25% 45%, #f5e9ff 0%, #faf8f5 50%, #f3edf8 100%)'
       }}
     >

@@ -79,7 +79,7 @@ export const Footer = () => {
 
   return (
     <footer
-      className={`relative w-full pt-14 pb-8 overflow-hidden transition-colors duration-300 ${
+      className={`relative w-full pt-12 pb-6 overflow-hidden transition-colors duration-300 ${
         isDark
           ? 'bg-[#100b1d] text-[#f5f3f0]'
           : 'bg-[#faf5ff] text-[#26153b]'
@@ -237,7 +237,7 @@ export const Footer = () => {
       </div>
 
       {/* 5. Physical Torn-Paper Divider with Paper Airplane Flight Path */}
-      <div className="relative w-full mt-10 overflow-hidden select-none">
+      <div className="relative w-full mt-6 overflow-hidden select-none">
         {/* Dashed Paper-Airplane Flight Trail Path */}
         <div className="relative w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <svg
@@ -276,7 +276,7 @@ export const Footer = () => {
       </div>
 
       {/* 6. Bottom Footer Row: Copyright (Left) & Social Media Icons (Right) */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4 relative z-10">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-3 relative z-10">
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
 
           {/* Left: Copyright */}

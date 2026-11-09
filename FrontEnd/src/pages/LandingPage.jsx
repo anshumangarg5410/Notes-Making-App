@@ -18,7 +18,10 @@ export const LandingPage = () => {
         backgroundAttachment: 'fixed'
       }}
     >
-      {/* 1. Pencil Navigation Bar */}
+      {/* Keep the fixed navbar from covering the landing page content. */}
+      <div aria-hidden="true" className="h-[92px] shrink-0 xl:h-[102px]" />
+
+      {/* 1. Neon Navigation Bar */}
       <PencilNavbar />
 
       {/* 2. Hero Section (with Left Column and Right Editor Preview) */}

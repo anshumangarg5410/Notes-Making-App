@@ -1,0 +1,152 @@
+import Dexie from 'dexie';
+
+export const db = new Dexie('NoteNestDB');
+
+// Define database schema
+db.version(1).stores({
+  notes: '_id, id, title, isPinned, isFavorite, isDeleted, isArchived, updatedAt, syncStatus',
+  folders: 'id, name',
+  syncQueue: '++id, noteId, action, timestamp'
+});
+
+export const offlineService = {
+  // Get all cached notes from local Dexie database
+  async getLocalNotes(params = {}) {
+    try {
+      let collection = db.notes.toCollection();
+
+      if (params.filter === 'favorites') {
+        collection = db.notes.filter((n) => !n.isDeleted && n.isFavorite);
+      } else if (params.filter === 'trash') {
+        collection = db.notes.filter((n) => n.isDeleted);
+      } else if (params.filter === 'archived') {
+        collection = db.notes.filter((n) => !n.isDeleted && n.isArchived);
+      } else {
+        collection = db.notes.filter((n) => !n.isDeleted && !n.isArchived);
+      }
+
+      const all = await collection.toArray();
+      // Sort by isPinned descending, then updatedAt descending
+      return all.sort((a, b) => {
+        if (a.isPinned && !b.isPinned) return -1;
+        if (!a.isPinned && b.isPinned) return 1;
+        return new Date(b.updatedAt || b.createdAt) - new Date(a.updatedAt || a.createdAt);
+      });
+    } catch (err) {
+      console.warn('Dexie getLocalNotes error:', err);
+      return [];
+    }
+  },
+
+  // Save or update a note locally
+  async saveLocalNote(noteData, isPendingSync = true) {
+    try {
+      const id = noteData._id || noteData.id || `local_${Date.now()}`;
+      const record = {
+        ...noteData,
+        _id: id,
+        id: id,
+        updatedAt: noteData.updatedAt || new Date().toISOString(),
+        syncStatus: isPendingSync ? 'pending' : 'synced'
+      };
+
+      await db.notes.put(record);
+
+      if (isPendingSync) {
+        await db.syncQueue.add({
+          noteId: id,
+          action: 'upsert',
+          payload: record,
+          timestamp: Date.now()
+        });
+      }
+
+      return record;
+    } catch (err) {
+      console.warn('Dexie saveLocalNote error:', err);
+      return noteData;
+    }
+  },
+
+  // Bulk cache server notes into local Dexie
+  async cacheServerNotes(notes = []) {
+    try {
+      if (!Array.isArray(notes) || notes.length === 0) return;
+      await db.notes.bulkPut(
+        notes.map((n) => ({
+          ...n,
+          id: n._id,
+          syncStatus: 'synced'
+        }))
+      );
+    } catch (err) {
+      console.warn('Dexie cacheServerNotes error:', err);
+    }
+  },
+
+  // Mark a note as deleted locally
+  async deleteLocalNote(id, permanent = false) {
+    try {
+      if (permanent) {
+        await db.notes.delete(id);
+      } else {
+        const note = await db.notes.get(id);
+        if (note) {
+          note.isDeleted = true;
+          note.updatedAt = new Date().toISOString();
+          note.syncStatus = 'pending';
+          await db.notes.put(note);
+        }
+      }
+
+      await db.syncQueue.add({
+        noteId: id,
+        action: permanent ? 'permanentDelete' : 'delete',
+        payload: { id },
+        timestamp: Date.now()
+      });
+    } catch (err) {
+      console.warn('Dexie deleteLocalNote error:', err);
+    }
+  },
+
+  // Sync queued changes with backend
+  async processSyncQueue(apiClient) {
+    if (!navigator.onLine) return { synced: 0, pending: await db.syncQueue.count() };
+
+    try {
+      const items = await db.syncQueue.toArray();
+      if (items.length === 0) return { synced: 0, pending: 0 };
+
+      let syncedCount = 0;
+      for (const item of items) {
+        try {
+          if (item.action === 'upsert') {
+            if (item.payload._id && !item.payload._id.startsWith('local_')) {
+              await apiClient.updateNote(item.payload._id, item.payload);
+            } else {
+              const res = await apiClient.createNote(item.payload);
+              if (res.data?._id) {
+                await db.notes.delete(item.payload._id);
+                await db.notes.put({ ...res.data, syncStatus: 'synced' });
+              }
+            }
+          } else if (item.action === 'delete') {
+            await apiClient.deleteNote(item.noteId);
+          } else if (item.action === 'permanentDelete') {
+            await apiClient.permanentDeleteNote(item.noteId);
+          }
+          await db.syncQueue.delete(item.id);
+          syncedCount++;
+        } catch (itemErr) {
+          console.warn('Sync queue item failed:', item.id, itemErr.message);
+        }
+      }
+
+      return { synced: syncedCount, pending: await db.syncQueue.count() };
+    } catch (err) {
+      console.warn('processSyncQueue error:', err);
+      return { synced: 0, pending: 0 };
+    }
+  }
+};

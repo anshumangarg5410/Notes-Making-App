@@ -2,25 +2,14 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { BookOpen } from 'lucide-react';
 import { useTheme } from '../../context/ThemeContext';
-import stackedBooksDark from '../../assets/footer/stacked-books-dark.png';
-import stackedBooksLight from '../../assets/footer/stacked-books-light.png';
-import leafBranchDark from '../../assets/footer/leaf-branch-dark.png';
-import leafBranchLight from '../../assets/footer/leaf-branch-light.png';
+import booksMugDark from '../../assets/auth/books-mug-dark-clean.png';
+import booksMugLight from '../../assets/auth/books-mug-light-clean.png';
 
 export const FooterBrand = () => {
   const { isDark } = useTheme();
 
   return (
     <div className="relative space-y-4 pr-4">
-      {/* Small Leafy Branch Illustration on Left Margin */}
-      <div className="absolute -left-8 sm:-left-10 top-0 w-8 sm:w-10 pointer-events-none select-none opacity-85">
-        <img
-          src={isDark ? leafBranchDark : leafBranchLight}
-          alt="Botanical Leaf"
-          className="w-full h-auto object-contain"
-        />
-      </div>
-
       {/* NoteNest Logo with Open Book */}
       <Link to="/" className="inline-flex items-center gap-2.5 group">
         <div
@@ -81,11 +70,12 @@ export const FooterBrand = () => {
         anytime, even offline.
       </p>
 
-      {/* Stacked Books Illustration at the Bottom of Brand Column */}
-      <div className="pt-2 w-28 sm:w-36 select-none pointer-events-none filter drop-shadow-md">
+      {/* Books and mug illustration */}
+      <div className="w-24 select-none pointer-events-none filter drop-shadow-md sm:w-28">
         <img
-          src={isDark ? stackedBooksDark : stackedBooksLight}
-          alt="Stacked Books"
+          src={isDark ? booksMugDark : booksMugLight}
+          alt=""
+          aria-hidden="true"
           className="w-full h-auto object-contain"
         />
       </div>

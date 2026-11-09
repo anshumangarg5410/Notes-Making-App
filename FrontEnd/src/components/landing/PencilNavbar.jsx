@@ -1,14 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { BookOpen, Menu, X, ArrowRight, LogOut } from 'lucide-react';
+import { Pencil, Menu, X, ArrowRight, LogOut, Moon, Sun } from 'lucide-react';
 import { useAuthModal } from '../../context/AuthModalContext';
 import { useAuth } from '../../context/AuthContext';
+import { useTheme } from '../../context/ThemeContext';
 
 export const PencilNavbar = () => {
   const [activeSection, setActiveSection] = useState('home');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { openLogin, openSignup, openLogout } = useAuthModal();
   const { isAuthenticated } = useAuth();
+  const { isDark, toggleTheme } = useTheme();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -49,136 +51,169 @@ export const PencilNavbar = () => {
   ];
 
   return (
-    <header className="relative z-30 w-full px-4 pb-3 pt-4 sm:px-6 lg:px-8">
-      <div className="mx-auto flex max-w-[1400px] items-center justify-between gap-3">
-        <Link
-          to="/"
-          onClick={() => handleNavClick('home')}
-          className="group flex shrink-0 items-center gap-2.5"
+    <header className="fixed inset-x-0 top-0 z-40 w-full px-4 pb-2 pt-3 sm:px-6 lg:px-8">
+      <div className="relative mx-auto max-w-[1280px]">
+        <div
+          className="absolute inset-0 bg-[linear-gradient(110deg,rgba(24,12,39,0.9),rgba(14,9,25,0.88))] shadow-[0_0_30px_rgba(168,85,247,0.08)]"
+          style={{
+            clipPath:
+              'polygon(3.6% 1%, 96.4% 1%, 99.8% 50%, 96.4% 99%, 3.6% 99%, 0.2% 50%)',
+          }}
+        />
+        <svg
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-0 h-full w-full overflow-visible"
+          viewBox="0 0 1000 100"
+          preserveAspectRatio="none"
         >
-          <div className="flex h-9 w-9 items-center justify-center rounded-xl border border-purple-400/50 bg-[#1e1231]/90 text-purple-200 shadow-[0_0_18px_rgba(168,85,247,0.35)] transition-transform duration-200 group-hover:scale-105">
-            <BookOpen className="h-4 w-4" />
-          </div>
-          <span className="text-xl font-bold tracking-tight text-white sm:text-2xl">
-            NoteNest
-          </span>
-        </Link>
+          <defs>
+            <linearGradient id="landing-nav-stroke" x1="0" x2="1" y1="0" y2="1">
+              <stop offset="0%" stopColor="#e9b7ff" />
+              <stop offset="45%" stopColor="#a855f7" />
+              <stop offset="100%" stopColor="#d946ef" />
+            </linearGradient>
+            <filter id="landing-nav-glow" x="-20%" y="-40%" width="140%" height="180%">
+              <feGaussianBlur stdDeviation="2.5" result="blur" />
+              <feMerge>
+                <feMergeNode in="blur" />
+                <feMergeNode in="SourceGraphic" />
+              </feMerge>
+            </filter>
+          </defs>
+          <path
+            d="M36 2 H964 L998 50 L964 98 H36 L2 50 Z"
+            fill="none"
+            stroke="url(#landing-nav-stroke)"
+            strokeWidth="1.2"
+            vectorEffect="non-scaling-stroke"
+            filter="url(#landing-nav-glow)"
+          />
+        </svg>
 
-        <nav
-          className="hidden flex-1 items-center justify-center md:flex"
-          role="navigation"
-          aria-label="Main Navigation"
-        >
-          <div className="relative h-[78px] w-full max-w-[940px] shrink-0 select-none">
-            <div
-              className="absolute inset-0 rounded-[24px] border-[3px] border-[#a96d00] bg-[linear-gradient(180deg,#f3c45d_0%,#e7b449_17%,#d9a234_40%,#f2be58_72%,#d0972d_100%)] shadow-[0_14px_24px_rgba(0,0,0,0.55),inset_0_2px_0_rgba(255,255,255,0.35),inset_0_-6px_0_rgba(147,98,18,0.16)]"
-              style={{
-                backgroundImage:
-                  'linear-gradient(180deg, rgba(255,255,255,0.18) 0%, rgba(255,255,255,0.03) 20%, rgba(0,0,0,0.08) 100%), repeating-linear-gradient(90deg, rgba(255,255,255,0.10) 0 2px, rgba(78,43,10,0.03) 2px 9px), linear-gradient(180deg, #f3c45d 0%, #e7b449 17%, #d9a234 40%, #f2be58 72%, #d0972d 100%)',
-              }}
-            />
-
-            <div className="absolute left-[-18px] top-1/2 h-[90%] w-[52px] -translate-y-1/2 rounded-l-[26px] border-[3px] border-[#8d52ff] bg-[linear-gradient(90deg,#4b205d_0%,#7d4bc5_19%,#8a4ccc_40%,#9d5bd9_100%)] shadow-[inset_3px_0_8px_rgba(255,255,255,0.12),0_0_18px_rgba(128,67,189,0.5)] before:absolute before:inset-y-2 before:left-[-10px] before:w-8 before:rounded-l-[20px] before:bg-[#7b41ca] before:shadow-[inset_2px_0_8px_rgba(255,255,255,0.2)] before:content-[''] after:absolute after:-right-2 after:top-1/2 after:h-[34px] after:w-[10px] after:-translate-y-1/2 after:rounded-full after:bg-[#d59af0] after:shadow-[0_0_8px_rgba(255,255,255,0.35)]" />
-
-            <div className="absolute right-[-16px] top-1/2 h-[95%] w-[46px] -translate-y-1/2 rounded-r-[24px] border-[3px] border-[#d67bbd] bg-[linear-gradient(90deg,#f9a0d2_0%,#d771b8_26%,#d566b4_100%)] shadow-[inset_0_0_0_1px_rgba(255,255,255,0.25),0_0_20px_rgba(232,93,173,0.38)] before:absolute before:inset-y-[10px] before:left-1 before:right-1 before:rounded-[16px] before:bg-[linear-gradient(180deg,#f6b5dd_0%,#e387c8_18%,#df70b5_100%)] before:content-[''] after:absolute after:left-1/2 after:top-[10px] after:h-[22px] after:w-[22px] after:-translate-x-1/2 after:rounded-full after:border-2 after:border-[#c45bb0] after:bg-[radial-gradient(circle,#ffbddf_0%,#dc7bb9_50%,#b954a5_100%)] after:content-['']" />
-
-            <div className="absolute inset-y-[7px] left-[18px] right-[22px] flex items-center overflow-hidden">
-              {navLinks.map((link) => {
-                const isActive = activeSection === link.id;
-
-                return (
-                  <button
-                    key={link.id}
-                    type="button"
-                    onClick={() => handleNavClick(link.id)}
-                    className={`relative z-10 flex h-full flex-1 items-center justify-center px-3 text-center font-[Georgia,serif] text-[15px] font-black uppercase tracking-[-0.06em] transition-all duration-200 ${
-                      isActive
-                        ? 'text-white'
-                        : 'text-[#2f1c0b] hover:text-[#1c1008]'
-                    }`}
-                    style={{
-                      textShadow: isActive
-                        ? '0 2px 0 rgba(0,0,0,0.2), 0 0 12px rgba(164,110,255,0.35)'
-                        : '0 1px 0 rgba(255,255,255,0.25)',
-                    }}
-                  >
-                    <span
-                      className={`inline-flex items-center justify-center rounded-[18px] px-5 py-1.5 shadow-[inset_0_2px_0_rgba(255,255,255,0.2),inset_0_-6px_10px_rgba(0,0,0,0.18)] transition-all duration-200 ${
-                        isActive
-                          ? 'bg-[linear-gradient(180deg,#7b44b4_0%,#5b2c7c_100%)] ring-2 ring-[#d19aff]/80'
-                          : 'bg-transparent'
-                      }`}
-                    >
-                      {link.label}
-                    </span>
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-        </nav>
-
-        <div className="flex shrink-0 items-center gap-2.5 sm:gap-3">
-          {isAuthenticated ? (
-            <div className="flex items-center gap-2">
-              <Link
-                to="/notes"
-                className="inline-flex items-center gap-1.5 rounded-xl bg-gradient-to-r from-[#8b5cf6] to-[#7c3aed] px-4 py-2 text-xs font-semibold text-white shadow-[0_0_16px_rgba(147,51,234,0.35)] transition-transform hover:scale-[1.02] sm:text-sm"
-              >
-                <span>My Notes</span>
-                <ArrowRight className="h-3.5 w-3.5" />
-              </Link>
-              <button
-                type="button"
-                onClick={() => openLogout()}
-                title="Log out"
-                className="rounded-xl border border-white/15 p-2 text-stone-300 transition-colors hover:border-white/35 hover:text-white"
-              >
-                <LogOut className="h-4 w-4" />
-              </button>
-            </div>
-          ) : (
-            <>
-              <button
-                type="button"
-                onClick={() => openLogin()}
-                className="rounded-xl border border-white/20 bg-white/3 px-4 py-2 text-xs font-medium text-white transition-colors hover:border-white/40 hover:bg-white/8 sm:text-sm"
-              >
-                Log In
-              </button>
-              <button
-                type="button"
-                onClick={() => openSignup()}
-                className="rounded-xl bg-gradient-to-r from-[#8b5cf6] to-[#7c3aed] px-5 py-2 text-xs font-semibold text-white shadow-[0_0_18px_rgba(147,51,234,0.35)] transition-transform hover:scale-[1.02] sm:text-sm"
-              >
-                Sign Up
-              </button>
-            </>
-          )}
-
-          <button
-            type="button"
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="rounded-xl border border-white/15 p-2 text-stone-300 transition-colors hover:border-white/35 hover:text-white md:hidden"
-            aria-label={mobileMenuOpen ? 'Close navigation menu' : 'Open navigation menu'}
+        <div className="relative z-10 grid min-h-[72px] grid-cols-[1fr_auto] items-center gap-x-3 px-6 py-2 sm:px-8 xl:min-h-[82px] xl:grid-cols-[minmax(210px,1fr)_auto_minmax(270px,1fr)] xl:gap-5 xl:px-[4%]">
+          <Link
+            to="/"
+            onClick={() => handleNavClick('home')}
+            className="group flex w-fit items-center gap-2.5"
           >
-            {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-          </button>
+            <span className="relative flex h-8 w-8 items-center justify-center text-[#d98cff] transition-transform duration-200 group-hover:-rotate-12">
+              <Pencil className="h-7 w-7 -rotate-[18deg] stroke-[1.8]" />
+              <span className="absolute -bottom-0.5 left-1 h-px w-7 bg-gradient-to-r from-transparent via-[#c45aff] to-transparent shadow-[0_0_5px_#c45aff]" />
+            </span>
+            <span className="whitespace-nowrap text-[22px] font-bold tracking-tight text-white sm:text-[25px]">
+              Note<span className="text-[#c05aff]">Nest</span>
+            </span>
+          </Link>
+
+          <nav
+            className="hidden items-center justify-center gap-3 xl:col-span-1 xl:col-start-2 xl:row-start-1 xl:flex 2xl:gap-5"
+            aria-label="Main navigation"
+          >
+            {navLinks.map((link) => {
+              const isActive = activeSection === link.id;
+
+              return (
+                <button
+                  key={link.id}
+                  type="button"
+                  onClick={() => handleNavClick(link.id)}
+                  aria-current={isActive ? 'location' : undefined}
+                  className={`whitespace-nowrap rounded-xl px-2.5 py-2 text-xs font-medium transition-all duration-200 sm:px-3 sm:text-sm ${
+                    isActive
+                      ? 'border border-purple-400/70 bg-purple-600/25 text-white shadow-[0_0_18px_rgba(168,85,247,0.28),inset_0_0_12px_rgba(168,85,247,0.12)]'
+                      : 'border border-transparent text-white/90 hover:border-purple-300/30 hover:bg-purple-400/10 hover:text-white'
+                  }`}
+                >
+                  {link.label}
+                </button>
+              );
+            })}
+          </nav>
+
+          <div className="col-start-2 row-start-1 flex items-center justify-end gap-2 sm:gap-3 xl:col-start-3">
+            <button
+              type="button"
+              onClick={toggleTheme}
+              title={isDark ? 'Switch to Light Theme' : 'Switch to Dark Theme'}
+              aria-label={isDark ? 'Switch to light theme' : 'Switch to dark theme'}
+              className="hidden h-10 w-10 items-center justify-center rounded-full border border-purple-500/30 bg-purple-500/10 text-white transition-all hover:border-purple-300/60 hover:bg-purple-500/20 hover:shadow-[0_0_18px_rgba(168,85,247,0.25)] xl:flex"
+            >
+              {isDark ? <Moon className="h-4 w-4 fill-current" /> : <Sun className="h-4 w-4" />}
+            </button>
+
+            {isAuthenticated ? (
+              <>
+                <Link
+                  to="/notes"
+                  className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-lg bg-gradient-to-r from-[#a855f7] to-[#9333ea] px-3 py-2 text-xs font-semibold text-white shadow-[0_0_16px_rgba(147,51,234,0.25)] transition-all hover:brightness-110 sm:text-sm"
+                >
+                  <span>My Notes</span>
+                  <ArrowRight className="h-3.5 w-3.5" />
+                </Link>
+                <button
+                  type="button"
+                  onClick={() => openLogout()}
+                  title="Log out"
+                  aria-label="Log out"
+                  className="hidden rounded-lg border border-purple-300/50 p-2 text-white transition-colors hover:bg-purple-500/15 sm:inline-flex"
+                >
+                  <LogOut className="h-4 w-4" />
+                </button>
+              </>
+            ) : (
+              <>
+                <button
+                  type="button"
+                  onClick={() => openLogin()}
+                  className="hidden whitespace-nowrap rounded-lg border border-purple-300/70 px-3 py-2 text-xs font-medium text-white transition-all hover:bg-purple-500/15 sm:inline-flex sm:text-sm"
+                >
+                  Log In
+                </button>
+                <button
+                  type="button"
+                  onClick={() => openSignup()}
+                  className="whitespace-nowrap rounded-lg bg-gradient-to-r from-[#c45aff] to-[#a43bf2] px-3.5 py-2 text-xs font-semibold text-[#190d25] shadow-[0_0_18px_rgba(192,90,255,0.25)] transition-all hover:brightness-110 sm:px-4 sm:text-sm"
+                >
+                  Sign Up
+                </button>
+              </>
+            )}
+
+            <button
+              type="button"
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              className="rounded-xl border border-purple-300/30 p-2 text-white transition-colors hover:bg-purple-500/15 xl:hidden"
+              aria-label={mobileMenuOpen ? 'Close navigation menu' : 'Open navigation menu'}
+            >
+              {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+            </button>
+          </div>
         </div>
       </div>
 
       {mobileMenuOpen && (
-        <div className="mx-auto mt-3 max-w-7xl rounded-2xl border border-purple-500/30 bg-[#120d1f]/90 p-4 shadow-2xl backdrop-blur-md md:hidden">
-          <div className="flex flex-col gap-2">
+        <div className="mx-auto mt-3 max-w-[1280px] rounded-2xl border border-purple-500/30 bg-[#120d1f]/95 p-3 shadow-2xl backdrop-blur-md xl:hidden">
+          <div className="mb-3 flex items-center">
+            <button
+              type="button"
+              onClick={toggleTheme}
+              className="inline-flex items-center gap-2 rounded-xl border border-purple-300/25 px-3 py-2 text-sm text-stone-200"
+            >
+              {isDark ? <Moon className="h-4 w-4" /> : <Sun className="h-4 w-4" />}
+              {isDark ? 'Dark mode' : 'Light mode'}
+            </button>
+          </div>
+          <div className="grid grid-cols-2 gap-2">
             {navLinks.map((link) => (
               <button
                 key={link.id}
                 type="button"
                 onClick={() => handleNavClick(link.id)}
-                className={`rounded-xl px-3.5 py-2 text-left text-sm font-medium transition-colors ${
+                aria-current={activeSection === link.id ? 'location' : undefined}
+                className={`rounded-lg px-3 py-2.5 text-left text-sm font-medium ${
                   activeSection === link.id
-                    ? 'bg-purple-900/40 text-purple-100'
-                    : 'text-stone-200 hover:bg-white/5'
+                    ? 'bg-purple-500/25 text-white'
+                    : 'text-stone-300 hover:bg-white/5'
                 }`}
               >
                 {link.label}
@@ -186,7 +221,7 @@ export const PencilNavbar = () => {
             ))}
           </div>
 
-          <div className="mt-4 grid grid-cols-2 gap-2 border-t border-purple-500/20 pt-3">
+          <div className="mt-4 grid grid-cols-2 gap-2 border-t border-purple-500/20 pt-3 sm:hidden">
             {isAuthenticated ? (
               <>
                 <Link

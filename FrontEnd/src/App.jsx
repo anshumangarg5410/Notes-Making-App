@@ -9,6 +9,7 @@ import { ProtectedRoute } from './routes/ProtectedRoute';
 import { LandingPage } from './pages/LandingPage';
 import { DashboardPage } from './pages/DashboardPage';
 import { WorkspacePage } from './pages/WorkspacePage';
+import { NoteEditorPage } from './pages/NoteEditorPage';
 import { LoginPage } from './pages/LoginPage';
 import { RegisterPage } from './pages/RegisterPage';
 import { ErrorBoundary } from './components/common/ErrorBoundary';
@@ -38,12 +39,22 @@ export function App() {
                     }
                   />
 
-                  {/* Dedicated Protected Notes Workspace */}
+                  {/* Dedicated Protected Notes Workspace (Obsidian-Inspired 4-Pane Workspace) */}
                   <Route
                     path="/notes"
                     element={
                       <ProtectedRoute>
                         <WorkspacePage />
+                      </ProtectedRoute>
+                    }
+                  />
+
+                  {/* Dedicated Editor Route */}
+                  <Route
+                    path="/editor"
+                    element={
+                      <ProtectedRoute>
+                        <NoteEditorPage />
                       </ProtectedRoute>
                     }
                   />

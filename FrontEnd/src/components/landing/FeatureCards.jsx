@@ -54,7 +54,7 @@ export const FeatureCards = () => {
     <section id="features" className="w-full pt-1 pb-10 px-4 sm:px-6 lg:px-8 relative z-20">
       <div className="max-w-7xl mx-auto">
         {/* Five Feature Cards in a single row on desktop, wrapping gracefully on tablet & mobile */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4.5 items-stretch">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 sm:gap-5 items-stretch">
           {cards.map((card) => {
             const Icon = card.icon;
             return (

@@ -1,52 +1,56 @@
 import React from 'react';
 import { PenLine, Folder, CloudLightning, Search, Share } from 'lucide-react';
+import { useTheme } from '../../context/ThemeContext';
+import featureCardDark from '../../assets/landing/card-features-dark.png';
+import featureCardLight from '../../assets/landing/card-features-light.png';
 
 export const FeatureCards = () => {
+  const { isDark } = useTheme();
   const cards = [
     {
       id: 'rich-text',
       title: 'Rich Text Editor',
       description: 'Write beautifully with powerful formatting tools.',
       icon: PenLine,
-      iconColor: '#c084fc',
-      borderColor: 'rgba(192, 132, 252, 0.28)',
-      glowColor: 'rgba(192, 132, 252, 0.12)',
+      iconColor: '#818CF8',
+      borderColor: isDark ? 'rgba(129, 140, 248, 0.3)' : 'rgba(99, 102, 241, 0.22)',
+      glowColor: isDark ? 'rgba(129, 140, 248, 0.12)' : 'rgba(99, 102, 241, 0.08)',
     },
     {
       id: 'folders-tags',
       title: 'Folders & Tags',
       description: 'Keep your notes organized, your way.',
       icon: Folder,
-      iconColor: '#fbbf24',
-      borderColor: 'rgba(251, 191, 36, 0.28)',
-      glowColor: 'rgba(251, 191, 36, 0.1)',
+      iconColor: '#6366F1',
+      borderColor: isDark ? 'rgba(129, 140, 248, 0.3)' : 'rgba(99, 102, 241, 0.22)',
+      glowColor: isDark ? 'rgba(129, 140, 248, 0.12)' : 'rgba(99, 102, 241, 0.08)',
     },
     {
       id: 'offline-first',
       title: 'Offline First',
       description: 'Access and edit notes even without internet.',
       icon: CloudLightning,
-      iconColor: '#c084fc',
-      borderColor: 'rgba(192, 132, 252, 0.28)',
-      glowColor: 'rgba(192, 132, 252, 0.12)',
+      iconColor: '#818CF8',
+      borderColor: isDark ? 'rgba(129, 140, 248, 0.3)' : 'rgba(99, 102, 241, 0.22)',
+      glowColor: isDark ? 'rgba(129, 140, 248, 0.12)' : 'rgba(99, 102, 241, 0.08)',
     },
     {
       id: 'search',
       title: 'Powerful Search',
       description: 'Find anything in seconds with full-text search.',
       icon: Search,
-      iconColor: '#e9d5ff',
-      borderColor: 'rgba(233, 213, 255, 0.25)',
-      glowColor: 'rgba(233, 213, 255, 0.08)',
+      iconColor: '#818CF8',
+      borderColor: isDark ? 'rgba(129, 140, 248, 0.3)' : 'rgba(99, 102, 241, 0.22)',
+      glowColor: isDark ? 'rgba(129, 140, 248, 0.12)' : 'rgba(99, 102, 241, 0.08)',
     },
     {
       id: 'import-export',
       title: 'Import & Export',
       description: 'Bring in your notes or take them anywhere.',
       icon: Share,
-      iconColor: '#fbbf24',
-      borderColor: 'rgba(251, 191, 36, 0.28)',
-      glowColor: 'rgba(251, 191, 36, 0.1)',
+      iconColor: '#6366F1',
+      borderColor: isDark ? 'rgba(129, 140, 248, 0.3)' : 'rgba(99, 102, 241, 0.22)',
+      glowColor: isDark ? 'rgba(129, 140, 248, 0.12)' : 'rgba(99, 102, 241, 0.08)',
     },
   ];
 
@@ -62,10 +66,12 @@ export const FeatureCards = () => {
                 key={card.id}
                 className="relative group rounded-[4px] p-5 transition-all duration-300 cursor-default flex flex-col justify-between hover:-translate-y-1 hover:shadow-2xl select-none"
                 style={{
-                  backgroundColor: 'rgba(23, 17, 36, 0.75)',
+                  backgroundColor: isDark ? 'rgba(14, 19, 31, 0.86)' : 'rgba(248, 250, 252, 0.92)',
                   backdropFilter: 'blur(10px)',
                   border: `1px solid ${card.borderColor}`,
-                  boxShadow: `0 8px 24px -4px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.08)`
+                  boxShadow: isDark
+                    ? '0 8px 24px -4px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.06)'
+                    : '0 8px 24px -4px rgba(15, 23, 42, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.8)'
                 }}
               >
                 {/* Subtle paper deckle edge / inner glow */}
@@ -77,6 +83,12 @@ export const FeatureCards = () => {
                 />
 
                 <div>
+                  <img
+                    src={isDark ? featureCardDark : featureCardLight}
+                    alt=""
+                    aria-hidden="true"
+                    className="absolute top-3 right-3 h-9 w-9 object-contain opacity-75"
+                  />
                   {/* Card Icon */}
                   <div className="mb-4">
                     <Icon
@@ -86,12 +98,14 @@ export const FeatureCards = () => {
                   </div>
 
                   {/* Card Title (Serif) */}
-                  <h3 className="text-base sm:text-lg font-bold font-serif text-[#f5f3f0] mb-1.5 tracking-tight group-hover:text-purple-200 transition-colors">
+                  <h3 className={`text-base sm:text-lg font-bold font-serif mb-1.5 tracking-tight transition-colors ${
+                    isDark ? 'text-slate-100 group-hover:text-indigo-200' : 'text-slate-900 group-hover:text-indigo-700'
+                  }`}>
                     {card.title}
                   </h3>
 
                   {/* Card Description (Sans-serif) */}
-                  <p className="text-xs sm:text-[13px] leading-relaxed text-[#b8b3c8]">
+                  <p className={`text-xs sm:text-[13px] leading-relaxed ${isDark ? 'text-slate-300' : 'text-slate-600'}`}>
                     {card.description}
                   </p>
                 </div>

@@ -5,11 +5,13 @@ import { useAuthModal } from '../../context/AuthModalContext';
 import { useAuth } from '../../context/AuthContext';
 import { EditorPreview } from './EditorPreview';
 import { Benefits } from './Benefits';
+import { useTheme } from '../../context/ThemeContext';
 
 export const HeroSection = () => {
   const [showDemoModal, setShowDemoModal] = useState(false);
   const { openSignup } = useAuthModal();
   const { isAuthenticated } = useAuth();
+  const { isDark } = useTheme();
 
   return (
     <section id="home" className="w-full pt-8 pb-10 px-4 sm:px-6 lg:px-8 relative z-20">
@@ -22,14 +24,14 @@ export const HeroSection = () => {
             {/* Handwritten Eyebrow Annotation with Yellow Spark */}
             <div className="inline-flex items-center gap-1.5">
               <span className="text-amber-400 font-mono text-sm">✦</span>
-              <span className="font-handwriting text-xl sm:text-2xl text-purple-300 font-medium tracking-wide">
+              <span className={`font-handwriting text-xl sm:text-2xl font-medium tracking-wide ${isDark ? 'text-indigo-300' : 'text-indigo-700'}`}>
                 Your Ideas, Organized
               </span>
               <span className="text-amber-400 font-mono text-xs ml-0.5">✏️</span>
             </div>
 
             {/* Main Heading with Purple Hand-Drawn Loop around "Notes" */}
-            <h1 className="text-4xl sm:text-5xl lg:text-[3.5rem] font-serif font-extrabold text-[#f5f3f0] tracking-tight leading-[1.12]">
+            <h1 className={`text-4xl sm:text-5xl lg:text-[3.5rem] font-serif font-extrabold tracking-tight leading-[1.12] ${isDark ? 'text-slate-100' : 'text-slate-900'}`}>
               A Smarter Space <br />
               for Your{' '}
               <span className="relative inline-block whitespace-nowrap">
@@ -43,27 +45,27 @@ export const HeroSection = () => {
                   {/* Purple Oval Loop */}
                   <path
                     d="M 22,35 C 16,12 135,8 145,30 C 152,48 120,62 70,64 C 20,65 5,45 25,28 C 45,15 110,18 140,32"
-                    stroke="#a855f7"
+                    stroke={isDark ? '#818CF8' : '#6366F1'}
                     strokeWidth="3.2"
                     strokeLinecap="round"
                     strokeLinejoin="round"
-                    className="drop-shadow-[0_0_8px_rgba(168,85,247,0.7)]"
+                    className="drop-shadow-[0_0_8px_rgba(99,102,241,0.45)]"
                   />
                   {/* Little Radiant Pencil Sparks */}
-                  <line x1="150" y1="20" x2="159" y2="15" stroke="#c084fc" strokeWidth="2.5" strokeLinecap="round" />
-                  <line x1="156" y1="34" x2="165" y2="34" stroke="#c084fc" strokeWidth="2.5" strokeLinecap="round" />
-                  <line x1="150" y1="46" x2="158" y2="52" stroke="#c084fc" strokeWidth="2.5" strokeLinecap="round" />
+                  <line x1="150" y1="20" x2="159" y2="15" stroke={isDark ? '#A5B4FC' : '#6366F1'} strokeWidth="2.5" strokeLinecap="round" />
+                  <line x1="156" y1="34" x2="165" y2="34" stroke={isDark ? '#A5B4FC' : '#6366F1'} strokeWidth="2.5" strokeLinecap="round" />
+                  <line x1="150" y1="46" x2="158" y2="52" stroke={isDark ? '#A5B4FC' : '#6366F1'} strokeWidth="2.5" strokeLinecap="round" />
                 </svg>
 
                 {/* Highlighted Word "Notes" */}
-                <span className="relative z-10 italic font-serif px-2 font-normal text-purple-200">
+                <span className={`relative z-10 italic font-serif px-2 font-normal ${isDark ? 'text-indigo-200' : 'text-indigo-700'}`}>
                   Notes
                 </span>
               </span>
             </h1>
 
             {/* Description Paragraph */}
-            <p className="text-[#c4c0d0] text-sm sm:text-base leading-relaxed max-w-lg font-sans">
+            <p className={`text-sm sm:text-base leading-relaxed max-w-lg font-sans ${isDark ? 'text-slate-300' : 'text-slate-600'}`}>
               Write, organize, search and access your notes anytime, even offline. A modern,
               powerful note-taking space built for your thoughts, plans and ideas.
             </p>
@@ -74,7 +76,7 @@ export const HeroSection = () => {
               {isAuthenticated ? (
                 <Link
                   to="/notes"
-                  className="inline-flex items-center gap-2 px-6 py-3 rounded-[3px] font-semibold text-sm sm:text-base bg-gradient-to-r from-[#8b5cf6] to-[#7c3aed] border border-purple-400/40 text-white shadow-[0_0_20px_rgba(139,92,246,0.4)] hover:shadow-[0_0_30px_rgba(139,92,246,0.65)] hover:scale-102 active:scale-98 transition-all cursor-pointer"
+                  className="inline-flex items-center gap-2 px-6 py-3 rounded-lg font-semibold text-sm sm:text-base bg-gradient-to-r from-indigo-600 to-indigo-500 border border-indigo-400/50 text-white shadow-lg shadow-indigo-900/20 hover:shadow-indigo-500/30 hover:scale-102 active:scale-98 transition-all cursor-pointer"
                 >
                   <span>Open Your Notes</span>
                   <ArrowRight className="w-4 h-4" />
@@ -83,7 +85,7 @@ export const HeroSection = () => {
                 <button
                   type="button"
                   onClick={() => openSignup()}
-                  className="inline-flex items-center gap-2 px-6 py-3 rounded-[3px] font-semibold text-sm sm:text-base bg-gradient-to-r from-[#8b5cf6] to-[#7c3aed] border border-purple-400/40 text-white shadow-[0_0_20px_rgba(139,92,246,0.4)] hover:shadow-[0_0_30px_rgba(139,92,246,0.65)] hover:scale-102 active:scale-98 transition-all cursor-pointer"
+                  className="inline-flex items-center gap-2 px-6 py-3 rounded-lg font-semibold text-sm sm:text-base bg-gradient-to-r from-indigo-600 to-indigo-500 border border-indigo-400/50 text-white shadow-lg shadow-indigo-900/20 hover:shadow-indigo-500/30 hover:scale-102 active:scale-98 transition-all cursor-pointer"
                 >
                   <span>Get Started — It's Free</span>
                   <ArrowRight className="w-4 h-4" />
@@ -93,9 +95,13 @@ export const HeroSection = () => {
               {/* Secondary CTA: Watch Demo */}
               <button
                 onClick={() => setShowDemoModal(true)}
-                className="inline-flex items-center gap-2.5 px-6 py-3 rounded-[3px] font-semibold text-sm sm:text-base bg-[#181324]/80 border border-purple-500/30 text-purple-200 hover:border-purple-400 hover:text-white transition-all cursor-pointer hover:bg-[#231b36]"
+                className={`inline-flex items-center gap-2.5 px-6 py-3 rounded-lg font-semibold text-sm sm:text-base border transition-all cursor-pointer ${
+                  isDark
+                    ? 'bg-[#0E131F]/90 border-indigo-400/40 text-indigo-200 hover:border-indigo-300 hover:text-white hover:bg-[#171E2D]'
+                    : 'bg-white/90 border-indigo-200 text-indigo-700 hover:border-indigo-400 hover:text-indigo-900 hover:bg-indigo-50'
+                }`}
               >
-                <div className="w-5 h-5 rounded-[2px] flex items-center justify-center bg-purple-900/60 text-purple-300">
+                <div className={`w-5 h-5 rounded flex items-center justify-center ${isDark ? 'bg-indigo-500/20 text-indigo-300' : 'bg-indigo-100 text-indigo-700'}`}>
                   <Play className="w-2.5 h-2.5 fill-current ml-0.5" />
                 </div>
                 <span>Watch Demo</span>
@@ -118,10 +124,14 @@ export const HeroSection = () => {
       {/* Interactive Demo Video / Feature Walkthrough Modal */}
       {showDemoModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-200">
-          <div className="relative w-full max-w-2xl rounded-[5px] p-6 border border-purple-500/30 bg-[#151124] text-white shadow-[0_0_50px_rgba(168,85,247,0.3)]">
+          <div className={`relative w-full max-w-2xl rounded-xl p-6 border shadow-2xl ${
+            isDark
+              ? 'border-indigo-400/30 bg-[#0E131F] text-slate-100 shadow-black/50'
+              : 'border-slate-200 bg-[#F8FAFC] text-slate-900 shadow-slate-900/15'
+          }`}>
             <button
               onClick={() => setShowDemoModal(false)}
-              className="absolute top-4 right-4 p-2 rounded-[3px] text-stone-400 hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
+              className={`absolute top-4 right-4 p-2 rounded text-slate-400 transition-colors cursor-pointer ${isDark ? 'hover:text-white hover:bg-white/10' : 'hover:text-slate-900 hover:bg-slate-100'}`}
             >
               <X className="w-5 h-5" />
             </button>
@@ -132,19 +142,21 @@ export const HeroSection = () => {
               </div>
               <div>
                 <h3 className="text-lg font-bold font-serif">NoteNest Demo</h3>
-                <p className="text-xs text-stone-400">Tactile note-taking with offline cloud sync</p>
+                <p className={`text-xs ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>Tactile note-taking with offline cloud sync</p>
               </div>
             </div>
 
-            <div className="rounded-[4px] overflow-hidden border border-purple-500/20 aspect-video relative flex items-center justify-center bg-black/60">
+            <div className={`rounded-lg overflow-hidden border aspect-video relative flex items-center justify-center ${
+              isDark ? 'border-indigo-400/20 bg-black/40' : 'border-slate-200 bg-slate-100'
+            }`}>
               <div className="text-center p-6 space-y-3">
-                <p className="text-sm text-purple-200">
+                <p className={`text-sm ${isDark ? 'text-indigo-200' : 'text-indigo-800'}`}>
                   Organize ideas into nested notebooks with markdown and local-first speed.
                 </p>
                 <Link
                   to="/register"
                   onClick={() => setShowDemoModal(false)}
-                  className="inline-block px-5 py-2 rounded-[3px] bg-purple-600 hover:bg-purple-700 text-white font-semibold text-xs transition-colors"
+                  className="inline-block px-5 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs transition-colors"
                 >
                   Start Writing Now
                 </Link>

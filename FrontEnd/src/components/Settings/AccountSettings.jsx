@@ -291,3 +291,4 @@ export const AccountSettings = ({ user, onUserUpdate }) => {
     </div>
   );
 };
+

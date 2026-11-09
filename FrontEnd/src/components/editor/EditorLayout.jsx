@@ -8,6 +8,8 @@ import { EditorStatusBar } from './EditorStatusBar';
 import { noteService } from '../../services/noteService';
 import { offlineService } from '../../services/db';
 import { useToast } from '../../context/ToastContext';
+import { useTheme } from '../../context/ThemeContext';
+import './editorTheme.css';
 
 export const EditorLayout = ({
   initialNoteId,
@@ -15,6 +17,7 @@ export const EditorLayout = ({
   onOpenSettings
 }) => {
   const { success, error: toastError, info } = useToast();
+  const { isDark } = useTheme();
 
   // Network connectivity state
   const [isOnline, setIsOnline] = useState(navigator.onLine);
@@ -410,7 +413,7 @@ export const EditorLayout = ({
   };
 
   return (
-    <div className="flex h-screen w-screen overflow-hidden bg-[#0c0c11] text-gray-100 font-sans antialiased">
+    <div className={`editor-workspace flex h-screen w-screen overflow-hidden font-sans antialiased ${isDark ? 'editor-workspace-dark' : 'editor-workspace-light'}`}>
       {/* PANE 1: Left Navigation Sidebar */}
       {!isFocusMode && (
         <EditorSidebar
@@ -448,7 +451,7 @@ export const EditorLayout = ({
       )}
 
       {/* PANE 3: Main Writing Area */}
-      <main className="flex-1 flex flex-col h-full overflow-hidden min-w-0 bg-[#0e0e14]">
+      <main className="editor-main flex-1 flex flex-col h-full overflow-hidden min-w-0 bg-[#0e0e14]">
         {/* Tab Bar at the top */}
         <EditorTabBar
           tabs={tabs}
@@ -499,4 +502,3 @@ export const EditorLayout = ({
     </div>
   );
 };
-

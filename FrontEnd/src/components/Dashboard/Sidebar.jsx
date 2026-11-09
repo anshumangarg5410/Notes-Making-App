@@ -18,6 +18,9 @@ import {
   HelpCircle
 } from 'lucide-react';
 import upgradeProIcon from '../../assets/dashboard/upgrade-pro-icon-clean.png';
+import { useTheme } from '../../context/ThemeContext';
+import sidebarQuoteDark from '../../assets/dashboard/sidebar-quote-dark.png';
+import sidebarQuoteLight from '../../assets/dashboard/sidebar-quote-light.png';
 
 export const Sidebar = ({
   activeNav = 'dashboard',
@@ -31,6 +34,7 @@ export const Sidebar = ({
   onOpenUpgradeModal
 }) => {
   const [foldersExpanded, setFoldersExpanded] = useState(false);
+  const { isDark } = useTheme();
 
   const navItems = [
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
@@ -225,6 +229,15 @@ export const Sidebar = ({
             </div>
           )}
 
+          {!isCollapsed && (
+            <img
+              src={isDark ? sidebarQuoteDark : sidebarQuoteLight}
+              alt=""
+              aria-hidden="true"
+              className="w-full h-auto object-contain"
+            />
+          )}
+
           {/* Upgrade to Pro Card */}
           {!isCollapsed && (
             <div className="relative rounded-[4px] p-4 bg-gradient-to-b from-[#1e1532] to-[#150f24] border border-purple-500/30 overflow-hidden shadow-lg group">
@@ -293,4 +306,3 @@ export const Sidebar = ({
 };
 
 export default Sidebar;
-

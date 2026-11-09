@@ -16,9 +16,12 @@ import { UpgradeProModal } from '../components/Dashboard/UpgradeProModal';
 import { folderService } from '../services/folderService';
 import { offlineService } from '../services/db';
 import { useToast } from '../context/ToastContext';
+import { useTheme } from '../context/ThemeContext';
+import '../styles/authenticatedTheme.css';
 
 export const FoldersPage = () => {
   const navigate = useNavigate();
+  const { isDark } = useTheme();
   const { success, error: toastError, info } = useToast();
 
   // View & Filter states
@@ -315,7 +318,7 @@ export const FoldersPage = () => {
   };
 
   return (
-    <div className="flex h-screen w-screen overflow-hidden bg-[#0c0c11] text-gray-100 font-sans antialiased">
+    <div className={`app-theme-${isDark ? 'dark' : 'light'} flex h-screen w-screen overflow-hidden font-sans antialiased`}>
       {/* AREA 1: Left Navigation Sidebar */}
       <Sidebar
         activeNav="folders"
@@ -543,4 +546,3 @@ export const FoldersPage = () => {
 };
 
 export default FoldersPage;
-

@@ -64,5 +64,30 @@ export const noteService = {
   async getStats() {
     const response = await api.get('/notes/stats');
     return response.data;
+  },
+
+  async searchNotes(params = {}) {
+    const response = await api.get('/search', { params });
+    return response.data;
+  },
+
+  async importMarkdown(data) {
+    const response = await api.post('/export/import-markdown', data);
+    return response.data;
+  },
+
+  async exportMarkdown(id) {
+    const response = await api.get(`/export/notes/${id}/markdown`, { responseType: 'blob' });
+    return response.data;
+  },
+
+  async getPrintableHtml(id) {
+    const response = await api.get(`/export/notes/${id}/print`, { responseType: 'text' });
+    return response.data;
+  },
+
+  async bulkExport() {
+    const response = await api.get('/export/bulk');
+    return response.data;
   }
 };

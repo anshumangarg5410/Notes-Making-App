@@ -78,7 +78,6 @@ export const AuthModal = ({
         <AuthCardFrame
           onClose={handleClose}
           themeOverride={customTheme}
-          showStationerySidebar={false}
         >
           <ForgotPasswordForm
             onSwitchToLogin={() => setView('login')}

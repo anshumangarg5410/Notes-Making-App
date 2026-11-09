@@ -1,3 +1,4 @@
+import api from './api';
 import { noteService } from './noteService';
 
 // Default initial showcase records strictly matching the reference screenshot
@@ -98,6 +99,25 @@ export const DEFAULT_ACTIVITIES = [
 
 export const dashboardService = {
   async getDashboardData() {
+    try {
+      // 1. Fetch real aggregated dashboard data from NoteNest backend
+      const res = await api.get('/dashboard');
+      if (res.data?.success && res.data?.data) {
+        const d = res.data.data;
+        return {
+          notes: Array.isArray(d.notes) && d.notes.length > 0 ? d.notes : DEFAULT_RECENT_NOTES,
+          stats: d.stats || { totalNotes: 0, folders: 0, tags: 0, favorites: 0 },
+          folders: Array.isArray(d.folders) && d.folders.length > 0 ? d.folders : DEFAULT_FOLDERS,
+          tags: Array.isArray(d.tags) && d.tags.length > 0 ? d.tags : DEFAULT_TAGS,
+          storage: d.storage || { usedMb: 245, totalGb: 2, percentage: 12 },
+          activities: Array.isArray(d.activities) && d.activities.length > 0 ? d.activities : DEFAULT_ACTIVITIES,
+          syncStatus: d.syncStatus || { synced: true, message: 'All notes are up to date' }
+        };
+      }
+    } catch (err) {
+      console.warn('[DashboardService] Backend /dashboard unavailable, falling back to local cache/defaults:', err.message);
+    }
+
     try {
       const [notesRes, statsRes] = await Promise.all([
         noteService.getNotes().catch(() => ({ success: false, data: [] })),

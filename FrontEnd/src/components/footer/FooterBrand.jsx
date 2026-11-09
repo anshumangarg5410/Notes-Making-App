@@ -2,8 +2,6 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { BookOpen } from 'lucide-react';
 import { useTheme } from '../../context/ThemeContext';
-import booksMugDark from '../../assets/auth/books-mug-dark-clean.png';
-import booksMugLight from '../../assets/auth/books-mug-light-clean.png';
 
 export const FooterBrand = () => {
   const { isDark } = useTheme();
@@ -70,15 +68,6 @@ export const FooterBrand = () => {
         anytime, even offline.
       </p>
 
-      {/* Books and mug illustration */}
-      <div className="w-24 select-none pointer-events-none filter drop-shadow-md sm:w-28">
-        <img
-          src={isDark ? booksMugDark : booksMugLight}
-          alt=""
-          aria-hidden="true"
-          className="w-full h-auto object-contain"
-        />
-      </div>
     </div>
   );
 };

@@ -13,9 +13,12 @@ import { SettingsModal } from '../components/modals/SettingsModal';
 import { UpgradeProModal } from '../components/Dashboard/UpgradeProModal';
 import { trashService } from '../services/trashService';
 import { useToast } from '../context/ToastContext';
+import { useTheme } from '../context/ThemeContext';
+import '../styles/authenticatedTheme.css';
 
 export const TrashPage = () => {
   const navigate = useNavigate();
+  const { isDark } = useTheme();
   const { success, error: toastError, info } = useToast();
 
   // Layout & UI State
@@ -359,7 +362,7 @@ export const TrashPage = () => {
   };
 
   return (
-    <div className="flex h-screen w-screen overflow-hidden bg-[#0c0c11] text-gray-100 font-sans antialiased">
+    <div className={`app-theme-${isDark ? 'dark' : 'light'} flex h-screen w-screen overflow-hidden font-sans antialiased`}>
       {/* AREA 1: Left Navigation Sidebar */}
       <Sidebar
         activeNav="trash"
@@ -481,4 +484,3 @@ export const TrashPage = () => {
 };
 
 export default TrashPage;
-

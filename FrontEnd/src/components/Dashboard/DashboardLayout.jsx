@@ -12,6 +12,10 @@ import { NewFolderModal } from './NewFolderModal';
 import { ImportExportModal } from './ImportExportModal';
 import { UpgradeProModal } from './UpgradeProModal';
 import { SettingsModal } from '../modals/SettingsModal';
+import { useTheme } from '../../context/ThemeContext';
+import dashboardBgDark from '../../assets/dashboard/dashboard-bg-dark.png';
+import dashboardBgLight from '../../assets/dashboard/dashboard-bg-light.png';
+import '../../styles/authenticatedTheme.css';
 
 export const DashboardLayout = ({
   notes = [],
@@ -34,6 +38,7 @@ export const DashboardLayout = ({
   onViewAllFolders,
   onOpenSettings
 }) => {
+  const { isDark } = useTheme();
   const [searchQuery, setSearchQuery] = useState('');
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
@@ -56,7 +61,7 @@ export const DashboardLayout = ({
   };
 
   return (
-    <div className="min-h-screen w-full flex bg-[#0d0a14] text-[#f5f3f0] overflow-x-hidden font-sans">
+    <div className={`app-theme-${isDark ? 'dark' : 'light'} min-h-screen w-full flex overflow-x-hidden font-sans`}>
       {/* 1. Left Navigation Sidebar */}
       <Sidebar
         activeNav={activeNav}
@@ -83,7 +88,15 @@ export const DashboardLayout = ({
         />
 
         {/* Workspace Content Canvas */}
-        <main className="flex-1 p-4 sm:p-6 lg:p-7 max-w-[1700px] w-full mx-auto space-y-6">
+        <main
+          className="flex-1 p-4 sm:p-6 lg:p-7 max-w-[1700px] w-full mx-auto space-y-6"
+          style={{
+            backgroundImage: `url(${isDark ? dashboardBgDark : dashboardBgLight})`,
+            backgroundSize: 'cover',
+            backgroundPosition: 'center top',
+            backgroundAttachment: 'fixed'
+          }}
+        >
           {/* Main 2-Column Responsive Layout */}
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 lg:gap-6 items-start">
             {/* Column 1: Main Workspace (~72-74% width on desktop = 8 or 9 cols) */}
@@ -170,4 +183,3 @@ export const DashboardLayout = ({
 };
 
 export default DashboardLayout;
-

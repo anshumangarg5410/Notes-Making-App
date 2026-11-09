@@ -7,8 +7,6 @@ import pinnedHeartDark from '../../assets/footer/pinned-heart-dark.png';
 import pinnedHeartLight from '../../assets/footer/pinned-heart-light.png';
 import paperAirplaneDark from '../../assets/footer/paper-airplane-dark.png';
 import paperAirplaneLight from '../../assets/footer/paper-airplane-light.png';
-import tornDividerDark from '../../assets/footer/torn-divider-dark.png';
-import tornDividerLight from '../../assets/footer/torn-divider-light.png';
 
 // Social links configuration
 const SOCIAL_LINKS = [
@@ -236,7 +234,7 @@ export const Footer = () => {
         </div>
       </div>
 
-      {/* 5. Physical Torn-Paper Divider with Paper Airplane Flight Path */}
+      {/* 5. Paper Airplane Flight Path */}
       <div className="relative w-full mt-6 overflow-hidden select-none">
         {/* Dashed Paper-Airplane Flight Trail Path */}
         <div className="relative w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -265,14 +263,6 @@ export const Footer = () => {
           </div>
         </div>
 
-        {/* Torn-Paper Horizontal Divider Ribbon Clipart Asset */}
-        <div className="w-full -mt-2 leading-none pointer-events-none opacity-90">
-          <img
-            src={isDark ? tornDividerDark : tornDividerLight}
-            alt="Torn Paper Edge"
-            className="w-full h-auto object-cover min-h-[35px] max-h-[75px]"
-          />
-        </div>
       </div>
 
       {/* 6. Bottom Footer Row: Copyright (Left) & Social Media Icons (Right) */}

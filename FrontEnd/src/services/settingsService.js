@@ -51,3 +51,4 @@ export const settingsService = {
     return response.data;
   }
 };
+

@@ -30,6 +30,7 @@ import { useTheme } from '../context/ThemeContext';
 import { useToast } from '../context/ToastContext';
 import { settingsService } from '../services/settingsService';
 import { folderService } from '../services/folderService';
+import '../styles/authenticatedTheme.css';
 
 const CATEGORY_META = {
   profile: {
@@ -151,7 +152,7 @@ export const SettingsPage = () => {
   const ActiveIcon = currentMeta.icon;
 
   return (
-    <div className="h-screen w-full flex bg-[#0c0914] text-[#f5f3f0] overflow-hidden font-sans select-none">
+    <div className={`app-theme-${theme === 'dark' ? 'dark' : 'light'} h-screen w-full flex overflow-hidden font-sans select-none`}>
       {/* COLUMN 1: Main NoteNest Application Sidebar */}
       <Sidebar
         activeNav="settings"

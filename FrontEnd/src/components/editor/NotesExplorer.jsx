@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { Search, Plus, Filter, ArrowUpDown } from 'lucide-react';
+import { Search, Plus, Filter, ArrowUpDown, Trash2, RotateCcw } from 'lucide-react';
 import { NoteListItem } from './NoteListItem';
 
 export const NotesExplorer = ({
@@ -16,6 +16,9 @@ export const NotesExplorer = ({
   onToggleFavorite,
   onDeleteNote,
   onDuplicateNote,
+  onRestoreNote,
+  onPermanentDeleteNote,
+  onEmptyTrash,
   isLoading = false
 }) => {
   const [subFilter, setSubFilter] = useState('all'); // 'all', 'recent', 'pinned'
@@ -104,13 +107,26 @@ export const NotesExplorer = ({
           </span>
         </div>
 
-        <button
-          onClick={onNewNote}
-          className="w-7 h-7 bg-[#8b5cf6] hover:bg-[#7c3aed] text-white rounded-[4px] flex items-center justify-center transition-colors shadow-sm shadow-purple-900/40"
-          title="New Note (Cmd+N)"
-        >
-          <Plus className="w-4 h-4 stroke-[2.5]" />
-        </button>
+        {activeFilter === 'trash' ? (
+          filteredNotes.length > 0 && (
+            <button
+              onClick={onEmptyTrash}
+              className="px-2 py-1 rounded-[3px] bg-red-950/40 hover:bg-red-900/60 text-red-300 hover:text-white border border-red-500/30 text-[11px] font-medium transition-colors flex items-center gap-1 cursor-pointer"
+              title="Empty all notes in Trash"
+            >
+              <Trash2 className="w-3 h-3 text-red-400" />
+              <span>Empty</span>
+            </button>
+          )
+        ) : (
+          <button
+            onClick={onNewNote}
+            className="w-7 h-7 bg-[#8b5cf6] hover:bg-[#7c3aed] text-white rounded-[4px] flex items-center justify-center transition-colors shadow-sm shadow-purple-900/40"
+            title="New Note (Cmd+N)"
+          >
+            <Plus className="w-4 h-4 stroke-[2.5]" />
+          </button>
+        )}
       </div>
 
       {/* Search Input matching reference */}
@@ -130,29 +146,36 @@ export const NotesExplorer = ({
         </div>
       </div>
 
-      {/* Sub-Filter Tabs: All, Recent, Pinned */}
-      <div className="px-3 pt-2 pb-1.5 flex items-center gap-1 border-b border-[#20202e]">
-        {[
-          { id: 'all', label: 'All' },
-          { id: 'recent', label: 'Recent' },
-          { id: 'pinned', label: 'Pinned' }
-        ].map((tab) => {
-          const isActive = subFilter === tab.id;
-          return (
-            <button
-              key={tab.id}
-              onClick={() => setSubFilter(tab.id)}
-              className={`px-2.5 py-1 rounded-[3px] text-[11px] font-medium transition-colors ${
-                isActive
-                  ? 'bg-purple-900/30 text-purple-300 border border-purple-500/40'
-                  : 'text-gray-400 hover:text-gray-200 hover:bg-[#1c1c28]'
-              }`}
-            >
-              {tab.label}
-            </button>
-          );
-        })}
-      </div>
+      {/* Sub-Filter Tabs: All, Recent, Pinned (or Trash Info Banner) */}
+      {activeFilter === 'trash' ? (
+        <div className="px-3 py-1.5 border-b border-[#20202e] text-[10px] text-gray-500 flex items-center justify-between">
+          <span>Deleted notes kept for 30 days</span>
+          {filteredNotes.length > 0 && <span>{filteredNotes.length} in trash</span>}
+        </div>
+      ) : (
+        <div className="px-3 pt-2 pb-1.5 flex items-center gap-1 border-b border-[#20202e]">
+          {[
+            { id: 'all', label: 'All' },
+            { id: 'recent', label: 'Recent' },
+            { id: 'pinned', label: 'Pinned' }
+          ].map((tab) => {
+            const isActive = subFilter === tab.id;
+            return (
+              <button
+                key={tab.id}
+                onClick={() => setSubFilter(tab.id)}
+                className={`px-2.5 py-1 rounded-[3px] text-[11px] font-medium transition-colors ${
+                  isActive
+                    ? 'bg-purple-900/30 text-purple-300 border border-purple-500/40'
+                    : 'text-gray-400 hover:text-gray-200 hover:bg-[#1c1c28]'
+                }`}
+              >
+                {tab.label}
+              </button>
+            );
+          })}
+        </div>
+      )}
 
       {/* Notes List */}
       <div className="flex-1 overflow-y-auto obsidian-scrollbar p-2 space-y-1">
@@ -163,13 +186,15 @@ export const NotesExplorer = ({
           </div>
         ) : filteredNotes.length === 0 ? (
           <div className="p-6 text-center text-gray-500 text-xs space-y-2">
-            <p>No notes found</p>
-            <button
-              onClick={onNewNote}
-              className="px-2.5 py-1 text-[11px] bg-purple-600/20 text-purple-300 border border-purple-500/30 rounded-[3px] hover:bg-purple-600/30 transition-colors"
-            >
-              Create a note
-            </button>
+            <p>{activeFilter === 'trash' ? 'Trash is empty' : 'No notes found'}</p>
+            {activeFilter !== 'trash' && (
+              <button
+                onClick={onNewNote}
+                className="px-2.5 py-1 text-[11px] bg-purple-600/20 text-purple-300 border border-purple-500/30 rounded-[3px] hover:bg-purple-600/30 transition-colors"
+              >
+                Create a note
+              </button>
+            )}
           </div>
         ) : (
           filteredNotes.map((note) => {
@@ -179,11 +204,14 @@ export const NotesExplorer = ({
                 key={note._id || note.id}
                 note={note}
                 isSelected={isSelected}
+                isTrashView={activeFilter === 'trash'}
                 onSelect={onSelectNote}
                 onTogglePin={onTogglePin}
                 onToggleFavorite={onToggleFavorite}
                 onDelete={onDeleteNote}
                 onDuplicate={onDuplicateNote}
+                onRestore={onRestoreNote}
+                onPermanentDelete={onPermanentDeleteNote}
               />
             );
           })

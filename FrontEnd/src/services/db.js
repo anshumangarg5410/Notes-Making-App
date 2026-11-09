@@ -110,6 +110,41 @@ export const offlineService = {
     }
   },
 
+  // Restore a note locally
+  async restoreLocalNote(id) {
+    try {
+      const note = await db.notes.get(id);
+      if (note) {
+        note.isDeleted = false;
+        note.updatedAt = new Date().toISOString();
+        note.syncStatus = 'pending';
+        await db.notes.put(note);
+      }
+
+      await db.syncQueue.add({
+        noteId: id,
+        action: 'restore',
+        payload: { id },
+        timestamp: Date.now()
+      });
+    } catch (err) {
+      console.warn('Dexie restoreLocalNote error:', err);
+    }
+  },
+
+  // Empty local trash
+  async emptyLocalTrash() {
+    try {
+      const trashNotes = await db.notes.filter((n) => Boolean(n.isDeleted)).toArray();
+      const ids = trashNotes.map((n) => n._id || n.id).filter(Boolean);
+      if (ids.length > 0) {
+        await db.notes.bulkDelete(ids);
+      }
+    } catch (err) {
+      console.warn('Dexie emptyLocalTrash error:', err);
+    }
+  },
+
   // Sync queued changes with backend
   async processSyncQueue(apiClient) {
     if (!navigator.onLine) return { synced: 0, pending: await db.syncQueue.count() };
@@ -133,6 +168,8 @@ export const offlineService = {
             }
           } else if (item.action === 'delete') {
             await apiClient.deleteNote(item.noteId);
+          } else if (item.action === 'restore') {
+            await apiClient.restoreNote(item.noteId);
           } else if (item.action === 'permanentDelete') {
             await apiClient.permanentDeleteNote(item.noteId);
           }

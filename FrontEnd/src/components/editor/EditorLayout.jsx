@@ -6,9 +6,10 @@ import { RichTextEditor } from './RichTextEditor';
 import { DocumentInspector } from './DocumentInspector';
 import { EditorStatusBar } from './EditorStatusBar';
 import { noteService } from '../../services/noteService';
-import { offlineService } from '../../services/db';
+import { offlineService, db } from '../../services/db';
 import { useToast } from '../../context/ToastContext';
 import { useTheme } from '../../context/ThemeContext';
+import { RotateCcw, Trash2 } from 'lucide-react';
 import './editorTheme.css';
 
 export const EditorLayout = ({
@@ -78,6 +79,38 @@ export const EditorLayout = ({
     };
   }, [info, success]);
 
+  // Refresh statistics across the application
+  const refreshStats = useCallback(async () => {
+    try {
+      if (navigator.onLine) {
+        const statsRes = await noteService.getStats();
+        if (statsRes?.data) {
+          setStats({
+            totalNotes: statsRes.data.all || 0,
+            favorites: statsRes.data.favorites || 0,
+            trash: statsRes.data.trash || 0
+          });
+          return;
+        }
+      }
+    } catch (err) {
+      // ignore, fall through to Dexie
+    }
+
+    try {
+      const allCount = await db.notes.filter((n) => !n.isDeleted).count();
+      const favCount = await db.notes.filter((n) => !n.isDeleted && n.isFavorite).count();
+      const trashCount = await db.notes.filter((n) => Boolean(n.isDeleted)).count();
+      setStats({
+        totalNotes: allCount,
+        favorites: favCount,
+        trash: trashCount
+      });
+    } catch (err) {
+      console.warn('refreshStats error:', err);
+    }
+  }, []);
+
   // Load notes (offline-first from Dexie + sync with server)
   const loadNotes = useCallback(async () => {
     setIsLoading(true);
@@ -89,7 +122,11 @@ export const EditorLayout = ({
 
       if (cached && cached.length > 0) {
         setNotes(cached);
+      } else {
+        setNotes([]);
       }
+
+      await refreshStats();
 
       // 2. If online, fetch fresh notes from server
       if (navigator.onLine) {
@@ -102,9 +139,9 @@ export const EditorLayout = ({
           if (res.success && Array.isArray(res.data)) {
             let serverNotes = res.data;
 
-            // If user has zero notes on server, provide sample notes matching design reference
-            if (serverNotes.length === 0) {
-              const demoNotes = [
+            // Only provide sample notes if user is on 'all' view AND server has 0 notes AND local cache is 0
+            if (activeNav === 'all' && serverNotes.length === 0 && (!cached || cached.length === 0)) {
+              serverNotes = [
                 {
                   _id: 'demo-1',
                   id: 'demo-1',
@@ -115,6 +152,7 @@ export const EditorLayout = ({
                   category: 'Projects',
                   isPinned: true,
                   isFavorite: true,
+                  isDeleted: false,
                   updatedAt: new Date().toISOString()
                 },
                 {
@@ -124,6 +162,7 @@ export const EditorLayout = ({
                   plainText: 'Normalization, ER diagrams, SQL queries, transactions, and indexing concepts...',
                   tags: ['dbms', 'college'],
                   category: 'College',
+                  isDeleted: false,
                   updatedAt: new Date(Date.now() - 7200000).toISOString()
                 },
                 {
@@ -133,6 +172,7 @@ export const EditorLayout = ({
                   plainText: 'Scalability, caching, load balancing, fault tolerance patterns...',
                   tags: ['system-design'],
                   category: 'Projects',
+                  isDeleted: false,
                   updatedAt: new Date(Date.now() - 18000000).toISOString()
                 },
                 {
@@ -142,29 +182,26 @@ export const EditorLayout = ({
                   plainText: 'Push • Pull • Legs split, progressive overload tracking...',
                   tags: ['personal'],
                   category: 'Personal',
+                  isDeleted: false,
                   updatedAt: new Date(Date.now() - 86400000).toISOString()
                 }
               ];
-              serverNotes = demoNotes;
             }
 
             setNotes(serverNotes);
-            await offlineService.cacheServerNotes(serverNotes);
+            if (activeNav !== 'trash') {
+              await offlineService.cacheServerNotes(serverNotes);
+            }
 
-            // Update stats
-            setStats({
-              totalNotes: serverNotes.length,
-              favorites: serverNotes.filter((n) => n.isFavorite).length,
-              trash: serverNotes.filter((n) => n.isDeleted).length
-            });
+            await refreshStats();
 
-            // Initialize active tab if tabs is empty
-            if (tabs.length === 0 && serverNotes.length > 0) {
+            // Initialize active tab if tabs is empty and not viewing trash
+            if (tabs.length === 0 && serverNotes.length > 0 && activeNav !== 'trash') {
               const firstNote = serverNotes[0];
               setTabs([
                 {
                   id: firstNote._id || firstNote.id,
-                  title: firstNote.title || 'Project Planning',
+                  title: firstNote.title || 'Untitled Note',
                   note: firstNote,
                   isUnsaved: false
                 }
@@ -181,7 +218,7 @@ export const EditorLayout = ({
     } finally {
       setIsLoading(false);
     }
-  }, [activeNav, searchQuery]);
+  }, [activeNav, searchQuery, refreshStats]);
 
   useEffect(() => {
     loadNotes();
@@ -412,18 +449,9 @@ export const EditorLayout = ({
       const target = notes.find((n) => (n._id || n.id) === noteId);
       const title = target?.title || 'Note';
 
-      setNotes((prev) => {
-        const nextList = prev.filter((n) => (n._id || n.id) !== noteId);
-        setStats((s) => ({
-          ...s,
-          totalNotes: nextList.length,
-          favorites: nextList.filter((n) => n.isFavorite && !n.isDeleted).length,
-          trash: (s.trash || 0) + 1
-        }));
-        return nextList;
-      });
-
+      setNotes((prev) => prev.filter((n) => (n._id || n.id) !== noteId));
       handleCloseTab(noteId);
+
       await offlineService.deleteLocalNote(noteId, false);
 
       const isValidServerId = String(noteId).length === 24 && !String(noteId).includes('-');
@@ -431,9 +459,81 @@ export const EditorLayout = ({
         await noteService.deleteNote(noteId);
       }
 
+      await refreshStats();
       info(`"${title}" moved to trash`);
     } catch (err) {
       console.warn('deleteNote error:', err);
+    }
+  };
+
+  const handleRestoreNote = async (noteId) => {
+    try {
+      const target = notes.find((n) => (n._id || n.id) === noteId);
+      const title = target?.title || 'Note';
+
+      setNotes((prev) => prev.filter((n) => (n._id || n.id) !== noteId));
+      handleCloseTab(noteId);
+
+      await offlineService.restoreLocalNote(noteId);
+
+      const isValidServerId = String(noteId).length === 24 && !String(noteId).includes('-');
+      if (navigator.onLine && isValidServerId) {
+        await noteService.restoreNote(noteId);
+      }
+
+      await refreshStats();
+      success(`"${title}" restored to All Notes`);
+    } catch (err) {
+      console.warn('handleRestoreNote error:', err);
+    }
+  };
+
+  const handlePermanentDeleteNote = async (noteId) => {
+    try {
+      const target = notes.find((n) => (n._id || n.id) === noteId);
+      const title = target?.title || 'Note';
+
+      setNotes((prev) => prev.filter((n) => (n._id || n.id) !== noteId));
+      handleCloseTab(noteId);
+
+      await offlineService.deleteLocalNote(noteId, true);
+
+      const isValidServerId = String(noteId).length === 24 && !String(noteId).includes('-');
+      if (navigator.onLine && isValidServerId) {
+        await noteService.permanentDeleteNote(noteId);
+      }
+
+      await refreshStats();
+      success(`"${title}" permanently deleted`);
+    } catch (err) {
+      console.warn('handlePermanentDeleteNote error:', err);
+    }
+  };
+
+  const handleEmptyTrash = async () => {
+    if (!window.confirm('Are you sure you want to permanently delete all notes in Trash? This cannot be undone.')) {
+      return;
+    }
+
+    try {
+      setNotes([]);
+      // Close tabs for any deleted notes
+      tabs.forEach((t) => {
+        if (t.note?.isDeleted) {
+          handleCloseTab(t.id);
+        }
+      });
+
+      await offlineService.emptyLocalTrash();
+
+      if (navigator.onLine) {
+        await noteService.emptyTrash();
+      }
+
+      await refreshStats();
+      success('Trash emptied');
+    } catch (err) {
+      console.warn('handleEmptyTrash error:', err);
     }
   };
 
@@ -529,6 +629,9 @@ export const EditorLayout = ({
           onToggleFavorite={handleToggleFavorite}
           onDeleteNote={handleDeleteNote}
           onDuplicateNote={handleDuplicateNote}
+          onRestoreNote={handleRestoreNote}
+          onPermanentDeleteNote={handlePermanentDeleteNote}
+          onEmptyTrash={handleEmptyTrash}
           isLoading={isLoading}
         />
       )}
@@ -548,6 +651,34 @@ export const EditorLayout = ({
           isFocusMode={isFocusMode}
           onToggleFocusMode={() => setIsFocusMode(!isFocusMode)}
         />
+
+        {/* Trash Banner if Active Note is Deleted */}
+        {activeNote?.isDeleted && (
+          <div className="bg-red-950/60 border-b border-red-500/30 px-6 py-2 flex items-center justify-between text-xs text-red-200 shrink-0">
+            <div className="flex items-center gap-2">
+              <Trash2 className="w-4 h-4 text-red-400" />
+              <span>This note is in the Trash.</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => handleRestoreNote(activeNote._id || activeNote.id)}
+                className="px-2.5 py-1 rounded-[3px] bg-emerald-600 hover:bg-emerald-500 text-white font-medium transition-colors flex items-center gap-1 cursor-pointer"
+              >
+                <RotateCcw className="w-3.5 h-3.5" />
+                <span>Restore Note</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => handlePermanentDeleteNote(activeNote._id || activeNote.id)}
+                className="px-2.5 py-1 rounded-[3px] bg-red-600 hover:bg-red-500 text-white font-medium transition-colors flex items-center gap-1 cursor-pointer"
+              >
+                <Trash2 className="w-3.5 h-3.5" />
+                <span>Delete Permanently</span>
+              </button>
+            </div>
+          </div>
+        )}
 
         {/* Tiptap Writing Workspace */}
         <div className="flex-1 overflow-hidden relative flex flex-col">

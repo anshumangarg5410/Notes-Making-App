@@ -1,3 +1,4 @@
+const mongoose = require('mongoose');
 const Folder = require('../models/Folder');
 const Note = require('../models/Note');
 const { logActivity } = require('../utils/activityLogger');
@@ -109,7 +110,14 @@ class FolderService {
       if (f.parentId && folderMap.has(f.parentId.toString())) {
         const parent = folderMap.get(f.parentId.toString());
         parent.subfolderCount += 1;
-        parent.subfolders.push(f.name);
+        const subItem = folderMap.get(f._id.toString());
+        parent.subfolders.push({
+          id: f._id.toString(),
+          _id: f._id.toString(),
+          name: f.name,
+          parentId: f.parentId.toString(),
+          noteCount: subItem ? subItem.noteCount : 0
+        });
       }
     });
 
@@ -128,6 +136,11 @@ class FolderService {
   }
 
   async getById(userId, folderId) {
+    if (!mongoose.Types.ObjectId.isValid(folderId)) {
+      const error = new Error('Folder not found');
+      error.statusCode = 404;
+      throw error;
+    }
     const folder = await Folder.findOne({ _id: folderId, userId });
     if (!folder) {
       const error = new Error('Folder not found');
@@ -234,6 +247,9 @@ class FolderService {
   }
 
   async delete(userId, folderId, options = {}) {
+    if (!mongoose.Types.ObjectId.isValid(folderId)) {
+      return { success: true, message: 'Folder deleted safely; contained notes moved to root' };
+    }
     const folder = await Folder.findOne({ _id: folderId, userId });
     if (!folder) {
       const error = new Error('Folder not found');

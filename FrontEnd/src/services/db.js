@@ -221,6 +221,18 @@ export const offlineService = {
       console.warn('Dexie saveLocalFolder error:', err);
       return folderData;
     }
+  },
+
+  async deleteLocalFolder(id) {
+    try {
+      await db.folders.delete(id);
+      const subfolders = await db.folders.filter((f) => f.parentId === id).toArray();
+      for (const sub of subfolders) {
+        await db.folders.delete(sub.id || sub._id);
+      }
+    } catch (err) {
+      console.warn('Dexie deleteLocalFolder error:', err);
+    }
   }
 };
 

@@ -14,7 +14,9 @@ import {
   Settings,
   HelpCircle,
   Plus,
-  PanelLeftClose
+  PanelLeftClose,
+  Check,
+  X
 } from 'lucide-react';
 
 export const EditorSidebar = ({
@@ -26,6 +28,8 @@ export const EditorSidebar = ({
   onSelectTag,
   folders = [],
   onCreateFolder,
+  onDeleteFolder,
+  notes = [],
   onOpenSettings,
   stats = {},
   isCollapsed = false,
@@ -33,20 +37,60 @@ export const EditorSidebar = ({
 }) => {
   const navigate = useNavigate();
   const [foldersOpen, setFoldersOpen] = useState(true);
-  const [myNotesOpen, setMyNotesOpen] = useState(true);
-  const [projectsOpen, setProjectsOpen] = useState(false);
-  const [tagsOpen, setTagsOpen] = useState(true);
-  const [newFolderName, setNewFolderName] = useState('');
+  const [expandedFolders, setExpandedFolders] = useState({});
+  const [activeAddSubfolderParentId, setActiveAddSubfolderParentId] = useState(null);
+  const [newSubfolderName, setNewSubfolderName] = useState('');
   const [isCreatingFolder, setIsCreatingFolder] = useState(false);
+  const [newFolderName, setNewFolderName] = useState('');
+  const [confirmDeleteId, setConfirmDeleteId] = useState(null);
+  const [tagsOpen, setTagsOpen] = useState(true);
 
   const defaultFolders = [
-    { id: 'college', name: 'College', count: 18 },
-    { id: 'projects', name: 'Projects', count: 12, subfolders: ['NoteNest', 'API Gateway', 'Traffic System'] },
-    { id: 'personal', name: 'Personal', count: 6 },
-    { id: 'dsa', name: 'DSA', count: 8 }
+    { id: 'projects', _id: 'projects', name: 'Projects', subfolders: [{ id: 'notenest', _id: 'notenest', name: 'NoteNest' }] },
+    { id: 'college', _id: 'college', name: 'College' },
+    { id: 'personal', _id: 'personal', name: 'Personal' },
+    { id: 'dsa', _id: 'dsa', name: 'DSA' }
   ];
 
-  const displayFolders = folders && folders.length > 0 ? folders : defaultFolders;
+  const rawFolders = folders && folders.length > 0 ? folders : defaultFolders;
+
+  // Split into root folders and child folders
+  const rootFolders = rawFolders.filter((f) => !f.parentId);
+
+  // Helper to get subfolders for any folder
+  const getSubfoldersFor = (parent) => {
+    const parentId = parent._id || parent.id;
+    const directChildren = rawFolders.filter(
+      (f) => f.parentId && (f.parentId === parentId || f.parentId?._id === parentId || f.parentId?.id === parentId)
+    );
+    if (directChildren.length > 0) return directChildren;
+
+    if (Array.isArray(parent.subfolders) && parent.subfolders.length > 0) {
+      return parent.subfolders.map((sub, idx) => {
+        if (typeof sub === 'string') {
+          return { id: `${parentId}_${idx}`, _id: `${parentId}_${idx}`, name: sub, parentId };
+        }
+        return sub;
+      });
+    }
+
+    return [];
+  };
+
+  // Calculate live note count for a folder or subfolder
+  const getNoteCount = (folder) => {
+    if (!notes || notes.length === 0) return folder.noteCount || folder.count || 0;
+    const fName = folder.name?.toLowerCase();
+    const fId = folder._id || folder.id;
+    return notes.filter((n) => {
+      if (n.isDeleted) return false;
+      return (
+        (n.folderId && n.folderId === fId) ||
+        (n.folder && n.folder.toLowerCase() === fName) ||
+        (n.category && n.category.toLowerCase() === fName)
+      );
+    }).length;
+  };
 
   const { user } = useAuth();
   const displayName = user?.name || user?.username || 'User';
@@ -60,13 +104,46 @@ export const EditorSidebar = ({
 
   const popularTags = ['#go', '#system-design', '#dbms', '#ui-ux', '#projects'];
 
-  const handleCreateFolderSubmit = (e) => {
+  const handleCreateRootFolderSubmit = (e) => {
     e.preventDefault();
     if (newFolderName.trim() && onCreateFolder) {
-      onCreateFolder(newFolderName.trim());
+      onCreateFolder(newFolderName.trim(), null);
       setNewFolderName('');
       setIsCreatingFolder(false);
     }
+  };
+
+  const handleCreateSubfolderSubmit = (e, parentId) => {
+    e.preventDefault();
+    if (newSubfolderName.trim() && onCreateFolder) {
+      onCreateFolder(newSubfolderName.trim(), parentId);
+      setNewSubfolderName('');
+      setActiveAddSubfolderParentId(null);
+      setExpandedFolders((prev) => ({ ...prev, [parentId]: true }));
+    }
+  };
+
+  const handleDelete = (item) => {
+    if (onDeleteFolder) {
+      onDeleteFolder(item._id || item.id, item.name);
+    }
+    setConfirmDeleteId(null);
+  };
+
+  const toggleFolderExpanded = (id) => {
+    setExpandedFolders((prev) => ({
+      ...prev,
+      [id]: prev[id] === undefined ? false : !prev[id]
+    }));
+  };
+
+  const isFolderExpanded = (folder, hasChildren) => {
+    const id = folder._id || folder.id;
+    if (expandedFolders[id] !== undefined) {
+      return expandedFolders[id];
+    }
+    // Default: expanded if it has children or matches active selection
+    return hasChildren || selectedFolder === folder.name;
   };
 
   return (
@@ -167,6 +244,7 @@ export const EditorSidebar = ({
         {/* Folders Section */}
         {!isCollapsed && (
           <div className="pt-2 border-t border-[#1e1e2c]">
+            {/* Folders Header */}
             <div
               onClick={() => setFoldersOpen(!foldersOpen)}
               className="flex items-center justify-between px-2.5 py-1 text-gray-400 hover:text-gray-200 cursor-pointer text-[11px] font-medium uppercase tracking-wider"
@@ -182,99 +260,337 @@ export const EditorSidebar = ({
                     e.stopPropagation();
                     setIsCreatingFolder(!isCreatingFolder);
                   }}
-                  className="p-0.5 hover:bg-[#252536] rounded text-gray-400 hover:text-white"
-                  title="Create folder"
+                  className="p-1 hover:bg-[#252536] rounded text-gray-400 hover:text-purple-300 transition-colors"
+                  title="Add new folder"
                 >
-                  <Plus className="w-3 h-3" />
+                  <Plus className="w-3.5 h-3.5" />
                 </button>
                 {foldersOpen ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
               </div>
             </div>
 
+            {/* Inline Root Folder Creation Input */}
             {isCreatingFolder && (
-              <form onSubmit={handleCreateFolderSubmit} className="mt-1.5 px-2.5">
+              <form onSubmit={handleCreateRootFolderSubmit} className="mt-1.5 px-2 flex items-center gap-1.5">
+                <Folder className="w-3.5 h-3.5 text-purple-400 shrink-0" />
                 <input
                   type="text"
                   autoFocus
                   value={newFolderName}
                   onChange={(e) => setNewFolderName(e.target.value)}
-                  placeholder="Folder name..."
-                  className="w-full bg-[#1b1b26] border border-purple-500/50 rounded-[3px] px-2 py-1 text-xs text-gray-200 focus:outline-none"
+                  placeholder="New folder name..."
+                  className="flex-1 bg-[#1b1b26] border border-purple-500/50 rounded-[3px] px-2 py-1 text-xs text-gray-200 focus:outline-none"
+                  onKeyDown={(e) => {
+                    if (e.key === 'Escape') setIsCreatingFolder(false);
+                  }}
                 />
+                <button type="submit" className="p-1 text-purple-400 hover:text-purple-300" title="Create">
+                  <Check className="w-3.5 h-3.5" />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setIsCreatingFolder(false)}
+                  className="p-1 text-gray-400 hover:text-gray-200"
+                  title="Cancel"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
               </form>
             )}
 
+            {/* Folders Hierarchy Tree */}
             {foldersOpen && (
-              <div className="mt-1 pl-2 space-y-0.5 text-xs">
-                {/* My Notes Root Folder */}
-                <div>
-                  <button
-                    onClick={() => setMyNotesOpen(!myNotesOpen)}
-                    className="w-full flex items-center justify-between px-2 py-1 rounded-[3px] text-gray-300 hover:bg-[#1a1a24] text-left"
-                  >
-                    <div className="flex items-center gap-2">
-                      {myNotesOpen ? (
-                        <FolderOpen className="w-3.5 h-3.5 text-purple-400" />
-                      ) : (
-                        <Folder className="w-3.5 h-3.5 text-purple-400" />
-                      )}
-                      <span>My Notes</span>
-                    </div>
-                    {myNotesOpen ? (
-                      <ChevronDown className="w-3 h-3 text-gray-500" />
-                    ) : (
-                      <ChevronRight className="w-3 h-3 text-gray-500" />
-                    )}
-                  </button>
+              <div className="mt-1 space-y-0.5 text-xs">
+                {rootFolders.map((folder) => {
+                  const folderId = folder._id || folder.id;
+                  const isSelected = selectedFolder?.toLowerCase() === folder.name?.toLowerCase();
+                  const subfolders = getSubfoldersFor(folder);
+                  const hasSubfolders = subfolders.length > 0;
+                  const expanded = isFolderExpanded(folder, hasSubfolders);
+                  const noteCount = getNoteCount(folder);
+                  const isAddingSub = activeAddSubfolderParentId === folderId;
 
-                  {myNotesOpen && (
-                    <div className="pl-4 space-y-0.5 mt-0.5 border-l border-[#222232] ml-3.5">
-                      {displayFolders.map((folder) => {
-                        const isProjects = folder.name?.toLowerCase() === 'projects';
-                        const isSelected = selectedFolder === folder.name;
-                        return (
-                          <div key={folder.id || folder.name}>
+                  return (
+                    <div key={folderId} className="space-y-0.5">
+                      {/* Folder Item Row */}
+                      <div
+                        className={`group relative flex items-center justify-between px-2 py-1 rounded-[3px] transition-colors ${
+                          isSelected
+                            ? 'bg-purple-900/30 text-purple-200 font-medium'
+                            : 'text-gray-300 hover:text-gray-100 hover:bg-[#1a1a24]'
+                        }`}
+                      >
+                        <div className="flex items-center gap-1.5 flex-1 min-w-0 mr-1">
+                          {/* Subfolder expand/collapse toggle chevron */}
+                          {hasSubfolders ? (
                             <button
-                              onClick={() => {
-                                if (isProjects) setProjectsOpen(!projectsOpen);
-                                onSelectFolder(isSelected ? null : folder.name);
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                toggleFolderExpanded(folderId);
                               }}
-                              className={`w-full flex items-center justify-between px-2 py-1 rounded-[3px] transition-colors ${
-                                isSelected
-                                  ? 'bg-purple-900/30 text-purple-200 font-medium'
-                                  : 'text-gray-300 hover:text-gray-100 hover:bg-[#1a1a24]'
-                              }`}
+                              className="p-0.5 hover:bg-[#252538] rounded text-gray-400 hover:text-gray-200 transition-colors"
+                              title={expanded ? 'Collapse subfolders' : 'Expand subfolders'}
                             >
-                              <div className="flex items-center gap-2">
-                                <Folder className={`w-3.5 h-3.5 ${isSelected ? 'text-purple-400' : 'text-gray-400'}`} />
-                                <span>{folder.name}</span>
-                              </div>
-                              <span className="text-[10px] text-gray-500">{folder.count || 0}</span>
+                              <ChevronRight
+                                className={`w-3 h-3 transition-transform duration-150 ${expanded ? 'rotate-90 text-purple-400' : ''}`}
+                              />
                             </button>
+                          ) : (
+                            <span className="w-4" />
+                          )}
 
-                            {/* Subfolders for Projects */}
-                            {isProjects && projectsOpen && folder.subfolders && (
-                              <div className="pl-4 space-y-0.5 mt-0.5 border-l border-[#242436] ml-3.5">
-                                {folder.subfolders.map((sub) => (
-                                  <button
-                                    key={sub}
-                                    onClick={() => onSelectFolder(sub)}
-                                    className={`w-full flex items-center gap-2 px-2 py-0.5 rounded-[2px] text-[11px] ${
-                                      selectedFolder === sub ? 'text-purple-300 font-medium' : 'text-gray-400 hover:text-gray-200'
-                                    }`}
-                                  >
-                                    <span className="w-1.5 h-1.5 rounded-full bg-purple-500/50" />
-                                    <span>{sub}</span>
-                                  </button>
-                                ))}
-                              </div>
+                          {/* Select Folder Button */}
+                          <button
+                            type="button"
+                            onClick={() => onSelectFolder(isSelected ? null : folder.name)}
+                            className="flex items-center gap-2 flex-1 min-w-0 text-left truncate"
+                            title={folder.name}
+                          >
+                            {expanded || isSelected ? (
+                              <FolderOpen className={`w-3.5 h-3.5 shrink-0 ${isSelected ? 'text-purple-400' : 'text-gray-400'}`} />
+                            ) : (
+                              <Folder className={`w-3.5 h-3.5 shrink-0 ${isSelected ? 'text-purple-400' : 'text-gray-400'}`} />
                             )}
+                            <span className="truncate">{folder.name}</span>
+                          </button>
+                        </div>
+
+                        {/* Action buttons / count / confirm delete */}
+                        {confirmDeleteId === folderId ? (
+                          <div
+                            onClick={(e) => e.stopPropagation()}
+                            className="flex items-center gap-1 bg-[#281822] border border-red-500/40 rounded px-1.5 py-0.5 text-[10px] text-red-300 shrink-0"
+                          >
+                            <span>Delete?</span>
+                            <button
+                              type="button"
+                              onClick={() => handleDelete(folder)}
+                              className="text-red-400 hover:text-red-200 font-bold px-1"
+                              title="Confirm delete"
+                            >
+                              Yes
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setConfirmDeleteId(null)}
+                              className="text-gray-400 hover:text-gray-200 px-0.5"
+                              title="Cancel"
+                            >
+                              No
+                            </button>
                           </div>
-                        );
-                      })}
+                        ) : (
+                          <div className="flex items-center gap-1 shrink-0">
+                            {/* Note count (visible when not hovering) */}
+                            <span className="text-[10px] text-gray-500 group-hover:hidden">
+                              {noteCount}
+                            </span>
+
+                            {/* Hover actions: Add subfolder (+) & Delete folder (🗑) */}
+                            <div className="hidden group-hover:flex items-center gap-0.5">
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setActiveAddSubfolderParentId(folderId);
+                                  setNewSubfolderName('');
+                                  setExpandedFolders((prev) => ({ ...prev, [folderId]: true }));
+                                }}
+                                className="p-1 hover:bg-[#252538] rounded text-gray-400 hover:text-purple-300 transition-colors"
+                                title="Add subfolder"
+                              >
+                                <Plus className="w-3 h-3" />
+                              </button>
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setConfirmDeleteId(folderId);
+                                }}
+                                className="p-1 hover:bg-red-950/60 rounded text-gray-400 hover:text-red-400 transition-colors"
+                                title="Delete folder"
+                              >
+                                <Trash2 className="w-3 h-3" />
+                              </button>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Inline Input for Adding Subfolder directly under this folder */}
+                      {isAddingSub && (
+                        <form
+                          onSubmit={(e) => handleCreateSubfolderSubmit(e, folderId)}
+                          className="flex items-center gap-1.5 py-1 px-2 my-0.5 ml-6 bg-[#1b1b28] border border-purple-500/50 rounded-[3px]"
+                        >
+                          <Folder className="w-3 h-3 text-purple-400 shrink-0" />
+                          <input
+                            type="text"
+                            autoFocus
+                            value={newSubfolderName}
+                            onChange={(e) => setNewSubfolderName(e.target.value)}
+                            placeholder="Subfolder name..."
+                            className="flex-1 bg-transparent text-xs text-gray-200 outline-none placeholder-gray-500"
+                            onKeyDown={(e) => {
+                              if (e.key === 'Escape') setActiveAddSubfolderParentId(null);
+                            }}
+                          />
+                          <button
+                            type="submit"
+                            className="p-0.5 text-purple-400 hover:text-purple-300"
+                            title="Create subfolder"
+                          >
+                            <Check className="w-3.5 h-3.5" />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setActiveAddSubfolderParentId(null)}
+                            className="p-0.5 text-gray-400 hover:text-gray-200"
+                            title="Cancel"
+                          >
+                            <X className="w-3.5 h-3.5" />
+                          </button>
+                        </form>
+                      )}
+
+                      {/* Subfolders List (Indented Tree) */}
+                      {hasSubfolders && expanded && (
+                        <div className="ml-5 pl-2.5 border-l border-[#242436] space-y-0.5">
+                          {subfolders.map((sub) => {
+                            const subId = sub._id || sub.id;
+                            const isSubSelected = selectedFolder?.toLowerCase() === sub.name?.toLowerCase();
+                            const subCount = getNoteCount(sub);
+                            const isSubAddingNested = activeAddSubfolderParentId === subId;
+
+                            return (
+                              <div key={subId} className="space-y-0.5">
+                                <div
+                                  className={`group relative flex items-center justify-between px-2 py-0.5 rounded-[3px] transition-colors ${
+                                    isSubSelected
+                                      ? 'bg-purple-900/30 text-purple-200 font-medium'
+                                      : 'text-gray-400 hover:text-gray-200 hover:bg-[#1a1a24]'
+                                  }`}
+                                >
+                                  {/* Subfolder Select Button */}
+                                  <button
+                                    type="button"
+                                    onClick={() => onSelectFolder(isSubSelected ? null : sub.name)}
+                                    className="flex items-center gap-2 flex-1 min-w-0 text-left truncate mr-1"
+                                    title={sub.name}
+                                  >
+                                    <span
+                                      className={`w-1.5 h-1.5 rounded-full shrink-0 ${
+                                        isSubSelected ? 'bg-purple-400' : 'bg-purple-500/40'
+                                      }`}
+                                    />
+                                    <span className="truncate text-[11px]">{sub.name}</span>
+                                  </button>
+
+                                  {/* Subfolder Actions / Delete Confirm */}
+                                  {confirmDeleteId === subId ? (
+                                    <div
+                                      onClick={(e) => e.stopPropagation()}
+                                      className="flex items-center gap-1 bg-[#281822] border border-red-500/40 rounded px-1.5 py-0.5 text-[10px] text-red-300 shrink-0"
+                                    >
+                                      <span>Delete?</span>
+                                      <button
+                                        type="button"
+                                        onClick={() => handleDelete(sub)}
+                                        className="text-red-400 hover:text-red-200 font-bold px-1"
+                                        title="Delete this subfolder"
+                                      >
+                                        Yes
+                                      </button>
+                                      <button
+                                        type="button"
+                                        onClick={() => setConfirmDeleteId(null)}
+                                        className="text-gray-400 hover:text-gray-200 px-0.5"
+                                        title="Cancel"
+                                      >
+                                        No
+                                      </button>
+                                    </div>
+                                  ) : (
+                                    <div className="flex items-center gap-1 shrink-0">
+                                      {/* Subfolder note count */}
+                                      <span className="text-[10px] text-gray-500 group-hover:hidden">
+                                        {subCount}
+                                      </span>
+
+                                      {/* Hover actions: Add nested (+) & Delete Subfolder (🗑) */}
+                                      <div className="hidden group-hover:flex items-center gap-0.5">
+                                        <button
+                                          type="button"
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            setActiveAddSubfolderParentId(subId);
+                                            setNewSubfolderName('');
+                                          }}
+                                          className="p-1 hover:bg-[#252538] rounded text-gray-400 hover:text-purple-300 transition-colors"
+                                          title="Add nested subfolder"
+                                        >
+                                          <Plus className="w-3 h-3" />
+                                        </button>
+                                        <button
+                                          type="button"
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            setConfirmDeleteId(subId);
+                                          }}
+                                          className="p-1 hover:bg-red-950/60 rounded text-gray-400 hover:text-red-400 transition-colors"
+                                          title="Delete this subfolder"
+                                        >
+                                          <Trash2 className="w-3 h-3" />
+                                        </button>
+                                      </div>
+                                    </div>
+                                  )}
+                                </div>
+
+                                {/* Nested Subfolder Inline Input */}
+                                {isSubAddingNested && (
+                                  <form
+                                    onSubmit={(e) => handleCreateSubfolderSubmit(e, subId)}
+                                    className="flex items-center gap-1.5 py-1 px-2 my-0.5 ml-4 bg-[#1b1b28] border border-purple-500/50 rounded-[3px]"
+                                  >
+                                    <Folder className="w-3 h-3 text-purple-400 shrink-0" />
+                                    <input
+                                      type="text"
+                                      autoFocus
+                                      value={newSubfolderName}
+                                      onChange={(e) => setNewSubfolderName(e.target.value)}
+                                      placeholder="Nested folder name..."
+                                      className="flex-1 bg-transparent text-xs text-gray-200 outline-none placeholder-gray-500"
+                                      onKeyDown={(e) => {
+                                        if (e.key === 'Escape') setActiveAddSubfolderParentId(null);
+                                      }}
+                                    />
+                                    <button
+                                      type="submit"
+                                      className="p-0.5 text-purple-400 hover:text-purple-300"
+                                      title="Create"
+                                    >
+                                      <Check className="w-3.5 h-3.5" />
+                                    </button>
+                                    <button
+                                      type="button"
+                                      onClick={() => setActiveAddSubfolderParentId(null)}
+                                      className="p-0.5 text-gray-400 hover:text-gray-200"
+                                      title="Cancel"
+                                    >
+                                      <X className="w-3.5 h-3.5" />
+                                    </button>
+                                  </form>
+                                )}
+                              </div>
+                            );
+                          })}
+                        </div>
+                      )}
                     </div>
-                  )}
-                </div>
+                  );
+                })}
               </div>
             )}
           </div>

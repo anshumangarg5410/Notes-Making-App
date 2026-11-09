@@ -6,6 +6,7 @@ import { RichTextEditor } from './RichTextEditor';
 import { DocumentInspector } from './DocumentInspector';
 import { EditorStatusBar } from './EditorStatusBar';
 import { noteService } from '../../services/noteService';
+import { folderService } from '../../services/folderService';
 import { offlineService, db } from '../../services/db';
 import { useToast } from '../../context/ToastContext';
 import { useTheme } from '../../context/ThemeContext';
@@ -40,6 +41,7 @@ export const EditorLayout = ({
 
   // Data state
   const [notes, setNotes] = useState([]);
+  const [folders, setFolders] = useState([]);
   const [stats, setStats] = useState({ totalNotes: 4, favorites: 1, trash: 0 });
   const [isLoading, setIsLoading] = useState(true);
 
@@ -220,9 +222,110 @@ export const EditorLayout = ({
     }
   }, [activeNav, searchQuery, refreshStats]);
 
+  // Load folders (from backend + Dexie offline fallback)
+  const loadFolders = useCallback(async () => {
+    try {
+      // 1. Fetch from Dexie cache first
+      const localFolders = await offlineService.getLocalFolders();
+      if (localFolders && localFolders.length > 0) {
+        setFolders(localFolders);
+      }
+
+      // 2. If online, fetch from backend
+      if (navigator.onLine) {
+        try {
+          const res = await folderService.getFolders();
+          if (res.success && Array.isArray(res.data)) {
+            let fetchedFolders = res.data;
+
+            // Seed helpful initial folders if database has 0 folders
+            if (fetchedFolders.length === 0 && (!localFolders || localFolders.length === 0)) {
+              try {
+                const projectsRes = await folderService.createFolder({ name: 'Projects' });
+                await folderService.createFolder({ name: 'College' });
+                await folderService.createFolder({ name: 'Personal' });
+                await folderService.createFolder({ name: 'DSA' });
+
+                if (projectsRes?.data?._id) {
+                  await folderService.createFolder({
+                    name: 'NoteNest',
+                    parentId: projectsRes.data._id
+                  });
+                }
+
+                const refreshed = await folderService.getFolders();
+                if (refreshed?.data) {
+                  fetchedFolders = refreshed.data;
+                }
+              } catch (seedErr) {
+                console.warn('Folder seeding error:', seedErr);
+              }
+            }
+
+            setFolders(fetchedFolders);
+            await offlineService.cacheServerFolders(fetchedFolders);
+          }
+        } catch (apiErr) {
+          console.warn('Backend getFolders failed, using cached folders:', apiErr.message);
+        }
+      }
+    } catch (err) {
+      console.warn('Error loading folders:', err);
+    }
+  }, []);
+
+  const handleCreateFolder = async (name, parentId = null) => {
+    if (!name || !name.trim()) return;
+    try {
+      if (navigator.onLine) {
+        const res = await folderService.createFolder({
+          name: name.trim(),
+          parentId: parentId || undefined
+        });
+        if (res.success && res.data) {
+          success(parentId ? `Subfolder "${name}" created` : `Folder "${name}" created`);
+          await loadFolders();
+          return res.data;
+        }
+      } else {
+        const localFolder = await offlineService.saveLocalFolder({
+          name: name.trim(),
+          parentId: parentId || null
+        });
+        setFolders((prev) => [...prev, localFolder]);
+        success(`Folder "${name}" created locally`);
+        return localFolder;
+      }
+    } catch (err) {
+      toastError(err?.response?.data?.message || err.message || 'Failed to create folder');
+    }
+  };
+
+  const handleDeleteFolder = async (folderId, folderName) => {
+    try {
+      if (navigator.onLine) {
+        await folderService.deleteFolder(folderId);
+        success(`Folder "${folderName || 'Folder'}" deleted`);
+      } else {
+        await offlineService.deleteLocalFolder(folderId);
+        success(`Folder "${folderName || 'Folder'}" deleted locally`);
+      }
+
+      if (selectedFolder === folderName) {
+        setSelectedFolder(null);
+      }
+
+      await loadFolders();
+      await loadNotes();
+    } catch (err) {
+      toastError(err?.response?.data?.message || err.message || 'Failed to delete folder');
+    }
+  };
+
   useEffect(() => {
     loadNotes();
-  }, [loadNotes]);
+    loadFolders();
+  }, [loadNotes, loadFolders]);
 
   // Current active note object
   const activeNote = notes.find((n) => (n._id || n.id) === activeTabId) || (tabs.find((t) => t.id === activeTabId)?.note);
@@ -606,6 +709,10 @@ export const EditorLayout = ({
           onSelectFolder={setSelectedFolder}
           selectedTag={selectedTag}
           onSelectTag={setSelectedTag}
+          folders={folders}
+          onCreateFolder={handleCreateFolder}
+          onDeleteFolder={handleDeleteFolder}
+          notes={notes}
           stats={stats}
           onOpenSettings={onOpenSettings}
           isCollapsed={isSidebarCollapsed}

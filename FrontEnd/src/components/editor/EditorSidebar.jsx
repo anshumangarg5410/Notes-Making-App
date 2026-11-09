@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext';
 import {
-  BookOpen,
   ChevronDown,
   ChevronRight,
   FileText,
@@ -48,6 +48,16 @@ export const EditorSidebar = ({
 
   const displayFolders = folders && folders.length > 0 ? folders : defaultFolders;
 
+  const { user } = useAuth();
+  const displayName = user?.name || user?.username || 'User';
+  const initials = displayName
+    .split(' ')
+    .filter(Boolean)
+    .map((n) => n[0])
+    .slice(0, 2)
+    .join('')
+    .toUpperCase() || 'U';
+
   const popularTags = ['#go', '#system-design', '#dbms', '#ui-ux', '#projects'];
 
   const handleCreateFolderSubmit = (e) => {
@@ -65,19 +75,27 @@ export const EditorSidebar = ({
         isCollapsed ? 'w-14' : 'w-64 min-w-[240px]'
       }`}
     >
-      {/* Top Brand Header */}
+      {/* Top Brand / User Header */}
       <div className="p-3.5 border-b border-[#222230] flex items-center justify-between">
         <div
           onClick={() => {
-            onSelectNav('all');
-            onSelectFolder?.(null);
-            onSelectTag?.(null);
+            if (onOpenSettings) onOpenSettings();
+            else onSelectNav('all');
           }}
           className="flex items-center gap-2.5 cursor-pointer hover:opacity-90 transition-opacity"
+          title={`Logged in as ${displayName}`}
         >
-          <div className="w-7 h-7 rounded-[4px] bg-gradient-to-tr from-purple-600 to-indigo-500 flex items-center justify-center text-white shadow-sm shadow-purple-900/40">
-            <BookOpen className="w-4 h-4" />
-          </div>
+          {user?.avatar ? (
+            <img
+              src={user.avatar}
+              alt={displayName}
+              className="w-7 h-7 rounded-full object-cover border border-purple-500/50 shadow-sm shadow-purple-900/40 shrink-0"
+            />
+          ) : (
+            <div className="w-7 h-7 rounded-full bg-gradient-to-tr from-[#9333ea] to-[#c084fc] text-white text-[11px] font-bold flex items-center justify-center shadow-sm shadow-purple-900/50 border border-purple-400/40 shrink-0">
+              {initials}
+            </div>
+          )}
           {!isCollapsed && (
             <div className="flex items-center gap-1.5">
               <span className="font-semibold text-sm text-gray-100 tracking-tight">NoteNest</span>

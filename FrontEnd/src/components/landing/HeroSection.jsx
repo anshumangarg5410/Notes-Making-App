@@ -1,329 +1,349 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import {
-  ArrowRight,
-  Play,
-  CheckCircle2,
-  Zap,
-  Cloud,
-  FileText,
-  Link2,
-  Image as ImageIcon,
-  CheckSquare,
-  Sparkles
-} from 'lucide-react';
-import { useAuth } from '../../context/AuthContext';
-import { useToast } from '../../context/ToastContext';
-import heroBgLight from '../../assets/landing/backgrounds/hero-bg-light.png';
-import heroBgDark from '../../assets/landing/backgrounds/hero-bg-dark.png';
+import { Link } from 'react-router-dom';
+import { ArrowRight, Play, Zap, RefreshCw, Smartphone, Sparkles, Check, X } from 'lucide-react';
+import { useTheme } from '../../context/ThemeContext';
+import editorPreviewDark from '../../assets/landing/editor-preview-dark.png';
+import editorPreviewLight from '../../assets/landing/editor-preview-light.png';
+import stickyHeartDark from '../../assets/landing/sticky-heart-dark.png';
+import binderClipDark from '../../assets/landing/binder-clip-dark.png';
 
 export const HeroSection = () => {
-  const { isAuthenticated, login, user } = useAuth();
-  const { success, error: toastError } = useToast();
-  const navigate = useNavigate();
-  const [demoLoading, setDemoLoading] = useState(false);
-  const [quickInput, setQuickInput] = useState('');
-
-  // Dynamic greeting: user name if authenticated, otherwise friendly fallback
-  const userGreeting = isAuthenticated && user?.name
-    ? `Good morning, ${user.name.split(' ')[0]} 👋`
-    : 'Hello, User 👋';
-
-  const handleStartWriting = () => {
-    if (isAuthenticated) {
-      navigate('/notes?action=new');
-    } else {
-      navigate('/login', { state: { from: { pathname: '/notes', search: '?action=new' } } });
-    }
-  };
-
-  const handleDemoLogin = async () => {
-    setDemoLoading(true);
-    try {
-      const res = await login('demo@notely.com', 'password123');
-      if (res.success) {
-        success('Logged into demo workspace!');
-        navigate('/notes');
-      }
-    } catch (err) {
-      toastError(err.response?.data?.message || 'Demo login failed');
-    } finally {
-      setDemoLoading(false);
-    }
-  };
-
-  const handleQuickCapture = (captureType = 'Note') => {
-    const defaultTitle = quickInput ? quickInput : `New ${captureType}`;
-    if (isAuthenticated) {
-      navigate(`/notes?action=new&title=${encodeURIComponent(defaultTitle)}`);
-    } else {
-      handleStartWriting();
-    }
-  };
+  const { isDark } = useTheme();
+  const [showDemoModal, setShowDemoModal] = useState(false);
 
   return (
-    <section className="relative overflow-hidden min-h-[calc(100vh-4rem)] flex flex-col justify-center py-10 lg:py-14 bg-gradient-to-b from-[#FFF5EC] via-[#FDF9F4] to-[#FDFBF7] dark:from-[#1E1712] dark:via-[#161413] dark:to-[#121316] select-none transition-colors">
-      {/* Background Graphic Layers */}
+    <section
+      id="home"
+      className="relative pt-24 pb-10 flex items-center overflow-hidden transition-colors duration-300"
+      style={{
+        background: isDark
+          ? 'radial-gradient(ellipse at 25% 45%, #2a164d 0%, #130f22 45%, #0c0916 100%)'
+          : 'radial-gradient(ellipse at 25% 45%, #f5e9ff 0%, #faf8f5 50%, #f3edf8 100%)'
+      }}
+    >
+      {/* Background Paper Texture & Ambient Glows */}
       <div
-        role="presentation"
-        aria-hidden="true"
-        className="absolute inset-0 bg-cover bg-center pointer-events-none opacity-45 dark:opacity-0 transition-opacity duration-300"
-        style={{
-          backgroundImage: `url(${heroBgLight})`,
-          backgroundRepeat: 'no-repeat',
-          backgroundPosition: 'center',
-          backgroundSize: 'cover'
-        }}
+        className="absolute top-1/4 left-1/5 w-[500px] h-[500px] rounded-full blur-[120px] pointer-events-none opacity-40 transition-colors duration-500"
+        style={{ background: isDark ? '#7c3aed' : '#d8b4fe' }}
       />
       <div
-        role="presentation"
-        aria-hidden="true"
-        className="absolute inset-0 bg-cover bg-center pointer-events-none opacity-0 dark:opacity-40 transition-opacity duration-300"
-        style={{
-          backgroundImage: `url(${heroBgDark})`,
-          backgroundRepeat: 'no-repeat',
-          backgroundPosition: 'center',
-          backgroundSize: 'cover'
-        }}
+        className="absolute bottom-1/5 right-1/4 w-[450px] h-[450px] rounded-full blur-[140px] pointer-events-none opacity-30 transition-colors duration-500"
+        style={{ background: isDark ? '#9333ea' : '#c084fc' }}
       />
 
-      {/* Ambient background glow */}
-      <div className="absolute top-10 left-1/4 w-[500px] h-[350px] bg-orange-400/15 dark:bg-orange-500/10 rounded-full blur-3xl pointer-events-none" />
-      <div className="absolute top-20 right-10 w-[400px] h-[300px] bg-amber-400/15 dark:bg-amber-500/10 rounded-full blur-3xl pointer-events-none" />
+      {/* Hand-drawn Doodles & Pencil Annotations in Background */}
+      <svg
+        className="absolute top-28 left-6 sm:left-12 w-24 h-24 opacity-30 pointer-events-none select-none"
+        viewBox="0 0 100 100"
+        fill="none"
+      >
+        <path
+          d="M15,50 Q35,15 55,50 T95,50"
+          stroke={isDark ? '#c084fc' : '#8b5cf6'}
+          strokeWidth="2"
+          strokeDasharray="4 4"
+        />
+        <circle cx="55" cy="25" r="3.5" fill={isDark ? '#fbbf24' : '#f59e0b'} />
+      </svg>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 w-full my-auto">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-8 items-center">
-          
-          {/* Left Column: Headline & Action Buttons */}
-          <div className="lg:col-span-5 space-y-6 text-center lg:text-left">
-            {/* Pill Tag */}
-            <div className="inline-flex items-center space-x-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-orange-100/80 dark:bg-orange-950/60 text-orange-700 dark:text-orange-300 border border-orange-200/80 dark:border-orange-900/50">
-              <Sparkles className="w-3.5 h-3.5 text-orange-600 dark:text-orange-400" />
-              <span>Your Second Brain</span>
+      <svg
+        className="absolute bottom-16 left-1/3 w-32 h-16 opacity-25 pointer-events-none select-none"
+        viewBox="0 0 120 60"
+        fill="none"
+      >
+        <path
+          d="M10,30 C30,10 70,50 110,25"
+          stroke={isDark ? '#fbbf24' : '#d97706'}
+          strokeWidth="2"
+          strokeLinecap="round"
+        />
+        <path
+          d="M95,20 L110,25 L102,38"
+          stroke={isDark ? '#fbbf24' : '#d97706'}
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+      </svg>
+
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full relative z-10">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-8 items-center">
+
+          {/* Left Column (5 cols on desktop) */}
+          <div className="lg:col-span-5 space-y-7 text-center lg:text-left">
+
+            {/* Handwritten Eyebrow */}
+            <div className="inline-flex items-center gap-2">
+              <span
+                className="text-sm sm:text-base font-serif italic tracking-wide flex items-center gap-2"
+                style={{
+                  color: isDark ? '#c4b5fd' : '#7c3aed'
+                }}
+              >
+                <span className="text-amber-400">✦</span>
+                <span>Your Ideas, Organized</span>
+                <span className="text-amber-400 text-xs">✏️</span>
+              </span>
             </div>
 
-            {/* Big Headline */}
-            <h1 className="font-serif font-extrabold text-4xl sm:text-5xl lg:text-5xl xl:text-6xl text-[#1E1E1E] dark:text-[#FAF8F5] leading-[1.12] tracking-tight">
-              Capture Ideas. <br />
-              Connect Knowledge. <br />
-              <span className="text-orange-600 dark:text-orange-400">
-                Remember Forever.
+            {/* Main Heading with Hand-Drawn Oval around "Notes" */}
+            <h1 className={`text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight leading-[1.12] font-serif ${
+              isDark ? 'text-white' : 'text-stone-900'
+            }`}>
+              A Smarter Space <br className="hidden sm:inline" />
+              for Your{' '}
+              <span className="relative inline-block whitespace-nowrap mt-1">
+                {/* Hand-drawn purple circular doodle around Notes */}
+                <svg
+                  className="absolute -inset-x-5 -inset-y-3.5 w-[calc(100%+2.5rem)] h-[calc(100%+1.8rem)] pointer-events-none overflow-visible"
+                  viewBox="0 0 160 70"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  {/* Purple Oval Loop */}
+                  <path
+                    d="M 20,35 C 15,12 135,8 145,30 C 152,48 120,62 70,64 C 20,65 5,45 25,28 C 45,15 110,18 140,32"
+                    stroke={isDark ? '#a855f7' : '#9333ea'}
+                    strokeWidth="3.2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    className="drop-shadow-[0_0_8px_rgba(168,85,247,0.7)]"
+                  />
+                  {/* Little radiant pencil sparks */}
+                  <line x1="150" y1="20" x2="158" y2="15" stroke={isDark ? '#c084fc' : '#a855f7'} strokeWidth="2.5" strokeLinecap="round" />
+                  <line x1="155" y1="34" x2="164" y2="34" stroke={isDark ? '#c084fc' : '#a855f7'} strokeWidth="2.5" strokeLinecap="round" />
+                  <line x1="150" y1="46" x2="157" y2="52" stroke={isDark ? '#c084fc' : '#a855f7'} strokeWidth="2.5" strokeLinecap="round" />
+                </svg>
+                <span
+                  className="relative z-10 italic font-serif px-2 font-normal"
+                  style={{
+                    color: isDark ? '#f3e8ff' : '#6b21a8',
+                    textShadow: isDark ? '0 0 20px rgba(168,85,247,0.4)' : 'none'
+                  }}
+                >
+                  Notes
+                </span>
               </span>
             </h1>
 
-            {/* Subtitle */}
-            <p className="text-sm sm:text-base text-[#6E6C66] dark:text-[#A8A59E] leading-relaxed max-w-lg mx-auto lg:mx-0">
-              A modern note-taking app that helps you write, organize, understand and actually use your knowledge with the power of AI.
+            {/* Description */}
+            <p className={`text-base sm:text-lg leading-relaxed max-w-xl mx-auto lg:mx-0 font-sans ${
+              isDark ? 'text-stone-300' : 'text-stone-600'
+            }`}>
+              Write, organize, search and access your notes anytime, even offline. A modern,
+              powerful note-taking space built for your thoughts, plans and ideas.
             </p>
 
-            {/* Buttons */}
-            <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-3 pt-2">
-              <button
-                onClick={handleStartWriting}
-                id="hero-get-started-btn"
-                className="w-full sm:w-auto px-7 py-3.5 bg-gradient-to-r from-orange-600 via-orange-500 to-amber-600 hover:from-orange-700 hover:to-amber-700 text-white rounded-2xl font-semibold text-sm flex items-center justify-center space-x-2 shadow-lg shadow-orange-500/25 hover:shadow-orange-500/35 transition-all active:scale-[0.98]"
+            {/* CTA Buttons */}
+            <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4 pt-2">
+              {/* Primary: Get Started — It's Free */}
+              <Link
+                to="/register"
+                className={`w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-full font-semibold text-base transition-all duration-200 cursor-pointer ${
+                  isDark
+                    ? 'bg-gradient-to-r from-[#9333ea] to-[#7c3aed] text-white shadow-[0_0_28px_rgba(147,51,234,0.55)] hover:shadow-[0_0_36px_rgba(147,51,234,0.8)] hover:scale-105 active:scale-98'
+                    : 'bg-gradient-to-r from-[#8b5cf6] to-[#7c3aed] text-white shadow-lg shadow-purple-500/30 hover:shadow-purple-500/50 hover:scale-105 active:scale-98'
+                }`}
               >
-                <span>Get Started</span>
+                <span>Get Started — It's Free</span>
                 <ArrowRight className="w-4 h-4" />
-              </button>
+              </Link>
 
+              {/* Secondary: Watch Demo */}
               <button
-                onClick={handleDemoLogin}
-                disabled={demoLoading}
-                className="w-full sm:w-auto px-6 py-3.5 bg-white dark:bg-[#1E2026] border border-[#E5E0D5] dark:border-[#2E313A] hover:bg-[#F8F5EE] dark:hover:bg-[#282B33] text-[#333] dark:text-[#EEE] rounded-2xl font-semibold text-sm flex items-center justify-center space-x-2 shadow-xs transition-all"
+                onClick={() => setShowDemoModal(true)}
+                className={`w-full sm:w-auto inline-flex items-center justify-center gap-2.5 px-6 py-3.5 rounded-full font-semibold text-base transition-all duration-200 cursor-pointer ${
+                  isDark
+                    ? 'bg-[#1e1633]/80 border border-purple-500/30 text-purple-200 hover:bg-[#281d45] hover:border-purple-400 hover:text-white'
+                    : 'bg-white/80 border border-stone-300 text-stone-800 hover:bg-stone-50 hover:border-stone-400'
+                }`}
               >
-                <Play className="w-3.5 h-3.5 fill-current text-orange-500" />
-                <span>{demoLoading ? 'Opening Demo...' : 'Watch Demo'}</span>
+                <div className={`w-6 h-6 rounded-full flex items-center justify-center ${
+                  isDark ? 'bg-purple-900/60 text-purple-300' : 'bg-purple-100 text-purple-700'
+                }`}>
+                  <Play className="w-3 h-3 fill-current ml-0.5" />
+                </div>
+                <span>Watch Demo</span>
               </button>
             </div>
 
-            {/* Trust Checks */}
-            <div className="flex items-center justify-center lg:justify-start gap-5 pt-3 text-xs text-[#7A7872] dark:text-[#9A9893] font-medium">
-              <div className="flex items-center space-x-1.5">
-                <CheckCircle2 className="w-4 h-4 text-orange-500" />
-                <span>Free to start</span>
+            {/* 3 Key Benefits below CTA */}
+            <div className="pt-4 grid grid-cols-3 gap-3 border-t border-purple-500/15 max-w-lg mx-auto lg:mx-0">
+              {/* Benefit 1: Works Offline */}
+              <div className="flex flex-col items-center lg:items-start gap-1.5">
+                <div className="flex items-center gap-2">
+                  <div className={`p-1.5 rounded-lg ${
+                    isDark ? 'text-amber-400 bg-amber-400/10' : 'text-amber-600 bg-amber-100'
+                  }`}>
+                    <Zap className="w-4 h-4" />
+                  </div>
+                  <span className={`text-xs sm:text-sm font-semibold ${
+                    isDark ? 'text-stone-200' : 'text-stone-800'
+                  }`}>
+                    Works Offline
+                  </span>
+                </div>
               </div>
-              <div className="flex items-center space-x-1.5">
-                <Zap className="w-4 h-4 text-orange-500" />
-                <span>AI-powered</span>
+
+              {/* Benefit 2: Auto Syncs */}
+              <div className="flex flex-col items-center lg:items-start gap-1.5">
+                <div className="flex items-center gap-2">
+                  <div className={`p-1.5 rounded-lg ${
+                    isDark ? 'text-purple-400 bg-purple-400/10' : 'text-purple-600 bg-purple-100'
+                  }`}>
+                    <RefreshCw className="w-4 h-4" />
+                  </div>
+                  <span className={`text-xs sm:text-sm font-semibold ${
+                    isDark ? 'text-stone-200' : 'text-stone-800'
+                  }`}>
+                    Auto Syncs
+                  </span>
+                </div>
               </div>
-              <div className="flex items-center space-x-1.5">
-                <Cloud className="w-4 h-4 text-orange-500" />
-                <span>Sync across devices</span>
+
+              {/* Benefit 3: Across Devices */}
+              <div className="flex flex-col items-center lg:items-start gap-1.5">
+                <div className="flex items-center gap-2">
+                  <div className={`p-1.5 rounded-lg ${
+                    isDark ? 'text-indigo-400 bg-indigo-400/10' : 'text-indigo-600 bg-indigo-100'
+                  }`}>
+                    <Smartphone className="w-4 h-4" />
+                  </div>
+                  <span className={`text-xs sm:text-sm font-semibold ${
+                    isDark ? 'text-stone-200' : 'text-stone-800'
+                  }`}>
+                    Across Devices
+                  </span>
+                </div>
               </div>
             </div>
+
           </div>
 
-          {/* Right Column: Floating 3D Dashboard Mockup Card */}
-          <div className="lg:col-span-7 relative">
-            <div className="relative rounded-3xl border border-[#E8E2D5] dark:border-[#2D2E36] bg-white dark:bg-[#181A20] shadow-2xl p-5 sm:p-7 space-y-5 transition-transform duration-300 hover:scale-[1.01]">
-              
-              {/* Header Greeting */}
-              <div className="flex items-center justify-between pb-3 border-b border-[#F0EBE0] dark:border-[#252731]">
-                <div>
-                  <h3 className="font-serif font-bold text-lg sm:text-xl text-[#222] dark:text-[#FAF8F5]">
-                    {userGreeting}
-                  </h3>
-                  <p className="text-xs text-[#88857E] dark:text-[#7A7C85]">
-                    Capture ideas, connect knowledge
-                  </p>
-                </div>
-                <button
-                  onClick={handleStartWriting}
-                  className="px-3.5 py-1.5 bg-orange-600 hover:bg-orange-700 text-white rounded-xl text-xs font-semibold shadow-xs flex items-center space-x-1 transition-colors"
-                >
-                  <FileText className="w-3.5 h-3.5" />
-                  <span>+ New Note</span>
-                </button>
-              </div>
+          {/* Right Column: Floating NoteNest Tablet Editor Interface (7 cols on desktop) */}
+          <div className="lg:col-span-7 relative flex items-center justify-center">
 
-              {/* Quick Capture Card */}
-              <div className="rounded-2xl border border-[#EBE5DA] dark:border-[#272933] bg-[#FAF8F4] dark:bg-[#1C1E26] p-4 space-y-3">
-                <div className="flex items-center justify-between text-xs font-semibold text-[#55534E] dark:text-[#C5C2BA]">
-                  <span>Quick Capture</span>
-                  <span className="text-[11px] text-orange-600 dark:text-orange-400 font-mono">⌘ K</span>
-                </div>
-                <input
-                  type="text"
-                  placeholder="Jot down an idea, paste a link, or write anything..."
-                  value={quickInput}
-                  onChange={(e) => setQuickInput(e.target.value)}
-                  onKeyDown={(e) => e.key === 'Enter' && handleQuickCapture()}
-                  className="w-full px-3 py-2 bg-white dark:bg-[#15171D] border border-[#E0DAD0] dark:border-[#2B2D37] rounded-xl text-xs placeholder:text-[#9A9893] text-[#222] dark:text-[#EEE] focus:outline-none focus:ring-1 focus:ring-orange-500"
+            {/* Decorative Ambient Glowing Aura around Editor */}
+            <div
+              className="absolute -inset-4 rounded-3xl blur-2xl opacity-60 pointer-events-none transition-colors duration-500"
+              style={{
+                background: isDark
+                  ? 'radial-gradient(circle, rgba(168,85,247,0.35) 0%, rgba(139,92,246,0.15) 50%, transparent 70%)'
+                  : 'radial-gradient(circle, rgba(216,180,254,0.45) 0%, rgba(192,132,252,0.15) 50%, transparent 70%)'
+              }}
+            />
+
+            {/* Floating Illustrated Elements Container */}
+            <div className="relative w-full max-w-2xl group select-none">
+
+              {/* Yellow Heart Sticky Note (Top-Right Floating) */}
+              <div
+                className="absolute -top-6 sm:-top-8 -right-3 sm:-right-4 w-16 sm:w-20 z-20 transform rotate-12 transition-transform duration-300 group-hover:rotate-6 group-hover:scale-105 filter drop-shadow-lg"
+              >
+                <img
+                  src={stickyHeartDark}
+                  alt="Sticky Note"
+                  className="w-full h-auto object-contain"
                 />
-                <div className="flex items-center space-x-2 text-xs">
-                  <button
-                    onClick={() => handleQuickCapture()}
-                    className="px-2.5 py-1 rounded-lg bg-white dark:bg-[#23252E] border border-[#E5DFD4] dark:border-[#2D303B] hover:border-orange-400 text-[#555] dark:text-[#CCC] flex items-center space-x-1"
-                  >
-                    <FileText className="w-3 h-3 text-orange-500" />
-                    <span>Note</span>
-                  </button>
-                  <button
-                    onClick={() => handleQuickCapture()}
-                    className="px-2.5 py-1 rounded-lg bg-white dark:bg-[#23252E] border border-[#E5DFD4] dark:border-[#2D303B] hover:border-orange-400 text-[#555] dark:text-[#CCC] flex items-center space-x-1"
-                  >
-                    <Link2 className="w-3 h-3 text-blue-500" />
-                    <span>Link</span>
-                  </button>
-                  <button
-                    onClick={() => handleQuickCapture()}
-                    className="px-2.5 py-1 rounded-lg bg-white dark:bg-[#23252E] border border-[#E5DFD4] dark:border-[#2D303B] hover:border-orange-400 text-[#555] dark:text-[#CCC] flex items-center space-x-1"
-                  >
-                    <ImageIcon className="w-3 h-3 text-emerald-500" />
-                    <span>Image</span>
-                  </button>
-                  <button
-                    onClick={() => handleQuickCapture()}
-                    className="px-2.5 py-1 rounded-lg bg-white dark:bg-[#23252E] border border-[#E5DFD4] dark:border-[#2D303B] hover:border-orange-400 text-[#555] dark:text-[#CCC] flex items-center space-x-1"
-                  >
-                    <CheckSquare className="w-3 h-3 text-purple-500" />
-                    <span>Checklist</span>
-                  </button>
-                </div>
               </div>
 
-              {/* Recent Notes Grid */}
-              <div className="space-y-2">
-                <span className="text-[11px] font-semibold uppercase tracking-wider text-[#98958E] dark:text-[#7A7C85]">
-                  Recent Notes
-                </span>
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
-                  <div
-                    onClick={() => navigate('/notes')}
-                    className="p-3 rounded-xl border border-[#E8E2D5] dark:border-[#282A33] bg-[#FAF8F4] dark:bg-[#1A1C22] hover:border-orange-400 dark:hover:border-orange-600 transition-all cursor-pointer space-y-1"
-                  >
-                    <div className="flex items-center space-x-1.5 text-xs font-semibold text-[#222] dark:text-[#FAF8F5]">
-                      <span className="w-2 h-2 rounded-full bg-orange-500" />
-                      <span className="truncate">Dijkstra&apos;s Algorithm</span>
-                    </div>
-                    <p className="text-[10px] text-[#88857E] dark:text-[#7A7C85]">
-                      DSA Notes • 2h ago
-                    </p>
-                  </div>
-
-                  <div
-                    onClick={() => navigate('/notes')}
-                    className="p-3 rounded-xl border border-[#E8E2D5] dark:border-[#282A33] bg-[#FAF8F4] dark:bg-[#1A1C22] hover:border-emerald-400 dark:hover:border-emerald-600 transition-all cursor-pointer space-y-1"
-                  >
-                    <div className="flex items-center space-x-1.5 text-xs font-semibold text-[#222] dark:text-[#FAF8F5]">
-                      <span className="w-2 h-2 rounded-full bg-emerald-500" />
-                      <span className="truncate">System Design Basics</span>
-                    </div>
-                    <p className="text-[10px] text-[#88857E] dark:text-[#7A7C85]">
-                      System Design • 1d ago
-                    </p>
-                  </div>
-
-                  <div
-                    onClick={() => navigate('/notes')}
-                    className="p-3 rounded-xl border border-[#E8E2D5] dark:border-[#282A33] bg-[#FAF8F4] dark:bg-[#1A1C22] hover:border-purple-400 dark:hover:border-purple-600 transition-all cursor-pointer space-y-1"
-                  >
-                    <div className="flex items-center space-x-1.5 text-xs font-semibold text-[#222] dark:text-[#FAF8F5]">
-                      <span className="w-2 h-2 rounded-full bg-purple-500" />
-                      <span className="truncate">My AI Project Ideas</span>
-                    </div>
-                    <p className="text-[10px] text-[#88857E] dark:text-[#7A7C85]">
-                      Personal • 3d ago
-                    </p>
-                  </div>
-                </div>
+              {/* Metal Binder Clip (Top-Left of Editor) */}
+              <div
+                className="absolute -top-4 sm:-top-5 left-16 sm:left-24 w-8 sm:w-11 z-20 transform -rotate-6 transition-transform duration-300 group-hover:rotate-0 filter drop-shadow-md"
+              >
+                <img
+                  src={binderClipDark}
+                  alt="Binder Clip"
+                  className="w-full h-auto object-contain"
+                />
               </div>
 
-              {/* Continue Learning Cards */}
-              <div className="space-y-2">
-                <span className="text-[11px] font-semibold uppercase tracking-wider text-[#98958E] dark:text-[#7A7C85]">
-                  Continue Learning
-                </span>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-                  <div
-                    onClick={() => navigate('/notes')}
-                    className="p-3 rounded-xl border border-[#E8E2D5] dark:border-[#282A33] bg-[#FAF8F4] dark:bg-[#1A1C22] flex items-center justify-between cursor-pointer hover:border-orange-300"
-                  >
-                    <div className="space-y-1">
-                      <span className="text-xs font-semibold text-[#222] dark:text-[#FAF8F5] block">
-                        Graph Algorithms
-                      </span>
-                      <span className="text-[10px] text-[#88857E] dark:text-[#7A7C85]">
-                        12 cards • 80% complete
-                      </span>
-                    </div>
-                    <div className="w-16 h-1.5 rounded-full bg-orange-100 dark:bg-orange-950/80 overflow-hidden">
-                      <div className="w-4/5 h-full bg-orange-500 rounded-full" />
-                    </div>
-                  </div>
+              {/* Main Tablet Editor Interface Clipart Asset */}
+              <div className="relative rounded-2xl overflow-hidden transition-all duration-500 group-hover:scale-[1.01] filter drop-shadow-[0_20px_50px_rgba(0,0,0,0.5)]">
+                <img
+                  src={isDark ? editorPreviewDark : editorPreviewLight}
+                  alt="NoteNest Application Interface"
+                  className="w-full h-auto object-contain block select-none"
+                  loading="eager"
+                />
 
-                  <div
-                    onClick={() => navigate('/notes')}
-                    className="p-3 rounded-xl border border-[#E8E2D5] dark:border-[#282A33] bg-[#FAF8F4] dark:bg-[#1A1C22] flex items-center justify-between cursor-pointer hover:border-blue-300"
-                  >
-                    <div className="space-y-1">
-                      <span className="text-xs font-semibold text-[#222] dark:text-[#FAF8F5] block">
-                        Operating Systems
-                      </span>
-                      <span className="text-[10px] text-[#88857E] dark:text-[#7A7C85]">
-                        8 cards • 60% complete
-                      </span>
-                    </div>
-                    <div className="w-16 h-1.5 rounded-full bg-blue-100 dark:bg-blue-950/80 overflow-hidden">
-                      <div className="w-3/5 h-full bg-blue-500 rounded-full" />
-                    </div>
-                  </div>
-                </div>
+                {/* Subtle Interactive Shimmer Overlay on Hover */}
+                <div className="absolute inset-0 bg-gradient-to-tr from-purple-500/0 via-white/5 to-purple-500/0 opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none" />
+              </div>
+
+              {/* Floating Live Badge: Offline-First Mode Indicator */}
+              <div
+                className={`absolute -bottom-4 left-6 sm:left-12 px-3.5 py-1.5 rounded-full text-xs font-semibold flex items-center gap-2 z-20 backdrop-blur-md shadow-lg transition-transform duration-300 group-hover:-translate-y-1 ${
+                  isDark
+                    ? 'bg-[#1f1736]/90 border border-purple-500/40 text-purple-200 shadow-purple-950/50'
+                    : 'bg-white/95 border border-amber-300 text-stone-800 shadow-amber-900/10'
+                }`}
+              >
+                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                <span>Ready to write • Offline first</span>
               </div>
 
             </div>
+
           </div>
 
         </div>
       </div>
 
-      {/* Bottom seamless ambient fade into subsequent page sections */}
-      <div
-        role="presentation"
-        aria-hidden="true"
-        className="absolute bottom-0 inset-x-0 h-28 bg-gradient-to-t from-[#FDFBF7] dark:from-[#121316] to-transparent pointer-events-none"
-      />
+      {/* Interactive Demo Video / Feature Walkthrough Modal */}
+      {showDemoModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-200">
+          <div
+            className={`relative w-full max-w-3xl rounded-3xl p-6 sm:p-8 border shadow-2xl transition-all ${
+              isDark
+                ? 'bg-[#151124] border-purple-800/40 text-stone-100 shadow-[0_0_50px_rgba(168,85,247,0.3)]'
+                : 'bg-white border-stone-200 text-stone-900 shadow-2xl'
+            }`}
+          >
+            <button
+              onClick={() => setShowDemoModal(false)}
+              className="absolute top-5 right-5 p-2 rounded-xl text-stone-400 hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
+            >
+              <X className="w-5 h-5" />
+            </button>
+
+            <div className="flex items-center gap-3 mb-6">
+              <div className="w-10 h-10 rounded-2xl bg-purple-600/20 text-purple-400 flex items-center justify-center">
+                <Play className="w-5 h-5 fill-current ml-0.5" />
+              </div>
+              <div>
+                <h3 className="text-xl font-bold font-serif">NoteNest in Action</h3>
+                <p className="text-xs text-stone-400">See how fluid note-taking feels</p>
+              </div>
+            </div>
+
+            {/* Video / Interactive Simulation Container */}
+            <div className="rounded-2xl overflow-hidden border border-purple-500/20 bg-black aspect-video relative flex items-center justify-center">
+              <img
+                src={isDark ? editorPreviewDark : editorPreviewLight}
+                alt="Demo Preview"
+                className="w-full h-full object-cover opacity-80"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent flex flex-col justify-end p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h4 className="text-white font-bold text-lg">Instant Note Nesting & Offline Sync</h4>
+                    <p className="text-purple-300 text-sm">Experience the distraction-free markdown canvas.</p>
+                  </div>
+                  <Link
+                    to="/register"
+                    className="px-5 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-semibold text-sm shadow-lg shadow-purple-600/40 transition-colors"
+                  >
+                    Try it Now
+                  </Link>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </section>
   );
 };
+
+export default HeroSection;

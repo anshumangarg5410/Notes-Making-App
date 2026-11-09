@@ -2,6 +2,7 @@ import React from 'react';
 import { PencilNavbar } from '../components/landing/PencilNavbar';
 import { HeroSection } from '../components/landing/HeroSection';
 import { FeatureCards } from '../components/landing/FeatureCards';
+import { Footer } from '../components/footer/Footer';
 import landingBg from '../assets/wide_dark_moody_stationary_themed_background_des.png';
 
 export const LandingPage = () => {
@@ -27,6 +28,9 @@ export const LandingPage = () => {
 
       {/* 3. Five Feature Cards */}
       <FeatureCards />
+
+      {/* 4. New 4-Column Footer with Torn-Paper Divider */}
+      <Footer />
     </div>
   );
 };

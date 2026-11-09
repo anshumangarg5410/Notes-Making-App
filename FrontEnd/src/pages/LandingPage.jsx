@@ -1,31 +1,32 @@
 import React from 'react';
-import { LandingNavbar } from '../components/landing/LandingNavbar';
+import { PencilNavbar } from '../components/landing/PencilNavbar';
 import { HeroSection } from '../components/landing/HeroSection';
 import { FeatureCards } from '../components/landing/FeatureCards';
-import { AboutSection } from '../components/landing/AboutSection';
-import { HowItWorks } from '../components/landing/HowItWorks';
-import { FinalCTA } from '../components/landing/FinalCTA';
-import { LandingFooter } from '../components/landing/LandingFooter';
-import { useTheme } from '../context/ThemeContext';
+import landingBg from '../assets/wide_dark_moody_stationary_themed_background_des.png';
 
 export const LandingPage = () => {
-  const { isDark } = useTheme();
-
   return (
     <div
-      className={`min-h-screen overflow-x-hidden transition-colors duration-300 ${
-        isDark ? 'bg-[#0c0916] text-[#f0eeff]' : 'bg-[#faf8f5] text-stone-900'
-      }`}
+      className="min-h-screen w-full relative flex flex-col justify-between overflow-x-hidden text-[#f5f3f0]"
+      style={{
+        backgroundImage: `url(${landingBg})`,
+        backgroundColor: '#0d0a14',
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundRepeat: 'no-repeat',
+        backgroundAttachment: 'fixed'
+      }}
     >
-      <LandingNavbar />
-      <main>
+      {/* 1. Pencil Navigation Bar */}
+      <PencilNavbar />
+
+      {/* 2. Hero Section (with Left Column and Right Editor Preview) */}
+      <main className="flex-1 flex flex-col justify-center">
         <HeroSection />
-        <FeatureCards />
-        <AboutSection />
-        <HowItWorks />
-        <FinalCTA />
       </main>
-      <LandingFooter />
+
+      {/* 3. Five Feature Cards */}
+      <FeatureCards />
     </div>
   );
 };

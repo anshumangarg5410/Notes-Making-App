@@ -78,7 +78,8 @@ export default {
       fontFamily: {
         serif: ['"Playfair Display"', 'Georgia', 'serif'],
         sans: ['"Plus Jakarta Sans"', 'Inter', 'system-ui', 'sans-serif'],
-        mono: ['"JetBrains Mono"', 'monospace']
+        mono: ['"JetBrains Mono"', 'monospace'],
+        handwriting: ['"Caveat"', 'cursive', 'sans-serif']
       },
       boxShadow: {
         'subtle': '0 1px 3px 0 rgba(15, 23, 42, 0.05), 0 1px 2px -1px rgba(15, 23, 42, 0.05)',

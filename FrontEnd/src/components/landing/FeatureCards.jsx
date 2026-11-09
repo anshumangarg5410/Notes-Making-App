@@ -1,153 +1,104 @@
 import React from 'react';
-import { PenTool, Folder, CloudLightning, Search, Share2, Sparkles } from 'lucide-react';
-import { useTheme } from '../../context/ThemeContext';
+import { PenLine, Folder, CloudLightning, Search, Share } from 'lucide-react';
 
 export const FeatureCards = () => {
-  const { isDark } = useTheme();
-
-  const features = [
+  const cards = [
     {
-      id: 'editor',
+      id: 'rich-text',
       title: 'Rich Text Editor',
       description: 'Write beautifully with powerful formatting tools.',
-      icon: PenTool,
-      accentColor: isDark ? '#c084fc' : '#7c3aed',
-      badge: 'Markdown & Rich-Text',
-      bgGlow: isDark ? 'rgba(192,132,252,0.12)' : 'rgba(124,58,237,0.06)',
-      borderColor: isDark ? 'rgba(192,132,252,0.25)' : 'rgba(124,58,237,0.18)',
-      rotation: '-rotate-1',
+      icon: PenLine,
+      iconColor: '#c084fc',
+      borderColor: 'rgba(192, 132, 252, 0.28)',
+      glowColor: 'rgba(192, 132, 252, 0.12)',
     },
     {
-      id: 'organization',
+      id: 'folders-tags',
       title: 'Folders & Tags',
       description: 'Keep your notes organized, your way.',
       icon: Folder,
-      accentColor: isDark ? '#fbbf24' : '#d97706',
-      badge: 'Nested Hierarchy',
-      bgGlow: isDark ? 'rgba(251,191,36,0.12)' : 'rgba(217,119,6,0.06)',
-      borderColor: isDark ? 'rgba(251,191,36,0.25)' : 'rgba(217,119,6,0.18)',
-      rotation: 'rotate-1',
+      iconColor: '#fbbf24',
+      borderColor: 'rgba(251, 191, 36, 0.28)',
+      glowColor: 'rgba(251, 191, 36, 0.1)',
     },
     {
-      id: 'offline',
+      id: 'offline-first',
       title: 'Offline First',
       description: 'Access and edit notes even without internet.',
       icon: CloudLightning,
-      accentColor: isDark ? '#c084fc' : '#9333ea',
-      badge: 'Local Database',
-      bgGlow: isDark ? 'rgba(192,132,252,0.12)' : 'rgba(147,51,234,0.06)',
-      borderColor: isDark ? 'rgba(192,132,252,0.25)' : 'rgba(147,51,234,0.18)',
-      rotation: '-rotate-0.5',
+      iconColor: '#c084fc',
+      borderColor: 'rgba(192, 132, 252, 0.28)',
+      glowColor: 'rgba(192, 132, 252, 0.12)',
     },
     {
       id: 'search',
       title: 'Powerful Search',
       description: 'Find anything in seconds with full-text search.',
       icon: Search,
-      accentColor: isDark ? '#e9d5ff' : '#6b21a8',
-      badge: 'Instant Results',
-      bgGlow: isDark ? 'rgba(233,213,255,0.1)' : 'rgba(107,33,168,0.05)',
-      borderColor: isDark ? 'rgba(233,213,255,0.22)' : 'rgba(107,33,168,0.18)',
-      rotation: 'rotate-1',
+      iconColor: '#e9d5ff',
+      borderColor: 'rgba(233, 213, 255, 0.25)',
+      glowColor: 'rgba(233, 213, 255, 0.08)',
     },
     {
-      id: 'export',
+      id: 'import-export',
       title: 'Import & Export',
       description: 'Bring in your notes or take them anywhere.',
-      icon: Share2,
-      accentColor: isDark ? '#fbbf24' : '#b45309',
-      badge: 'Markdown & PDF',
-      bgGlow: isDark ? 'rgba(251,191,36,0.12)' : 'rgba(180,83,9,0.06)',
-      borderColor: isDark ? 'rgba(251,191,36,0.25)' : 'rgba(180,83,9,0.18)',
-      rotation: '-rotate-1',
+      icon: Share,
+      iconColor: '#fbbf24',
+      borderColor: 'rgba(251, 191, 36, 0.28)',
+      glowColor: 'rgba(251, 191, 36, 0.1)',
     },
   ];
 
   return (
-    <section
-      id="features"
-      className="relative pt-2 pb-16 px-4 sm:px-6 lg:px-8 overflow-hidden transition-colors duration-300"
-      style={{
-        background: isDark
-          ? 'linear-gradient(180deg, #0c0916 0%, #151124 50%, #0d0a17 100%)'
-          : 'linear-gradient(180deg, #f3edf8 0%, #faf8f5 50%, #f6f0fa 100%)'
-      }}
-    >
+    <section id="features" className="w-full pt-1 pb-10 px-4 sm:px-6 lg:px-8 relative z-20">
       <div className="max-w-7xl mx-auto">
-        {/* 5 Feature Cards Grid matching the 5 cards in Reference */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-5 items-stretch">
-          {features.map((feature, idx) => {
-            const IconComponent = feature.icon;
+        {/* Five Feature Cards in a single row on desktop, wrapping gracefully on tablet & mobile */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4.5 items-stretch">
+          {cards.map((card) => {
+            const Icon = card.icon;
             return (
               <div
-                key={feature.id}
-                className={`relative group rounded-2xl p-6 transition-all duration-300 cursor-default flex flex-col justify-between ${feature.rotation} hover:rotate-0 hover:scale-103 hover:z-20`}
+                key={card.id}
+                className="relative group rounded-2xl p-5 transition-all duration-300 cursor-default flex flex-col justify-between hover:-translate-y-1 hover:shadow-2xl select-none"
                 style={{
-                  backgroundColor: isDark ? '#191329' : '#ffffff',
-                  backgroundImage: isDark
-                    ? 'radial-gradient(ellipse at top left, rgba(168,85,247,0.12) 0%, transparent 70%)'
-                    : 'radial-gradient(ellipse at top left, rgba(251,191,36,0.08) 0%, transparent 70%)',
-                  border: `1.5px solid ${feature.borderColor}`,
-                  boxShadow: isDark
-                    ? '0 10px 30px -10px rgba(0,0,0,0.7), inset 0 1px 0 rgba(255,255,255,0.08)'
-                    : '0 8px 24px -6px rgba(120,80,40,0.08), inset 0 1px 0 rgba(255,255,255,0.8)',
+                  backgroundColor: 'rgba(23, 17, 36, 0.75)',
+                  backdropFilter: 'blur(10px)',
+                  border: `1.5px solid ${card.borderColor}`,
+                  boxShadow: `0 8px 24px -4px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.08)`
                 }}
               >
-                {/* Paper texture overlay / subtle torn edge effect */}
+                {/* Subtle paper deckle edge / inner glow */}
                 <div
-                  className="absolute inset-0 rounded-2xl pointer-events-none opacity-40 transition-opacity group-hover:opacity-70"
+                  className="absolute inset-0 rounded-2xl pointer-events-none opacity-30 group-hover:opacity-70 transition-opacity"
                   style={{
-                    boxShadow: `inset 0 0 18px ${feature.bgGlow}`
+                    boxShadow: `inset 0 0 16px ${card.glowColor}`
                   }}
                 />
 
-                {/* Top: Illustrated Icon in Hand-Drawn Style */}
                 <div>
-                  <div
-                    className="w-12 h-12 rounded-xl flex items-center justify-center mb-5 transition-transform duration-300 group-hover:scale-110"
-                    style={{
-                      backgroundColor: feature.bgGlow,
-                      border: `1px solid ${feature.borderColor}`,
-                      color: feature.accentColor
-                    }}
-                  >
-                    <IconComponent className="w-6 h-6 stroke-[1.8]" />
+                  {/* Card Icon */}
+                  <div className="mb-4">
+                    <Icon
+                      className="w-6 h-6 stroke-[1.9] transition-transform duration-300 group-hover:scale-110"
+                      style={{ color: card.iconColor }}
+                    />
                   </div>
 
-                  {/* Title */}
-                  <h3
-                    className={`text-lg font-bold font-serif mb-2 tracking-tight transition-colors ${
-                      isDark ? 'text-white group-hover:text-purple-300' : 'text-stone-900 group-hover:text-purple-900'
-                    }`}
-                  >
-                    {feature.title}
+                  {/* Card Title (Serif) */}
+                  <h3 className="text-base sm:text-lg font-bold font-serif text-[#f5f3f0] mb-1.5 tracking-tight group-hover:text-purple-200 transition-colors">
+                    {card.title}
                   </h3>
 
-                  {/* Description */}
-                  <p className={`text-xs sm:text-sm leading-relaxed ${
-                    isDark ? 'text-stone-300' : 'text-stone-600'
-                  }`}>
-                    {feature.description}
+                  {/* Card Description (Sans-serif) */}
+                  <p className="text-xs sm:text-[13px] leading-relaxed text-[#b8b3c8]">
+                    {card.description}
                   </p>
-                </div>
-
-                {/* Bottom: Subtle stationery tag */}
-                <div className="mt-5 pt-4 border-t border-purple-500/10 flex items-center justify-between">
-                  <span
-                    className="text-[11px] font-mono uppercase tracking-wider font-semibold"
-                    style={{ color: feature.accentColor }}
-                  >
-                    {feature.badge}
-                  </span>
-                  <span className={`text-[10px] font-mono ${isDark ? 'text-stone-500' : 'text-stone-400'}`}>
-                    0{idx + 1}
-                  </span>
                 </div>
               </div>
             );
           })}
         </div>
-
       </div>
     </section>
   );

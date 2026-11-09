@@ -1,0 +1,77 @@
+import React from 'react';
+import { HardDrive, Crown, ArrowUpRight, Check, Sparkles } from 'lucide-react';
+
+export const StorageSettings = ({ user }) => {
+  const plan = user?.plan || 'pro';
+
+  return (
+    <div className="space-y-4 text-xs">
+      <div className="rounded-[6px] border border-[#272738] bg-[#14141e] p-5 shadow-sm">
+        <div className="flex items-center gap-2 mb-1">
+          <HardDrive className="w-4 h-4 text-purple-400" />
+          <h3 className="text-sm font-bold text-white tracking-tight">Storage & Quotas</h3>
+        </div>
+        <p className="text-[11px] text-gray-400 mb-4">
+          Monitor your cloud storage usage across notes, attachments, and backups
+        </p>
+
+        {/* Progress Bar & Meter */}
+        <div className="p-4 rounded-[6px] bg-[#1a1a26] border border-[#2e2e44] mb-5">
+          <div className="flex items-center justify-between text-xs mb-2">
+            <span className="font-semibold text-white">245 MB of 2 GB used</span>
+            <span className="text-purple-400 font-bold">12%</span>
+          </div>
+          <div className="w-full h-2 bg-[#252538] rounded-full overflow-hidden">
+            <div
+              className="h-full bg-gradient-to-r from-purple-500 to-indigo-500 rounded-full"
+              style={{ width: '12%' }}
+            />
+          </div>
+        </div>
+
+        {/* Breakdown */}
+        <h4 className="text-xs font-semibold text-gray-300 mb-3">Storage Breakdown</h4>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-5">
+          <div className="p-3 bg-[#171722] border border-[#272738] rounded-[5px]">
+            <p className="text-[11px] text-gray-400">Notes & Revisions</p>
+            <p className="text-sm font-bold text-white mt-1">18.4 MB</p>
+            <p className="text-[10px] text-purple-400 mt-0.5">48 active notes</p>
+          </div>
+          <div className="p-3 bg-[#171722] border border-[#272738] rounded-[5px]">
+            <p className="text-[11px] text-gray-400">Images & Attachments</p>
+            <p className="text-sm font-bold text-white mt-1">210.0 MB</p>
+            <p className="text-[10px] text-purple-400 mt-0.5">Media assets</p>
+          </div>
+          <div className="p-3 bg-[#171722] border border-[#272738] rounded-[5px]">
+            <p className="text-[11px] text-gray-400">Cache & Indexes</p>
+            <p className="text-sm font-bold text-white mt-1">16.6 MB</p>
+            <p className="text-[10px] text-purple-400 mt-0.5">Search index</p>
+          </div>
+        </div>
+
+        {/* Upgrade / Plan info */}
+        <div className="p-4 rounded-[6px] bg-gradient-to-r from-purple-950/40 via-[#1e1430]/60 to-[#14141e] border border-purple-800/40 flex items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-[6px] bg-purple-600/30 border border-purple-500/40 flex items-center justify-center text-purple-300">
+              <Crown className="w-5 h-5 text-amber-300" />
+            </div>
+            <div>
+              <p className="text-xs font-bold text-white flex items-center gap-1.5">
+                <span>NoteNest Pro Plan</span>
+                <span className="px-1.5 py-0.5 rounded text-[10px] bg-purple-600 text-white font-semibold">Active</span>
+              </p>
+              <p className="text-[11px] text-gray-400">Unlimited notes, nested folders, and priority cloud sync</p>
+            </div>
+          </div>
+          <button
+            type="button"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-[5px] bg-purple-600 hover:bg-purple-500 text-white font-medium text-xs transition-colors cursor-pointer"
+          >
+            <span>Manage Plan</span>
+            <ArrowUpRight className="w-3.5 h-3.5" />
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};

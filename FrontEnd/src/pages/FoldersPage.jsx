@@ -296,11 +296,11 @@ export const FoldersPage = () => {
     } else if (navId === 'favorites') {
       navigate('/notes?view=favorites');
     } else if (navId === 'trash') {
-      navigate('/notes?view=trash');
+      navigate('/trash');
     } else if (navId === 'tags') {
       navigate('/notes?view=tags');
     } else if (navId === 'settings') {
-      setSettingsModalOpen(true);
+      navigate('/settings');
     } else if (navId === 'help') {
       alert('NoteNest Folders: Organize notes by topic, college courses, or work projects.');
     }

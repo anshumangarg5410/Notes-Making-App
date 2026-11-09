@@ -31,7 +31,8 @@ export const DashboardLayout = ({
   onSelectTag,
   onSelectFolder,
   onViewAllNotes,
-  onViewAllFolders
+  onViewAllFolders,
+  onOpenSettings
 }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
@@ -77,7 +78,7 @@ export const DashboardLayout = ({
           onSearchChange={setSearchQuery}
           notes={notes}
           onSelectSearchResult={onSelectNote}
-          onOpenSettings={() => setIsSettingsModalOpen(true)}
+          onOpenSettings={onOpenSettings || (() => setIsSettingsModalOpen(true))}
           onToggleMobileSidebar={() => setIsMobileSidebarOpen(true)}
         />
 

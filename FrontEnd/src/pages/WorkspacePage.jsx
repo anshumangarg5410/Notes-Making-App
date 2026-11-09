@@ -15,7 +15,7 @@ export const WorkspacePage = () => {
       <EditorLayout
         initialNoteId={noteId}
         onNavigateDashboard={() => navigate('/dashboard')}
-        onOpenSettings={() => setIsSettingsOpen(true)}
+        onOpenSettings={() => navigate('/settings')}
       />
 
       {/* Settings Modal */}

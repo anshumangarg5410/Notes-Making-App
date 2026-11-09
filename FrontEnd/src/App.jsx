@@ -12,6 +12,7 @@ import { WorkspacePage } from './pages/WorkspacePage';
 import { NoteEditorPage } from './pages/NoteEditorPage';
 import { FoldersPage } from './pages/FoldersPage';
 import { TrashPage } from './pages/TrashPage';
+import { SettingsPage } from './pages/SettingsPage';
 import { LoginPage } from './pages/LoginPage';
 import { RegisterPage } from './pages/RegisterPage';
 import { ErrorBoundary } from './components/common/ErrorBoundary';
@@ -67,6 +68,16 @@ export function App() {
                     element={
                       <ProtectedRoute>
                         <TrashPage />
+                      </ProtectedRoute>
+                    }
+                  />
+
+                  {/* Profile & Settings Page (Exact Reference Design) */}
+                  <Route
+                    path="/settings"
+                    element={
+                      <ProtectedRoute>
+                        <SettingsPage />
                       </ProtectedRoute>
                     }
                   />

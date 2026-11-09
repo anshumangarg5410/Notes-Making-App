@@ -14,6 +14,7 @@ export const NoteEditorPage = () => {
       initialNoteId={noteId}
       initialView={view}
       onNavigateDashboard={() => navigate('/dashboard')}
+      onOpenSettings={() => navigate('/settings')}
     />
   );
 };

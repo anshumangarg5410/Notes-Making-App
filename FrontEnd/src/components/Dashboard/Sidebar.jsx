@@ -268,7 +268,11 @@ export const Sidebar = ({
             <button
               type="button"
               onClick={() => onSelectNav?.('settings')}
-              className="p-1.5 rounded hover:text-white hover:bg-[#1e1e2d] transition-colors"
+              className={`p-1.5 rounded transition-colors cursor-pointer ${
+                activeNav === 'settings'
+                  ? 'text-purple-300 bg-purple-950/50 border border-purple-500/40 shadow-[0_0_8px_rgba(168,85,247,0.3)]'
+                  : 'hover:text-white hover:bg-[#1e1e2d]'
+              }`}
               title="Settings"
             >
               <Settings className="w-4 h-4" />
@@ -276,7 +280,7 @@ export const Sidebar = ({
             <button
               type="button"
               onClick={() => onSelectNav?.('help')}
-              className="p-1.5 rounded hover:text-white hover:bg-[#1e1e2d] transition-colors"
+              className="p-1.5 rounded hover:text-white hover:bg-[#1e1e2d] transition-colors cursor-pointer"
               title="Help & Support"
             >
               <HelpCircle className="w-4 h-4" />

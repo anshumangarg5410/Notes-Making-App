@@ -22,3 +22,4 @@ router.patch('/:id/move', folderController.moveFolder);
 router.get('/:id/notes', folderController.getFolderNotes);
 
 module.exports = router;
+

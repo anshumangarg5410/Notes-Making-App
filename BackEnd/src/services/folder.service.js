@@ -294,3 +294,4 @@ class FolderService {
 }
 
 module.exports = new FolderService();
+

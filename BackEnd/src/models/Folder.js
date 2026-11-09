@@ -37,6 +37,21 @@ const folderSchema = new mongoose.Schema(
     isPinned: {
       type: Boolean,
       default: false
+    },
+    isDeleted: {
+      type: Boolean,
+      default: false,
+      index: true
+    },
+    deletedAt: {
+      type: Date,
+      default: null,
+      index: true
+    },
+    originalParentId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Folder',
+      default: null
     }
   },
   {
@@ -57,3 +72,4 @@ folderSchema.index({ userId: 1, parentId: 1, name: 1 });
 const Folder = mongoose.model('Folder', folderSchema);
 
 module.exports = Folder;
+

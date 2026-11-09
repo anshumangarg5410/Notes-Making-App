@@ -62,6 +62,16 @@ const noteSchema = new mongoose.Schema(
     isDeleted: {
       type: Boolean,
       default: false
+    },
+    deletedAt: {
+      type: Date,
+      default: null,
+      index: true
+    },
+    originalFolderId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Folder',
+      default: null
     }
   },
   {

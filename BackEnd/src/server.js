@@ -1,6 +1,7 @@
 const app = require('./app');
 const { connectDB, disconnectDB } = require('./config/database');
 const environment = require('./config/environment');
+const trashService = require('./services/trash.service');
 
 const startServer = async () => {
   try {
@@ -13,9 +14,16 @@ const startServer = async () => {
       console.log(`[Server] API Health check available at: http://localhost:${environment.port}/api/health`);
     });
 
-    // 3. Graceful Shutdown Handlers
+    // 3. 30-Day Trash Auto-Retention Cleanup (Runs on boot and every 24 hours)
+    trashService.cleanupExpiredTrash();
+    const cleanupInterval = setInterval(() => {
+      trashService.cleanupExpiredTrash();
+    }, 24 * 60 * 60 * 1000);
+
+    // 4. Graceful Shutdown Handlers
     const handleShutdown = async (signal) => {
       console.log(`\n[Server] Received ${signal}. Shutting down gracefully...`);
+      clearInterval(cleanupInterval);
       server.close(async () => {
         console.log('[Server] HTTP listener closed.');
         await disconnectDB();

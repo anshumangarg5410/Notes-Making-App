@@ -6,6 +6,22 @@ This directory organizes all illustrations, stickers, icons, and design referenc
 
 ```text
 FrontEnd/src/assets/
+├── auth/
+│   ├── reference-dark-login.png     # Reference mockup for dark login modal
+│   ├── reference-dark-signup.png    # Reference mockup for dark sign-up modal
+│   ├── reference-light-login.png    # Reference mockup for light login modal
+│   ├── reference-light-signup.png   # Reference mockup for light sign-up modal
+│   ├── pinned-heart-dark-clean.png  # Pinned sticky note with heart doodle (dark)
+│   ├── pinned-heart-light-clean.png # Pinned sticky note with heart doodle (light)
+│   ├── leaf-branch-dark-clean.png   # Fresh green leafy branch (dark)
+│   ├── leaf-branch-light-clean.png  # Fresh green leafy branch (light)
+│   ├── books-mug-dark-clean.png     # Stacked books with steaming NoteNest coffee mug (dark)
+│   ├── books-mug-light-clean.png    # Stacked books with steaming NoteNest coffee mug (light)
+│   ├── washi-tape-dark.png          # Diagonal textured purple washi tape for top-left edge (dark)
+│   ├── washi-tape-light.png         # Diagonal textured purple washi tape for top-left edge (light)
+│   ├── torn-bottom-dark.png         # Jagged purple torn paper bottom accent (dark)
+│   └── torn-bottom-light.png        # Jagged purple torn paper bottom accent (light)
+│
 ├── landing/
 │   ├── hero-bg-dark.png             # Full dark paper texture background with ambient purple glow
 │   ├── wide_dark_moody_stationary_themed_background_des.png # Master dark moody background

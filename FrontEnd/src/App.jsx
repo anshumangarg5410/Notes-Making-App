@@ -3,12 +3,13 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import { ThemeProvider } from './context/ThemeContext';
 import { ToastProvider } from './context/ToastContext';
+import { AuthModalProvider } from './context/AuthModalContext';
+import { AuthModal } from './components/auth/AuthModal';
 import { ProtectedRoute } from './routes/ProtectedRoute';
 import { LandingPage } from './pages/LandingPage';
 import { WorkspacePage } from './pages/WorkspacePage';
 import { LoginPage } from './pages/LoginPage';
 import { RegisterPage } from './pages/RegisterPage';
-
 import { ErrorBoundary } from './components/common/ErrorBoundary';
 
 export function App() {
@@ -16,34 +17,39 @@ export function App() {
     <ThemeProvider>
       <ToastProvider>
         <AuthProvider>
-          <ErrorBoundary>
-            <BrowserRouter>
-              <Routes>
-                {/* Public Landing Page */}
-                <Route path="/" element={<LandingPage />} />
+          <AuthModalProvider>
+            <ErrorBoundary>
+              <BrowserRouter>
+                {/* Global Authentication Modal (Login / Sign-up / Logout / Forgot Password) */}
+                <AuthModal />
 
-                {/* Dedicated Protected Notes Dashboard */}
-                <Route
-                  path="/notes"
-                  element={
-                    <ProtectedRoute>
-                      <WorkspacePage />
-                    </ProtectedRoute>
-                  }
-                />
+                <Routes>
+                  {/* Public Landing Page */}
+                  <Route path="/" element={<LandingPage />} />
 
-                {/* Legacy / Alias Route */}
-                <Route path="/workspace" element={<Navigate to="/notes" replace />} />
+                  {/* Dedicated Protected Notes Dashboard */}
+                  <Route
+                    path="/notes"
+                    element={
+                      <ProtectedRoute>
+                        <WorkspacePage />
+                      </ProtectedRoute>
+                    }
+                  />
 
-                {/* Public Auth Routes */}
-                <Route path="/login" element={<LoginPage />} />
-                <Route path="/register" element={<RegisterPage />} />
+                  {/* Legacy / Alias Route */}
+                  <Route path="/workspace" element={<Navigate to="/notes" replace />} />
 
-                {/* Fallback */}
-                <Route path="*" element={<Navigate to="/" replace />} />
-              </Routes>
-            </BrowserRouter>
-          </ErrorBoundary>
+                  {/* Public Auth Routes */}
+                  <Route path="/login" element={<LoginPage />} />
+                  <Route path="/register" element={<RegisterPage />} />
+
+                  {/* Fallback */}
+                  <Route path="*" element={<Navigate to="/" replace />} />
+                </Routes>
+              </BrowserRouter>
+            </ErrorBoundary>
+          </AuthModalProvider>
         </AuthProvider>
       </ToastProvider>
     </ThemeProvider>

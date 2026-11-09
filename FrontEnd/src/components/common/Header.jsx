@@ -14,10 +14,12 @@ import {
 } from 'lucide-react';
 import { useTheme } from '../../context/ThemeContext';
 import { useAuth } from '../../context/AuthContext';
+import { useAuthModal } from '../../context/AuthModalContext';
 
 export const Header = ({ onToggleSidebar, onOpenSettings, onToggleFocusMode, isFocusMode, onNewNote }) => {
   const { toggleTheme, isDark } = useTheme();
   const { user, logout } = useAuth();
+  const { openLogout } = useAuthModal();
   const [profileOpen, setProfileOpen] = useState(false);
   const dropdownRef = useRef(null);
 
@@ -166,9 +168,9 @@ export const Header = ({ onToggleSidebar, onOpenSettings, onToggleFocusMode, isF
                 <button
                   onClick={() => {
                     setProfileOpen(false);
-                    logout();
+                    openLogout();
                   }}
-                  className="w-full text-left px-4 py-2 hover:bg-red-50 dark:hover:bg-red-950/30 text-red-600 dark:text-red-400 flex items-center space-x-2.5 transition-colors"
+                  className="w-full text-left px-4 py-2 hover:bg-red-50 dark:hover:bg-red-950/30 text-red-600 dark:text-red-400 flex items-center space-x-2.5 transition-colors cursor-pointer"
                 >
                   <LogOut className="w-4 h-4" />
                   <span>Log out</span>

@@ -1,11 +1,15 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowRight, Play, X } from 'lucide-react';
+import { useAuthModal } from '../../context/AuthModalContext';
+import { useAuth } from '../../context/AuthContext';
 import { EditorPreview } from './EditorPreview';
 import { Benefits } from './Benefits';
 
 export const HeroSection = () => {
   const [showDemoModal, setShowDemoModal] = useState(false);
+  const { openSignup } = useAuthModal();
+  const { isAuthenticated } = useAuth();
 
   return (
     <section id="home" className="w-full pt-8 pb-10 px-4 sm:px-6 lg:px-8 relative z-20">
@@ -67,13 +71,24 @@ export const HeroSection = () => {
             {/* CTA Buttons */}
             <div className="flex flex-wrap items-center gap-4 pt-1">
               {/* Primary CTA: Get Started — It's Free → */}
-              <Link
-                to="/register"
-                className="inline-flex items-center gap-2 px-6 py-3 rounded-full font-semibold text-sm sm:text-base bg-gradient-to-r from-[#8b5cf6] to-[#7c3aed] text-white shadow-[0_0_25px_rgba(139,92,246,0.55)] hover:shadow-[0_0_35px_rgba(139,92,246,0.8)] hover:scale-103 active:scale-98 transition-all cursor-pointer"
-              >
-                <span>Get Started — It's Free</span>
-                <ArrowRight className="w-4 h-4" />
-              </Link>
+              {isAuthenticated ? (
+                <Link
+                  to="/notes"
+                  className="inline-flex items-center gap-2 px-6 py-3 rounded-full font-semibold text-sm sm:text-base bg-gradient-to-r from-[#8b5cf6] to-[#7c3aed] text-white shadow-[0_0_25px_rgba(139,92,246,0.55)] hover:shadow-[0_0_35px_rgba(139,92,246,0.8)] hover:scale-103 active:scale-98 transition-all cursor-pointer"
+                >
+                  <span>Open Your Notes</span>
+                  <ArrowRight className="w-4 h-4" />
+                </Link>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => openSignup()}
+                  className="inline-flex items-center gap-2 px-6 py-3 rounded-full font-semibold text-sm sm:text-base bg-gradient-to-r from-[#8b5cf6] to-[#7c3aed] text-white shadow-[0_0_25px_rgba(139,92,246,0.55)] hover:shadow-[0_0_35px_rgba(139,92,246,0.8)] hover:scale-103 active:scale-98 transition-all cursor-pointer"
+                >
+                  <span>Get Started — It's Free</span>
+                  <ArrowRight className="w-4 h-4" />
+                </button>
+              )}
 
               {/* Secondary CTA: Watch Demo */}
               <button

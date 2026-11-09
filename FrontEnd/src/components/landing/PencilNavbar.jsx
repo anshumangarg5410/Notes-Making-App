@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { BookOpen, Menu, X } from 'lucide-react';
+import { BookOpen, Menu, X, ArrowRight, LogOut } from 'lucide-react';
+import { useAuthModal } from '../../context/AuthModalContext';
+import { useAuth } from '../../context/AuthContext';
 import pencilTip from '../../assets/landing/pencil-tip-realistic.png';
 import pencilShaft from '../../assets/landing/pencil-shaft-realistic.png';
 import pencilEraser from '../../assets/landing/pencil-eraser-realistic.png';
@@ -8,6 +10,8 @@ import pencilEraser from '../../assets/landing/pencil-eraser-realistic.png';
 export const PencilNavbar = () => {
   const [activeSection, setActiveSection] = useState('home');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const { openLogin, openSignup, openLogout } = useAuthModal();
+  const { isAuthenticated, user } = useAuth();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -129,21 +133,45 @@ export const PencilNavbar = () => {
 
         {/* 3. Right: Authentication Buttons (Log In & Sign Up) */}
         <div className="flex items-center gap-2.5 sm:gap-3 shrink-0">
-          {/* Log In Button: Transparent with Thin Light Border */}
-          <Link
-            to="/login"
-            className="px-4 sm:px-5 py-1.5 sm:py-2 rounded-full border border-white/25 hover:border-white/50 text-white hover:bg-white/5 text-xs sm:text-sm font-medium transition-all"
-          >
-            Log In
-          </Link>
+          {isAuthenticated ? (
+            <div className="flex items-center gap-2">
+              <Link
+                to="/notes"
+                className="px-4 sm:px-5 py-1.5 sm:py-2 rounded-full bg-gradient-to-r from-[#9333ea] to-[#7c3aed] text-white shadow-[0_0_16px_rgba(147,51,234,0.5)] text-xs sm:text-sm font-semibold transition-all hover:scale-102 flex items-center gap-1.5"
+              >
+                <span>My Notes</span>
+                <ArrowRight className="w-3.5 h-3.5" />
+              </Link>
+              <button
+                type="button"
+                onClick={() => openLogout()}
+                title="Log out"
+                className="p-2 rounded-full border border-white/20 hover:border-white/40 text-stone-300 hover:text-white transition-all cursor-pointer"
+              >
+                <LogOut className="w-4 h-4" />
+              </button>
+            </div>
+          ) : (
+            <>
+              {/* Log In Button: Opens Notebook Login Modal */}
+              <button
+                type="button"
+                onClick={() => openLogin()}
+                className="px-4 sm:px-5 py-1.5 sm:py-2 rounded-full border border-white/25 hover:border-white/50 text-white hover:bg-white/5 text-xs sm:text-sm font-medium transition-all cursor-pointer"
+              >
+                Log In
+              </button>
 
-          {/* Sign Up Button: Purple Gradient with Subtle Shadow */}
-          <Link
-            to="/register"
-            className="px-5 sm:px-6 py-1.5 sm:py-2 rounded-full bg-gradient-to-r from-[#9333ea] to-[#7c3aed] text-white hover:from-[#8b5cf6] hover:to-[#6d28d9] shadow-[0_0_16px_rgba(147,51,234,0.5)] hover:shadow-[0_0_22px_rgba(147,51,234,0.7)] text-xs sm:text-sm font-semibold transition-all hover:scale-102 active:scale-98"
-          >
-            Sign Up
-          </Link>
+              {/* Sign Up Button: Opens Notebook Sign Up Modal */}
+              <button
+                type="button"
+                onClick={() => openSignup()}
+                className="px-5 sm:px-6 py-1.5 sm:py-2 rounded-full bg-gradient-to-r from-[#9333ea] to-[#7c3aed] text-white hover:from-[#8b5cf6] hover:to-[#6d28d9] shadow-[0_0_16px_rgba(147,51,234,0.5)] hover:shadow-[0_0_22px_rgba(147,51,234,0.7)] text-xs sm:text-sm font-semibold transition-all hover:scale-102 active:scale-98 cursor-pointer"
+              >
+                Sign Up
+              </button>
+            </>
+          )}
 
           {/* Mobile Menu Button */}
           <button
@@ -192,6 +220,53 @@ export const PencilNavbar = () => {
                 {link.label}
               </button>
             ))}
+          </div>
+
+          {/* Mobile Auth Actions */}
+          <div className="mt-3 pt-3 border-t border-purple-500/20 flex flex-col gap-2">
+            {isAuthenticated ? (
+              <div className="flex items-center justify-between">
+                <Link
+                  to="/notes"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="w-full text-center py-2 rounded-xl bg-purple-600 text-white font-semibold text-sm"
+                >
+                  My Notes →
+                </Link>
+                <button
+                  onClick={() => {
+                    setMobileMenuOpen(false);
+                    openLogout();
+                  }}
+                  className="ml-2 p-2 rounded-xl border border-white/20 text-stone-300"
+                >
+                  <LogOut className="w-4 h-4" />
+                </button>
+              </div>
+            ) : (
+              <div className="grid grid-cols-2 gap-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setMobileMenuOpen(false);
+                    openLogin();
+                  }}
+                  className="py-2 rounded-xl border border-white/20 text-white text-xs font-semibold hover:bg-white/5"
+                >
+                  Log In
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setMobileMenuOpen(false);
+                    openSignup();
+                  }}
+                  className="py-2 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 text-white text-xs font-semibold shadow-md"
+                >
+                  Sign Up
+                </button>
+              </div>
+            )}
           </div>
         </div>
       )}

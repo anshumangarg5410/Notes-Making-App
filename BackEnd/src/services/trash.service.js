@@ -262,3 +262,4 @@ class TrashService {
 }
 
 module.exports = new TrashService();
+

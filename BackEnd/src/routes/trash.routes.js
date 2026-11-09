@@ -19,3 +19,4 @@ router.route('/:id')
   .delete(trashController.deletePermanently);
 
 module.exports = router;
+

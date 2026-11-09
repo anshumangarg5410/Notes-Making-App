@@ -58,3 +58,4 @@ export const PermanentDeleteDialog = ({
     </div>
   );
 };
+

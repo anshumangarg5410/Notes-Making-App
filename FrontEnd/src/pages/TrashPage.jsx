@@ -346,7 +346,7 @@ export const TrashPage = () => {
     } else if (navId === 'tags') {
       navigate('/notes?view=tags');
     } else if (navId === 'settings') {
-      setSettingsModalOpen(true);
+      navigate('/settings');
     } else if (navId === 'help') {
       alert('NoteNest Trash: Items are kept safely for 30 days before permanent auto-cleanup.');
     }
@@ -481,3 +481,4 @@ export const TrashPage = () => {
 };
 
 export default TrashPage;
+

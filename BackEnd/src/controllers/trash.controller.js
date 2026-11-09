@@ -66,3 +66,4 @@ class TrashController {
 }
 
 module.exports = new TrashController();
+

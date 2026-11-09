@@ -48,3 +48,4 @@ export const TrashStatistics = ({ stats = {} }) => {
     </div>
   );
 };
+

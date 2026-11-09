@@ -114,6 +114,68 @@ class AuthController {
       next(error);
     }
   }
+
+  /**
+   * POST /api/auth/forgot-password
+   */
+  async forgotPassword(req, res, next) {
+    try {
+      const { email } = req.body;
+      const result = await authService.forgotPassword(email);
+      return res.status(200).json(result);
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  /**
+   * POST /api/auth/reset-password
+   */
+  async resetPassword(req, res, next) {
+    try {
+      const { token, newPassword } = req.body;
+      const result = await authService.resetPassword({ token, newPassword });
+
+      setAuthCookies(res, result.accessToken, result.refreshToken);
+
+      return res.status(200).json({
+        success: true,
+        message: 'Password has been reset successfully',
+        data: {
+          user: result.user,
+          token: result.accessToken
+        }
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  /**
+   * POST /api/auth/verify-email
+   */
+  async verifyEmail(req, res, next) {
+    try {
+      const { token } = req.body;
+      const result = await authService.verifyEmail(token);
+      return res.status(200).json(result);
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  /**
+   * POST /api/auth/resend-verification
+   */
+  async resendVerification(req, res, next) {
+    try {
+      const { email } = req.body;
+      const result = await authService.resendVerification(email);
+      return res.status(200).json(result);
+    } catch (error) {
+      next(error);
+    }
+  }
 }
 
 module.exports = new AuthController();

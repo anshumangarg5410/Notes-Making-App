@@ -79,12 +79,12 @@ class UserController {
 
   async updateAvatar(req, res, next) {
     try {
-      const { avatar } = req.body;
+      const avatarUrl = req.file ? `/uploads/${req.file.filename}` : req.body?.avatar;
       const user = await User.findById(req.user.id);
       if (!user) return res.status(404).json({ success: false, message: 'User not found' });
 
-      user.avatar = avatar || '';
-      user.avatarUrl = avatar || '';
+      user.avatar = avatarUrl || '';
+      user.avatarUrl = avatarUrl || '';
       await user.save();
 
       res.status(200).json({
@@ -117,11 +117,11 @@ class UserController {
 
   async updateCover(req, res, next) {
     try {
-      const { coverImage } = req.body;
+      const coverUrl = req.file ? `/uploads/${req.file.filename}` : req.body?.coverImage;
       const user = await User.findById(req.user.id);
       if (!user) return res.status(404).json({ success: false, message: 'User not found' });
 
-      user.coverImage = coverImage || '';
+      user.coverImage = coverUrl || '';
       await user.save();
 
       res.status(200).json({
@@ -252,3 +252,4 @@ class UserController {
 }
 
 module.exports = new UserController();
+

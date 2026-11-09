@@ -1,4 +1,5 @@
 const User = require('../models/User');
+const crypto = require('crypto');
 const {
   generateAccessToken,
   generateRefreshToken,
@@ -191,6 +192,163 @@ class AuthService {
       throw error;
     }
     return user.toJSON();
+  }
+
+  /**
+   * Generate password reset token
+   */
+  async forgotPassword(email) {
+    if (!email) {
+      const error = new Error('Please provide an email address.');
+      error.statusCode = 400;
+      throw error;
+    }
+
+    const normalizedEmail = email.trim().toLowerCase();
+    const user = await User.findOne({ email: normalizedEmail });
+
+    if (!user) {
+      return {
+        success: true,
+        message: 'If an account exists with this email, password reset instructions have been sent.'
+      };
+    }
+
+    const resetToken = user.createPasswordResetToken();
+    await user.save({ validateBeforeSave: false });
+
+    // In local / development mode, return resetToken in payload to ease testing
+    return {
+      success: true,
+      message: 'Password reset token generated successfully.',
+      ...(environment.nodeEnv !== 'production' ? { resetToken } : {})
+    };
+  }
+
+  /**
+   * Reset password with valid token
+   */
+  async resetPassword({ token, newPassword }) {
+    if (!token || !newPassword) {
+      const error = new Error('Token and new password are required.');
+      error.statusCode = 400;
+      throw error;
+    }
+
+    if (newPassword.length < 6) {
+      const error = new Error('Password must be at least 6 characters long.');
+      error.statusCode = 400;
+      throw error;
+    }
+
+    const hashedToken = crypto.createHash('sha256').update(token).digest('hex');
+
+    const user = await User.findOne({
+      passwordResetToken: hashedToken,
+      passwordResetExpires: { $gt: Date.now() }
+    }).select('+password +passwordResetToken +passwordResetExpires');
+
+    if (!user) {
+      const error = new Error('Password reset token is invalid or has expired.');
+      error.statusCode = 400;
+      throw error;
+    }
+
+    user.password = newPassword;
+    user.passwordResetToken = undefined;
+    user.passwordResetExpires = undefined;
+
+    // Invalidate old refresh tokens
+    user.refreshTokens = [];
+
+    // Issue fresh tokens
+    const accessToken = generateAccessToken(user);
+    const refreshToken = generateRefreshToken(user);
+    const tokenHash = hashToken(refreshToken);
+
+    user.refreshTokens = [
+      {
+        tokenHash,
+        expiresAt: new Date(Date.now() + environment.jwt.refreshExpiresInMs)
+      }
+    ];
+
+    await user.save();
+
+    return {
+      user: user.toJSON(),
+      accessToken,
+      refreshToken
+    };
+  }
+
+  /**
+   * Verify email address
+   */
+  async verifyEmail(token) {
+    if (!token) {
+      const error = new Error('Verification token is required.');
+      error.statusCode = 400;
+      throw error;
+    }
+
+    const hashedToken = crypto.createHash('sha256').update(token).digest('hex');
+
+    const user = await User.findOne({
+      emailVerificationToken: hashedToken,
+      emailVerificationExpires: { $gt: Date.now() }
+    });
+
+    if (!user) {
+      const error = new Error('Verification token is invalid or has expired.');
+      error.statusCode = 400;
+      throw error;
+    }
+
+    user.isEmailVerified = true;
+    user.emailVerificationToken = undefined;
+    user.emailVerificationExpires = undefined;
+    await user.save({ validateBeforeSave: false });
+
+    return {
+      success: true,
+      message: 'Email verified successfully.'
+    };
+  }
+
+  /**
+   * Resend email verification
+   */
+  async resendVerification(email) {
+    if (!email) {
+      const error = new Error('Email address is required.');
+      error.statusCode = 400;
+      throw error;
+    }
+
+    const user = await User.findOne({ email: email.trim().toLowerCase() });
+    if (!user) {
+      return {
+        success: true,
+        message: 'If an account exists, a verification link has been sent.'
+      };
+    }
+
+    if (user.isEmailVerified) {
+      return {
+        success: true,
+        message: 'Email address is already verified.'
+      };
+    }
+
+    const verificationToken = user.createEmailVerificationToken();
+    await user.save({ validateBeforeSave: false });
+
+    return {
+      success: true,
+      message: 'Verification email sent.',
+      ...(environment.nodeEnv !== 'production' ? { verificationToken } : {})
+    };
   }
 }
 

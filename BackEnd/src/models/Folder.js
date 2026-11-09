@@ -52,6 +52,10 @@ const folderSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Folder',
       default: null
+    },
+    revision: {
+      type: Number,
+      default: 1
     }
   },
   {

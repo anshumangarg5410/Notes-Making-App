@@ -72,6 +72,26 @@ const noteSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Folder',
       default: null
+    },
+    revision: {
+      type: Number,
+      default: 1
+    },
+    clientCreatedAt: {
+      type: Date,
+      default: null
+    },
+    clientUpdatedAt: {
+      type: Date,
+      default: null
+    },
+    wordCount: {
+      type: Number,
+      default: 0
+    },
+    charCount: {
+      type: Number,
+      default: 0
     }
   },
   {

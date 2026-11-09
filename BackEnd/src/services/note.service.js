@@ -1,21 +1,41 @@
 const Note = require('../models/Note');
+const { logActivity } = require('../utils/activityLogger');
 
 class NoteService {
   async create(userId, noteData) {
-    const { title, content, plainText, tags, color, icon, isPinned, isFavorite } = noteData;
+    const { title, content, plainText, tags, color, icon, isPinned, isFavorite, folderId, folder } = noteData;
+
+    const text = plainText || (typeof content === 'string' ? content : '');
+    const wordCount = text.trim() ? text.trim().split(/\s+/).length : 0;
+    const charCount = text.length;
+
     const note = await Note.create({
       userId,
       title: title?.trim() || 'Untitled Note',
       content: content || '',
-      plainText: plainText || '',
+      plainText: text,
       tags: Array.isArray(tags) ? tags : [],
+      folderId: folderId || null,
+      folder: folder?.trim() || '',
       color: color || 'default',
       icon: icon || 'document',
       isPinned: Boolean(isPinned),
       isFavorite: Boolean(isFavorite),
+      wordCount,
+      charCount,
+      revision: 1,
       isArchived: false,
       isDeleted: false
     });
+
+    logActivity({
+      userId,
+      action: 'created_note',
+      entityType: 'note',
+      entityId: note._id,
+      entityTitle: note.title
+    });
+
     return note;
   }
 
@@ -98,7 +118,19 @@ class NoteService {
   }
 
   async update(userId, noteId, updates) {
-    const allowed = ['title', 'content', 'plainText', 'tags', 'color', 'icon', 'isPinned', 'isFavorite', 'isArchived'];
+    const allowed = [
+      'title',
+      'content',
+      'plainText',
+      'tags',
+      'folderId',
+      'folder',
+      'color',
+      'icon',
+      'isPinned',
+      'isFavorite',
+      'isArchived'
+    ];
     const filteredUpdates = {};
     for (const key of allowed) {
       if (updates[key] !== undefined) {
@@ -106,27 +138,82 @@ class NoteService {
       }
     }
 
-    return await Note.findOneAndUpdate(
+    if (filteredUpdates.plainText !== undefined) {
+      const text = filteredUpdates.plainText || '';
+      filteredUpdates.wordCount = text.trim() ? text.trim().split(/\s+/).length : 0;
+      filteredUpdates.charCount = text.length;
+    }
+
+    const note = await Note.findOneAndUpdate(
       { _id: noteId, userId },
-      { $set: filteredUpdates },
+      {
+        $set: filteredUpdates,
+        $inc: { revision: 1 }
+      },
       { new: true, runValidators: true }
     );
+
+    if (note) {
+      logActivity({
+        userId,
+        action: 'updated_note',
+        entityType: 'note',
+        entityId: note._id,
+        entityTitle: note.title
+      });
+    }
+
+    return note;
   }
 
   async softDelete(userId, noteId) {
-    return await Note.findOneAndUpdate(
+    const note = await Note.findOneAndUpdate(
       { _id: noteId, userId },
-      { $set: { isDeleted: true } },
+      {
+        $set: {
+          isDeleted: true,
+          deletedAt: new Date()
+        }
+      },
       { new: true }
     );
+
+    if (note) {
+      logActivity({
+        userId,
+        action: 'deleted_note',
+        entityType: 'note',
+        entityId: note._id,
+        entityTitle: note.title
+      });
+    }
+
+    return note;
   }
 
   async restore(userId, noteId) {
-    return await Note.findOneAndUpdate(
+    const note = await Note.findOneAndUpdate(
       { _id: noteId, userId },
-      { $set: { isDeleted: false } },
+      {
+        $set: {
+          isDeleted: false,
+          deletedAt: null
+        }
+      },
       { new: true }
     );
+
+    if (note) {
+      logActivity({
+        userId,
+        action: 'restored_note',
+        entityType: 'note',
+        entityId: note._id,
+        entityTitle: note.title
+      });
+    }
+
+    return note;
   }
 
   async permanentDelete(userId, noteId) {

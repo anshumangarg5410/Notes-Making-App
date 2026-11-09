@@ -64,5 +64,31 @@ router.post(
   authController.logout
 );
 
+// F. Password Recovery
+router.post(
+  '/forgot-password',
+  strictAuthLimiter,
+  authController.forgotPassword
+);
+
+router.post(
+  '/reset-password',
+  strictAuthLimiter,
+  authController.resetPassword
+);
+
+// G. Email Verification
+router.post(
+  '/verify-email',
+  generalAuthLimiter,
+  authController.verifyEmail
+);
+
+router.post(
+  '/resend-verification',
+  strictAuthLimiter,
+  authController.resendVerification
+);
+
 module.exports = router;
 

@@ -1,4 +1,5 @@
 const express = require('express');
+const path = require('path');
 const helmet = require('helmet');
 const cors = require('cors');
 const cookieParser = require('cookie-parser');
@@ -9,6 +10,11 @@ const noteRoutes = require('./routes/note.routes');
 const folderRoutes = require('./routes/folder.routes');
 const trashRoutes = require('./routes/trash.routes');
 const userRoutes = require('./routes/user.routes');
+const tagRoutes = require('./routes/tag.routes');
+const dashboardRoutes = require('./routes/dashboard.routes');
+const searchRoutes = require('./routes/search.routes');
+const exportRoutes = require('./routes/export.routes');
+const syncRoutes = require('./routes/sync.routes');
 const errorHandler = require('./middleware/errorHandler');
 
 const app = express();
@@ -39,6 +45,9 @@ app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.use(cookieParser());
 
+// Static File Serving for Uploaded Media
+app.use('/uploads', express.static(path.resolve(__dirname, '../uploads')));
+
 // 4. Request Logging in non-test environments
 if (!environment.isTest) {
   app.use(morgan('dev'));
@@ -60,6 +69,11 @@ app.use('/api/notes', noteRoutes);
 app.use('/api/folders', folderRoutes);
 app.use('/api/trash', trashRoutes);
 app.use('/api/users', userRoutes);
+app.use('/api/tags', tagRoutes);
+app.use('/api/dashboard', dashboardRoutes);
+app.use('/api/search', searchRoutes);
+app.use('/api/export', exportRoutes);
+app.use('/api/sync', syncRoutes);
 
 // Fallback for 404 Not Found on undefined API routes
 app.use('/api/*', (req, res) => {

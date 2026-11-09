@@ -1,5 +1,6 @@
 const Folder = require('../models/Folder');
 const Note = require('../models/Note');
+const { logActivity } = require('../utils/activityLogger');
 
 class FolderService {
   async create(userId, folderData) {
@@ -43,6 +44,14 @@ class FolderService {
       icon: icon || 'folder',
       parentId: validParentId,
       isPinned: Boolean(isPinned)
+    });
+
+    logActivity({
+      userId,
+      action: 'created_folder',
+      entityType: 'folder',
+      entityId: folder._id,
+      entityTitle: folder.name
     });
 
     return folder;
@@ -160,6 +169,15 @@ class FolderService {
     if (isPinned !== undefined) folder.isPinned = Boolean(isPinned);
 
     await folder.save();
+
+    logActivity({
+      userId,
+      action: 'updated_folder',
+      entityType: 'folder',
+      entityId: folder._id,
+      entityTitle: folder.name
+    });
+
     return folder;
   }
 
@@ -203,6 +221,15 @@ class FolderService {
     }
 
     await folder.save();
+
+    logActivity({
+      userId,
+      action: 'updated_folder',
+      entityType: 'folder',
+      entityId: folder._id,
+      entityTitle: folder.name
+    });
+
     return folder;
   }
 
@@ -227,6 +254,15 @@ class FolderService {
     );
 
     await Folder.deleteOne({ _id: folder._id, userId });
+
+    logActivity({
+      userId,
+      action: 'deleted_folder',
+      entityType: 'folder',
+      entityId: folder._id,
+      entityTitle: folder.name
+    });
+
     return { success: true, message: 'Folder deleted safely; contained notes moved to root' };
   }
 

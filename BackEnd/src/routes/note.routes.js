@@ -17,6 +17,7 @@ router.route('/')
 router.route('/:id')
   .get(noteController.getNoteById)
   .put(noteController.updateNote)
+  .patch(noteController.updateNote)
   .delete(noteController.deleteNote);
 
 router.patch('/:id/restore', noteController.restoreNote);

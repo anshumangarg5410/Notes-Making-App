@@ -15,10 +15,12 @@ router.route('/')
 
 router.route('/:id')
   .get(folderController.getFolderById)
+  .put(folderController.updateFolder)
   .patch(folderController.updateFolder)
   .delete(folderController.deleteFolder);
 
 router.patch('/:id/move', folderController.moveFolder);
+router.put('/:id/move', folderController.moveFolder);
 router.get('/:id/notes', folderController.getFolderNotes);
 
 module.exports = router;

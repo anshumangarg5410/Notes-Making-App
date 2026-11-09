@@ -8,6 +8,7 @@ import { PopularTags } from './PopularTags';
 import { QuickActions } from './QuickActions';
 import { FolderOverview } from './FolderOverview';
 import { RecentActivity } from './RecentActivity';
+import { IntegratedTrashView } from './IntegratedTrashView';
 import { NewFolderModal } from './NewFolderModal';
 import { ImportExportModal } from './ImportExportModal';
 import { UpgradeProModal } from './UpgradeProModal';
@@ -97,59 +98,64 @@ export const DashboardLayout = ({
             backgroundAttachment: 'fixed'
           }}
         >
-          {/* Main 2-Column Responsive Layout */}
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 lg:gap-6 items-start">
-            {/* Column 1: Main Workspace (~72-74% width on desktop = 8 or 9 cols) */}
-            <div className="lg:col-span-8 xl:col-span-9 space-y-5 lg:space-y-6">
-              {/* Welcome / Hero Banner */}
-              <WelcomeSection />
+          {activeNav === 'trash' ? (
+            <IntegratedTrashView onBackToDashboard={() => onSelectNav && onSelectNav('dashboard')} />
+          ) : (
+            /* Main 2-Column Responsive Layout */
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 lg:gap-6 items-start">
+              {/* Column 1: Main Workspace (~72-74% width on desktop = 8 or 9 cols) */}
+              <div className="lg:col-span-8 xl:col-span-9 space-y-5 lg:space-y-6">
+                {/* Welcome / Hero Banner */}
+                <WelcomeSection />
 
-              {/* 4 Statistics Cards */}
-              <StatisticsCards
-                stats={stats}
-                onCardClick={onSelectNav}
-              />
+                {/* 4 Statistics Cards */}
+                <StatisticsCards
+                  stats={stats}
+                  onCardClick={onSelectNav}
+                />
 
-              {/* Recent Notes List Panel */}
-              <RecentNotes
-                notes={notes}
-                onSelectNote={onSelectNote}
-                onViewAll={onViewAllNotes}
-                onSelectTag={onSelectTag}
-                onToggleFavorite={onToggleFavorite}
-                onDeleteNote={onDeleteNote}
-              />
+                {/* Recent Notes List Panel */}
+                <RecentNotes
+                  notes={notes}
+                  onSelectNote={onSelectNote}
+                  onViewAll={onViewAllNotes}
+                  onViewTrash={() => onSelectNav && onSelectNav('trash')}
+                  onSelectTag={onSelectTag}
+                  onToggleFavorite={onToggleFavorite}
+                  onDeleteNote={onDeleteNote}
+                />
 
-              {/* Popular Tags */}
-              <PopularTags
-                tags={tags}
-                onSelectTag={onSelectTag}
-              />
+                {/* Popular Tags */}
+                <PopularTags
+                  tags={tags}
+                  onSelectTag={onSelectTag}
+                />
+              </div>
+
+              {/* Column 2: Right-Side Information Column (~26-28% width = 4 or 3 cols) */}
+              <div className="lg:col-span-4 xl:col-span-3 space-y-5 lg:space-y-6">
+                {/* Quick Actions */}
+                <QuickActions
+                  onNewNote={onNewNote}
+                  onNewFolder={() => setIsFolderModalOpen(true)}
+                  onImport={handleOpenImport}
+                  onExport={handleOpenExport}
+                />
+
+                {/* My Folders */}
+                <FolderOverview
+                  folders={folders}
+                  onSelectFolder={onSelectFolder}
+                  onViewAllFolders={onViewAllFolders}
+                />
+
+                {/* Recent Activity Timeline */}
+                <RecentActivity
+                  activities={activities}
+                />
+              </div>
             </div>
-
-            {/* Column 2: Right-Side Information Column (~26-28% width = 4 or 3 cols) */}
-            <div className="lg:col-span-4 xl:col-span-3 space-y-5 lg:space-y-6">
-              {/* Quick Actions */}
-              <QuickActions
-                onNewNote={onNewNote}
-                onNewFolder={() => setIsFolderModalOpen(true)}
-                onImport={handleOpenImport}
-                onExport={handleOpenExport}
-              />
-
-              {/* My Folders */}
-              <FolderOverview
-                folders={folders}
-                onSelectFolder={onSelectFolder}
-                onViewAllFolders={onViewAllFolders}
-              />
-
-              {/* Recent Activity Timeline */}
-              <RecentActivity
-                activities={activities}
-              />
-            </div>
-          </div>
+          )}
         </main>
       </div>
 

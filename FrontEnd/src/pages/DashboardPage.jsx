@@ -1,11 +1,13 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { DashboardLayout } from '../components/Dashboard/DashboardLayout';
 import { dashboardService } from '../services/dashboardService';
 import { noteService } from '../services/noteService';
 import { useToast } from '../context/ToastContext';
 
 export const DashboardPage = ({ onOpenNoteInEditor = null }) => {
+  const [searchParams, setSearchParams] = useSearchParams();
+  const initialNav = searchParams.get('view') === 'trash' ? 'trash' : 'dashboard';
   const [data, setData] = useState({
     notes: [],
     stats: { totalNotes: 48, folders: 6, tags: 12, favorites: 9 },
@@ -15,9 +17,18 @@ export const DashboardPage = ({ onOpenNoteInEditor = null }) => {
     storage: { usedMb: 245, totalGb: 2, percentage: 12 }
   });
   const [loading, setLoading] = useState(true);
-  const [activeNav, setActiveNav] = useState('dashboard');
+  const [activeNav, setActiveNav] = useState(initialNav);
   const { success, error: toastError } = useToast();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const view = searchParams.get('view');
+    if (view === 'trash') {
+      setActiveNav('trash');
+    } else if (!view || view === 'dashboard') {
+      setActiveNav('dashboard');
+    }
+  }, [searchParams]);
 
   const loadData = useCallback(async () => {
     try {
@@ -169,10 +180,12 @@ export const DashboardPage = ({ onOpenNoteInEditor = null }) => {
   // Handle Sidebar Nav
   const handleSelectNav = (navId) => {
     setActiveNav(navId);
-    if (navId === 'folders') {
-      navigate('/folders');
+    if (navId === 'dashboard') {
+      setSearchParams({});
     } else if (navId === 'trash') {
-      navigate('/trash');
+      setSearchParams({ view: 'trash' });
+    } else if (navId === 'folders') {
+      navigate('/folders');
     } else if (navId === 'all-notes' || navId === 'favorites') {
       navigate(`/notes?view=${navId}`);
     } else if (navId === 'settings') {

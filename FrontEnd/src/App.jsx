@@ -11,7 +11,6 @@ import { DashboardPage } from './pages/DashboardPage';
 import { WorkspacePage } from './pages/WorkspacePage';
 import { NoteEditorPage } from './pages/NoteEditorPage';
 import { FoldersPage } from './pages/FoldersPage';
-import { TrashPage } from './pages/TrashPage';
 import { SettingsPage } from './pages/SettingsPage';
 import { LoginPage } from './pages/LoginPage';
 import { RegisterPage } from './pages/RegisterPage';
@@ -62,12 +61,12 @@ export function App() {
                     }
                   />
 
-                  {/* Dedicated Trash Management Page (Exact Reference Design) */}
+                  {/* Integrated Trash view within Dashboard */}
                   <Route
                     path="/trash"
                     element={
                       <ProtectedRoute>
-                        <TrashPage />
+                        <Navigate to="/dashboard?view=trash" replace />
                       </ProtectedRoute>
                     }
                   />

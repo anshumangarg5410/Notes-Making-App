@@ -14,6 +14,7 @@ export const RecentNotes = ({
   notes = [],
   onSelectNote,
   onViewAll,
+  onViewTrash,
   onSelectTag,
   onToggleFavorite,
   onDeleteNote
@@ -78,14 +79,27 @@ export const RecentNotes = ({
           </h3>
         </div>
 
-        <button
-          type="button"
-          onClick={onViewAll}
-          className="inline-flex items-center gap-1 text-xs font-semibold text-purple-300 hover:text-white transition-colors cursor-pointer group"
-        >
-          <span>View All</span>
-          <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
-        </button>
+        <div className="flex items-center gap-2.5">
+          {onViewTrash && (
+            <button
+              type="button"
+              onClick={onViewTrash}
+              className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-[3px] bg-purple-950/40 hover:bg-purple-900/60 border border-purple-500/25 text-xs font-semibold text-purple-300 hover:text-white transition-colors cursor-pointer"
+            >
+              <Trash2 className="w-3.5 h-3.5" />
+              <span>Trash</span>
+            </button>
+          )}
+
+          <button
+            type="button"
+            onClick={onViewAll}
+            className="inline-flex items-center gap-1 text-xs font-semibold text-purple-300 hover:text-white transition-colors cursor-pointer group"
+          >
+            <span>View All</span>
+            <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
+          </button>
+        </div>
       </div>
 
       {/* Note List Rows */}

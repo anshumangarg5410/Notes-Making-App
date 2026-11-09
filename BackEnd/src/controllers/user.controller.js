@@ -1,6 +1,8 @@
+const fs = require('fs');
 const User = require('../models/User');
 const Note = require('../models/Note');
 const Folder = require('../models/Folder');
+const { isCloudinaryConfigured, uploadToCloudinary } = require('../config/cloudinary');
 
 class UserController {
   async getProfile(req, res, next) {
@@ -79,12 +81,46 @@ class UserController {
 
   async updateAvatar(req, res, next) {
     try {
-      const avatarUrl = req.file ? `/uploads/${req.file.filename}` : req.body?.avatar;
+      let avatarUrl = '';
+
+      if (req.file) {
+        if (isCloudinaryConfigured()) {
+          try {
+            const uploadResult = await uploadToCloudinary(req.file.path, {
+              folder: 'notenest/avatars'
+            });
+            if (uploadResult?.secure_url) {
+              avatarUrl = uploadResult.secure_url;
+              // Clean up local temp upload
+              try { fs.unlinkSync(req.file.path); } catch (_) {}
+            }
+          } catch (cloudErr) {
+            console.warn('Cloudinary upload failed, using local storage:', cloudErr.message);
+            avatarUrl = `/uploads/${req.file.filename}`;
+          }
+        } else {
+          avatarUrl = `/uploads/${req.file.filename}`;
+        }
+      } else if (req.body?.avatar) {
+        if (isCloudinaryConfigured() && typeof req.body.avatar === 'string' && req.body.avatar.startsWith('data:image')) {
+          try {
+            const uploadResult = await uploadToCloudinary(req.body.avatar, {
+              folder: 'notenest/avatars'
+            });
+            avatarUrl = uploadResult?.secure_url || req.body.avatar;
+          } catch (cloudErr) {
+            avatarUrl = req.body.avatar;
+          }
+        } else {
+          avatarUrl = req.body.avatar;
+        }
+      }
+
       const user = await User.findById(req.user.id);
       if (!user) return res.status(404).json({ success: false, message: 'User not found' });
 
-      user.avatar = avatarUrl || '';
-      user.avatarUrl = avatarUrl || '';
+      user.avatar = avatarUrl || user.avatar || '';
+      user.avatarUrl = avatarUrl || user.avatarUrl || '';
       await user.save();
 
       res.status(200).json({

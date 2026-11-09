@@ -35,6 +35,9 @@ FrontEnd/src/assets/
 │   ├── pencil-navbar-light.png      # Realistic wooden pencil navbar for light mode
 │   ├── editor-preview-dark.png      # Floating NoteNest tablet editor UI with paper layers (dark)
 │   ├── editor-preview-light.png     # Floating NoteNest tablet editor UI with paper layers (light)
+│   ├── editor-main-showcase.png     # High-resolution isolated NoteNest dark Obsidian editor screenshot
+│   ├── editor-showcase-reference.jpg # Full composition reference for Editor Showcase section
+│   ├── central-book-hologram-glow.png # Floating 3D holographic crystal book asset
 │   ├── sticky-heart-dark.png        # Yellow sticky note with hand-drawn heart doodle
 │   ├── binder-clip-dark.png         # Metal stationery binder clip
 │   └── paper-layer-dark.png         # Torn paper texture layer

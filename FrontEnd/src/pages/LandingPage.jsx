@@ -2,6 +2,7 @@ import React from 'react';
 import { PencilNavbar } from '../components/landing/PencilNavbar';
 import { HeroSection } from '../components/landing/HeroSection';
 import { FeaturesOverview } from '../components/landing/FeaturesOverview';
+import { EditorShowcase } from '../components/landing/EditorShowcase';
 import { Footer } from '../components/footer/Footer';
 import { useTheme } from '../context/ThemeContext';
 import landingBgDark from '../assets/landing/hero-bg-dark.png';
@@ -39,7 +40,10 @@ export const LandingPage = () => {
       {/* 3. NEW Features Overview Section (Interconnected Knowledge Universe) */}
       <FeaturesOverview />
 
-      {/* 4. Four-column footer */}
+      {/* 4. NEW Editor Showcase Section (Obsidian Rich-Text Editor Experience) */}
+      <EditorShowcase />
+
+      {/* 5. Four-column footer */}
       <Footer />
     </div>
   );

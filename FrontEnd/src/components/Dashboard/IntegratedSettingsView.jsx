@@ -206,3 +206,4 @@ export const IntegratedSettingsView = ({ onBackToDashboard, initialTab = 'profil
 };
 
 export default IntegratedSettingsView;
+

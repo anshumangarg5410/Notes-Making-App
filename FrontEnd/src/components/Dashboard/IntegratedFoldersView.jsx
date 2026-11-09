@@ -478,3 +478,4 @@ export const IntegratedFoldersView = ({ onBackToDashboard, onOpenFolderInEditor 
 };
 
 export default IntegratedFoldersView;
+

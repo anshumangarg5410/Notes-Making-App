@@ -69,7 +69,11 @@ export const EditorSidebar = ({
       {/* Top Brand Header */}
       <div className="p-3.5 border-b border-[#222230] flex items-center justify-between">
         <div
-          onClick={() => navigate('/dashboard')}
+          onClick={() => {
+            onSelectNav('all');
+            onSelectFolder?.(null);
+            onSelectTag?.(null);
+          }}
           className="flex items-center gap-2.5 cursor-pointer hover:opacity-90 transition-opacity"
         >
           <div className="w-7 h-7 rounded-[4px] bg-gradient-to-tr from-purple-600 to-indigo-500 flex items-center justify-center text-white shadow-sm shadow-purple-900/40">
@@ -99,11 +103,19 @@ export const EditorSidebar = ({
         {/* Primary Navigation Links */}
         <div className="space-y-0.5">
           <button
-            onClick={() => navigate('/dashboard')}
-            className="w-full flex items-center gap-2.5 px-2.5 py-1.5 rounded-[3px] text-gray-300 hover:text-gray-100 hover:bg-[#1a1a24] transition-colors"
+            onClick={() => {
+              onSelectNav('all');
+              onSelectFolder?.(null);
+              onSelectTag?.(null);
+            }}
+            className={`w-full flex items-center gap-2.5 px-2.5 py-1.5 rounded-[3px] transition-colors ${
+              activeNav === 'all' && !selectedFolder && !selectedTag
+                ? 'bg-purple-900/30 text-purple-200 border-l-2 border-purple-500 font-medium'
+                : 'text-gray-300 hover:text-gray-100 hover:bg-[#1a1a24]'
+            }`}
             title="Dashboard"
           >
-            <Home className="w-4 h-4 text-gray-400" />
+            <Home className={`w-4 h-4 ${activeNav === 'all' && !selectedFolder && !selectedTag ? 'text-purple-400' : 'text-gray-400'}`} />
             {!isCollapsed && <span>Dashboard</span>}
           </button>
 
@@ -309,7 +321,11 @@ export const EditorSidebar = ({
         {/* Trash */}
         <div className="pt-2 border-t border-[#1e1e2c]">
           <button
-            onClick={() => navigate('/trash')}
+            onClick={() => {
+              onSelectNav('trash');
+              onSelectFolder?.(null);
+              onSelectTag?.(null);
+            }}
             className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-[3px] transition-colors ${
               activeNav === 'trash'
                 ? 'bg-purple-900/30 text-purple-200 border-l-2 border-purple-500 font-medium'

@@ -7,7 +7,6 @@ import { AuthModalProvider } from './context/AuthModalContext';
 import { AuthModal } from './components/auth/AuthModal';
 import { ProtectedRoute } from './routes/ProtectedRoute';
 import { LandingPage } from './pages/LandingPage';
-import { DashboardPage } from './pages/DashboardPage';
 import { WorkspacePage } from './pages/WorkspacePage';
 import { NoteEditorPage } from './pages/NoteEditorPage';
 import { LoginPage } from './pages/LoginPage';
@@ -29,17 +28,17 @@ export function App() {
                   {/* Public Landing Page */}
                   <Route path="/" element={<LandingPage />} />
 
-                  {/* Main Application Dashboard (Exact Design Reference) */}
+                  {/* Main Application Dashboard IS this Workspace (Exact Obsidian Workspace Experience) */}
                   <Route
                     path="/dashboard"
                     element={
                       <ProtectedRoute>
-                        <DashboardPage />
+                        <WorkspacePage />
                       </ProtectedRoute>
                     }
                   />
 
-                  {/* Dedicated Protected Notes Workspace (Obsidian-Inspired 4-Pane Workspace) */}
+                  {/* Protected Notes Workspace */}
                   <Route
                     path="/notes"
                     element={
@@ -54,7 +53,7 @@ export function App() {
                     path="/folders"
                     element={
                       <ProtectedRoute>
-                        <Navigate to="/dashboard?view=folders" replace />
+                        <Navigate to="/dashboard?folder=all" replace />
                       </ProtectedRoute>
                     }
                   />
@@ -63,7 +62,7 @@ export function App() {
                     path="/trash"
                     element={
                       <ProtectedRoute>
-                        <Navigate to="/dashboard?view=trash" replace />
+                        <Navigate to="/dashboard?nav=trash" replace />
                       </ProtectedRoute>
                     }
                   />
@@ -72,7 +71,7 @@ export function App() {
                     path="/settings"
                     element={
                       <ProtectedRoute>
-                        <Navigate to="/dashboard?view=settings" replace />
+                        <Navigate to="/dashboard?settings=true" replace />
                       </ProtectedRoute>
                     }
                   />
@@ -81,7 +80,7 @@ export function App() {
                     path="/profile"
                     element={
                       <ProtectedRoute>
-                        <Navigate to="/dashboard?view=profile" replace />
+                        <Navigate to="/dashboard?settings=true" replace />
                       </ProtectedRoute>
                     }
                   />

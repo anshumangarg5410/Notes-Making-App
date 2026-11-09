@@ -13,6 +13,9 @@ import './editorTheme.css';
 
 export const EditorLayout = ({
   initialNoteId,
+  initialNav = 'all',
+  initialFolder = null,
+  initialTag = null,
   onNavigateDashboard,
   onOpenSettings
 }) => {
@@ -29,9 +32,9 @@ export const EditorLayout = ({
   const [isFocusMode, setIsFocusMode] = useState(false);
 
   // Navigation, Folder & Tag filter state
-  const [activeNav, setActiveNav] = useState('all'); // 'all', 'favorites', 'trash'
-  const [selectedFolder, setSelectedFolder] = useState(null);
-  const [selectedTag, setSelectedTag] = useState(null);
+  const [activeNav, setActiveNav] = useState(initialNav); // 'all', 'favorites', 'trash'
+  const [selectedFolder, setSelectedFolder] = useState(initialFolder);
+  const [selectedTag, setSelectedTag] = useState(initialTag);
   const [searchQuery, setSearchQuery] = useState('');
 
   // Data state

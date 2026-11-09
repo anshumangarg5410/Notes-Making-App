@@ -25,6 +25,15 @@ export const NotesExplorer = ({
   const filteredNotes = useMemo(() => {
     let result = [...notes];
 
+    // Filter by navigation view
+    if (activeFilter === 'favorites') {
+      result = result.filter((n) => n.isFavorite && !n.isDeleted);
+    } else if (activeFilter === 'trash') {
+      result = result.filter((n) => n.isDeleted);
+    } else {
+      result = result.filter((n) => !n.isDeleted);
+    }
+
     // Filter by search query
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase().trim();
@@ -61,10 +70,17 @@ export const NotesExplorer = ({
     } else if (subFilter === 'recent') {
       // Sort strictly by latest updated
       result.sort((a, b) => new Date(b.updatedAt || b.createdAt) - new Date(a.updatedAt || a.createdAt));
+    } else {
+      // Default view: pinned notes always at the top, then newest updated
+      result.sort((a, b) => {
+        if (a.isPinned && !b.isPinned) return -1;
+        if (!a.isPinned && b.isPinned) return 1;
+        return new Date(b.updatedAt || b.createdAt) - new Date(a.updatedAt || a.createdAt);
+      });
     }
 
     return result;
-  }, [notes, searchQuery, selectedFolder, selectedTag, subFilter]);
+  }, [notes, searchQuery, selectedFolder, selectedTag, subFilter, activeFilter]);
 
   // Determine explorer header title
   const getHeaderTitle = () => {

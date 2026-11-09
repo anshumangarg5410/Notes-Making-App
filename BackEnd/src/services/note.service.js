@@ -1,3 +1,4 @@
+const mongoose = require('mongoose');
 const Note = require('../models/Note');
 const { logActivity } = require('../utils/activityLogger');
 
@@ -114,10 +115,12 @@ class NoteService {
   }
 
   async getById(userId, noteId) {
+    if (!mongoose.Types.ObjectId.isValid(noteId)) return null;
     return await Note.findOne({ _id: noteId, userId });
   }
 
   async update(userId, noteId, updates) {
+    if (!mongoose.Types.ObjectId.isValid(noteId)) return null;
     const allowed = [
       'title',
       'content',
@@ -167,6 +170,7 @@ class NoteService {
   }
 
   async softDelete(userId, noteId) {
+    if (!mongoose.Types.ObjectId.isValid(noteId)) return null;
     const note = await Note.findOneAndUpdate(
       { _id: noteId, userId },
       {
@@ -192,6 +196,7 @@ class NoteService {
   }
 
   async restore(userId, noteId) {
+    if (!mongoose.Types.ObjectId.isValid(noteId)) return null;
     const note = await Note.findOneAndUpdate(
       { _id: noteId, userId },
       {
@@ -217,6 +222,7 @@ class NoteService {
   }
 
   async permanentDelete(userId, noteId) {
+    if (!mongoose.Types.ObjectId.isValid(noteId)) return null;
     return await Note.findOneAndDelete({ _id: noteId, userId });
   }
 
@@ -225,6 +231,7 @@ class NoteService {
   }
 
   async duplicate(userId, noteId) {
+    if (!mongoose.Types.ObjectId.isValid(noteId)) return null;
     const original = await Note.findOne({ _id: noteId, userId });
     if (!original) return null;
 
@@ -244,6 +251,7 @@ class NoteService {
   }
 
   async togglePin(userId, noteId) {
+    if (!mongoose.Types.ObjectId.isValid(noteId)) return null;
     const note = await Note.findOne({ _id: noteId, userId });
     if (!note) return null;
     note.isPinned = !note.isPinned;
@@ -251,6 +259,7 @@ class NoteService {
   }
 
   async toggleFavorite(userId, noteId) {
+    if (!mongoose.Types.ObjectId.isValid(noteId)) return null;
     const note = await Note.findOne({ _id: noteId, userId });
     if (!note) return null;
     note.isFavorite = !note.isFavorite;
@@ -258,6 +267,7 @@ class NoteService {
   }
 
   async toggleArchive(userId, noteId) {
+    if (!mongoose.Types.ObjectId.isValid(noteId)) return null;
     const note = await Note.findOne({ _id: noteId, userId });
     if (!note) return null;
     note.isArchived = !note.isArchived;

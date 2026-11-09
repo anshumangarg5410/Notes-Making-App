@@ -140,6 +140,27 @@ export const DashboardPage = ({ onOpenNoteInEditor = null }) => {
     }
   };
 
+  // Handle Toggle Pin
+  const handleTogglePin = async (id) => {
+    try {
+      await noteService.togglePin(id);
+      setData((prev) => ({
+        ...prev,
+        notes: prev.notes.map((n) =>
+          n._id === id ? { ...n, isPinned: !n.isPinned } : n
+        )
+      }));
+      success('Pin status updated');
+    } catch (err) {
+      setData((prev) => ({
+        ...prev,
+        notes: prev.notes.map((n) =>
+          n._id === id ? { ...n, isPinned: !n.isPinned } : n
+        )
+      }));
+    }
+  };
+
   // Handle Toggle Favorite
   const handleToggleFavorite = async (id) => {
     try {
@@ -224,6 +245,7 @@ export const DashboardPage = ({ onOpenNoteInEditor = null }) => {
       onNewNote={handleNewNote}
       onCreateFolder={handleCreateFolder}
       onImportNote={handleImportNote}
+      onTogglePin={handleTogglePin}
       onToggleFavorite={handleToggleFavorite}
       onDeleteNote={handleDeleteNote}
       onSelectTag={handleSelectTag}

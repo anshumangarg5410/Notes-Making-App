@@ -68,9 +68,14 @@ export const NoteListItem = ({
               {note.title || 'Untitled Note'}
             </h4>
 
-            {note.isPinned && (
-              <Pin className="w-3 h-3 text-purple-400 shrink-0 fill-purple-400/20" />
-            )}
+            <div className="flex items-center gap-1 shrink-0">
+              {note.isPinned && (
+                <Pin className="w-3 h-3 text-purple-400 shrink-0 fill-purple-400" />
+              )}
+              {note.isFavorite && (
+                <Star className="w-3 h-3 text-amber-400 shrink-0 fill-amber-400" />
+              )}
+            </div>
           </div>
 
           <p className="text-[11px] text-gray-400 truncate mt-0.5 leading-relaxed">
@@ -90,57 +95,65 @@ export const NoteListItem = ({
       </div>
 
       {/* Floating quick actions on hover */}
-      <div className="absolute top-2 right-2 hidden group-hover:flex items-center gap-1 bg-[#181824]/90 backdrop-blur-sm border border-[#272738] rounded-[3px] p-0.5 z-10">
+      <div className="absolute top-2 right-2 hidden group-hover:flex items-center gap-0.5 bg-[#171723] backdrop-blur-md border border-[#2a2a3d] rounded-[4px] p-0.5 z-10 shadow-xl">
         {onTogglePin && (
           <button
+            type="button"
             onClick={(e) => {
+              e.preventDefault();
               e.stopPropagation();
               onTogglePin(note._id || note.id);
             }}
-            className={`p-1 hover:text-white rounded ${
-              note.isPinned ? 'text-purple-400' : 'text-gray-400'
+            className={`p-1.5 rounded-[3px] hover:bg-[#252538] transition-colors ${
+              note.isPinned ? 'text-purple-400 fill-purple-400' : 'text-gray-400 hover:text-white'
             }`}
-            title={note.isPinned ? 'Unpin' : 'Pin'}
+            title={note.isPinned ? 'Unpin note' : 'Pin note to top'}
           >
-            <Pin className="w-3 h-3" />
+            <Pin className={`w-3.5 h-3.5 ${note.isPinned ? 'fill-purple-400' : ''}`} />
           </button>
         )}
         {onToggleFavorite && (
           <button
+            type="button"
             onClick={(e) => {
+              e.preventDefault();
               e.stopPropagation();
               onToggleFavorite(note._id || note.id);
             }}
-            className={`p-1 hover:text-white rounded ${
-              note.isFavorite ? 'text-amber-400 fill-amber-400' : 'text-gray-400'
+            className={`p-1.5 rounded-[3px] hover:bg-[#252538] transition-colors ${
+              note.isFavorite ? 'text-amber-400 fill-amber-400' : 'text-gray-400 hover:text-white'
             }`}
-            title="Favorite"
+            title={note.isFavorite ? 'Remove from favorites' : 'Add to favorites'}
           >
-            <Star className="w-3 h-3" />
+            <Star className={`w-3.5 h-3.5 ${note.isFavorite ? 'fill-amber-400' : ''}`} />
           </button>
         )}
         {onDuplicate && (
           <button
+            type="button"
             onClick={(e) => {
+              e.preventDefault();
               e.stopPropagation();
               onDuplicate(note._id || note.id);
             }}
-            className="p-1 hover:text-white text-gray-400 rounded"
-            title="Duplicate"
+            className="p-1.5 rounded-[3px] hover:bg-[#252538] text-gray-400 hover:text-white transition-colors"
+            title="Duplicate note"
           >
-            <Copy className="w-3 h-3" />
+            <Copy className="w-3.5 h-3.5" />
           </button>
         )}
         {onDelete && (
           <button
+            type="button"
             onClick={(e) => {
+              e.preventDefault();
               e.stopPropagation();
               onDelete(note._id || note.id);
             }}
-            className="p-1 hover:text-red-400 text-gray-400 rounded"
-            title="Delete"
+            className="p-1.5 rounded-[3px] hover:bg-[#252538] text-gray-400 hover:text-red-400 transition-colors"
+            title="Move note to trash"
           >
-            <Trash2 className="w-3 h-3" />
+            <Trash2 className="w-3.5 h-3.5" />
           </button>
         )}
       </div>

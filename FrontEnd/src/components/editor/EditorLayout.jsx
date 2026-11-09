@@ -223,53 +223,57 @@ export const EditorLayout = ({
 
   // Create new note
   const handleNewNote = async () => {
-    const newNoteTemplate = {
-      _id: `note_${Date.now()}`,
-      id: `note_${Date.now()}`,
-      title: 'Untitled Note',
-      plainText: '',
-      content: '<p></p>',
-      tags: selectedTag ? [selectedTag] : [],
-      category: selectedFolder || 'Personal',
-      isPinned: false,
-      isFavorite: false,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString()
-    };
+    let createdNote = null;
 
-    // Save locally immediately
-    await offlineService.saveLocalNote(newNoteTemplate, true);
-
-    setNotes((prev) => [newNoteTemplate, ...prev]);
-
-    // Open in tab
-    setTabs((prev) => [
-      ...prev,
-      {
-        id: newNoteTemplate._id,
-        title: newNoteTemplate.title,
-        note: newNoteTemplate,
-        isUnsaved: false
-      }
-    ]);
-    setActiveTabId(newNoteTemplate._id);
-
-    // If online, sync with server in background
+    // 1. If online, attempt to create directly on backend for permanent ObjectId
     if (navigator.onLine) {
       try {
         const res = await noteService.createNote({
-          title: newNoteTemplate.title,
-          content: newNoteTemplate.content,
-          tags: newNoteTemplate.tags
+          title: 'Untitled Note',
+          content: '',
+          plainText: '',
+          tags: selectedTag ? [selectedTag] : [],
+          folder: selectedFolder || 'Personal',
+          category: selectedFolder || 'Personal',
+          isPinned: false,
+          isFavorite: false
         });
-        if (res.data?._id) {
-          newNoteTemplate._id = res.data._id;
-          newNoteTemplate.id = res.data._id;
+        if (res?.data) {
+          createdNote = res.data;
         }
       } catch (err) {
-        console.warn('Server note creation queued for offline sync');
+        console.warn('Backend note creation failed, falling back to local creation:', err);
       }
     }
+
+    // 2. Fallback to local offline note
+    if (!createdNote) {
+      const localId = `note_${Date.now()}`;
+      createdNote = {
+        _id: localId,
+        id: localId,
+        title: 'Untitled Note',
+        plainText: '',
+        content: '',
+        tags: selectedTag ? [selectedTag] : [],
+        category: selectedFolder || 'Personal',
+        folder: selectedFolder || 'Personal',
+        isPinned: false,
+        isFavorite: false,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      };
+    }
+
+    // Save locally immediately
+    await offlineService.saveLocalNote(createdNote, true);
+
+    setNotes((prev) => [createdNote, ...prev]);
+    setStats((prev) => ({ ...prev, totalNotes: (prev.totalNotes || 0) + 1 }));
+
+    // Open in tab
+    handleSelectNote(createdNote);
+    success('New note created');
   };
 
   // Debounced auto-save handler
@@ -304,9 +308,12 @@ export const EditorLayout = ({
         // 1. Persist to local Dexie database
         await offlineService.saveLocalNote(merged, true);
 
-        // 2. Persist to backend if online and not a demo ID
-        if (navigator.onLine && activeNote?._id && !activeNote._id.startsWith('demo-')) {
-          await noteService.updateNote(activeNote._id, updatedFields);
+        // 2. Persist to backend if online and valid ID
+        const targetId = activeNote?._id || activeNote?.id;
+        const isValidServerId = targetId && String(targetId).length === 24 && !String(targetId).includes('-');
+
+        if (navigator.onLine && isValidServerId) {
+          await noteService.updateNote(targetId, updatedFields);
           setSaveStatus('saved');
         } else {
           setSaveStatus(navigator.onLine ? 'saved' : 'offline');
@@ -319,7 +326,7 @@ export const EditorLayout = ({
         // Update in notes list
         setNotes((prev) =>
           prev.map((n) =>
-            (n._id || n.id) === (activeNote._id || activeNote.id) ? merged : n
+            (n._id || n.id) === targetId ? merged : n
           )
         );
 
@@ -331,7 +338,7 @@ export const EditorLayout = ({
         console.warn('Auto-save error:', err);
         setSaveStatus('offline');
       }
-    }, 750);
+    }, 600);
   };
 
   // Note actions
@@ -339,12 +346,30 @@ export const EditorLayout = ({
     try {
       const target = notes.find((n) => (n._id || n.id) === noteId);
       if (!target) return;
-      const updated = { ...target, isPinned: !target.isPinned };
-      setNotes((prev) => prev.map((n) => ((n._id || n.id) === noteId ? updated : n)));
+      const nextPinned = !target.isPinned;
+      const updated = { ...target, isPinned: nextPinned };
+
+      // Update notes list and re-sort so pinned notes are at the top
+      setNotes((prev) => {
+        const nextList = prev.map((n) => ((n._id || n.id) === noteId ? updated : n));
+        return nextList.sort((a, b) => {
+          if (a.isPinned && !b.isPinned) return -1;
+          if (!a.isPinned && b.isPinned) return 1;
+          return new Date(b.updatedAt || b.createdAt) - new Date(a.updatedAt || a.createdAt);
+        });
+      });
+
+      // Update active tab note reference
+      setTabs((prev) => prev.map((t) => (t.id === noteId ? { ...t, note: updated } : t)));
+
       await offlineService.saveLocalNote(updated, true);
-      if (navigator.onLine && !noteId.startsWith('demo-')) {
+
+      const isValidServerId = String(noteId).length === 24 && !String(noteId).includes('-');
+      if (navigator.onLine && isValidServerId) {
         await noteService.togglePin(noteId);
       }
+
+      success(nextPinned ? 'Pinned to top' : 'Unpinned');
     } catch (err) {
       console.warn('togglePin error:', err);
     }
@@ -354,12 +379,29 @@ export const EditorLayout = ({
     try {
       const target = notes.find((n) => (n._id || n.id) === noteId);
       if (!target) return;
-      const updated = { ...target, isFavorite: !target.isFavorite };
-      setNotes((prev) => prev.map((n) => ((n._id || n.id) === noteId ? updated : n)));
+      const nextFav = !target.isFavorite;
+      const updated = { ...target, isFavorite: nextFav };
+
+      setNotes((prev) => {
+        const nextList = prev.map((n) => ((n._id || n.id) === noteId ? updated : n));
+        setStats((s) => ({
+          ...s,
+          favorites: nextList.filter((n) => n.isFavorite && !n.isDeleted).length
+        }));
+        return nextList;
+      });
+
+      // Update tab note reference
+      setTabs((prev) => prev.map((t) => (t.id === noteId ? { ...t, note: updated } : t)));
+
       await offlineService.saveLocalNote(updated, true);
-      if (navigator.onLine && !noteId.startsWith('demo-')) {
+
+      const isValidServerId = String(noteId).length === 24 && !String(noteId).includes('-');
+      if (navigator.onLine && isValidServerId) {
         await noteService.toggleFavorite(noteId);
       }
+
+      success(nextFav ? 'Added to favorites' : 'Removed from favorites');
     } catch (err) {
       console.warn('toggleFavorite error:', err);
     }
@@ -367,13 +409,29 @@ export const EditorLayout = ({
 
   const handleDeleteNote = async (noteId) => {
     try {
-      setNotes((prev) => prev.filter((n) => (n._id || n.id) !== noteId));
+      const target = notes.find((n) => (n._id || n.id) === noteId);
+      const title = target?.title || 'Note';
+
+      setNotes((prev) => {
+        const nextList = prev.filter((n) => (n._id || n.id) !== noteId);
+        setStats((s) => ({
+          ...s,
+          totalNotes: nextList.length,
+          favorites: nextList.filter((n) => n.isFavorite && !n.isDeleted).length,
+          trash: (s.trash || 0) + 1
+        }));
+        return nextList;
+      });
+
       handleCloseTab(noteId);
       await offlineService.deleteLocalNote(noteId, false);
-      if (navigator.onLine && !noteId.startsWith('demo-')) {
+
+      const isValidServerId = String(noteId).length === 24 && !String(noteId).includes('-');
+      if (navigator.onLine && isValidServerId) {
         await noteService.deleteNote(noteId);
       }
-      info('Note moved to trash');
+
+      info(`"${title}" moved to trash`);
     } catch (err) {
       console.warn('deleteNote error:', err);
     }
@@ -383,17 +441,39 @@ export const EditorLayout = ({
     try {
       const original = notes.find((n) => (n._id || n.id) === noteId);
       if (!original) return;
-      const copy = {
-        ...original,
-        _id: `note_${Date.now()}`,
-        id: `note_${Date.now()}`,
-        title: `${original.title} (Copy)`,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
-      };
-      setNotes((prev) => [copy, ...prev]);
-      await offlineService.saveLocalNote(copy, true);
-      handleSelectNote(copy);
+
+      let duplicateResult = null;
+      const isValidServerId = String(noteId).length === 24 && !String(noteId).includes('-');
+
+      if (navigator.onLine && isValidServerId) {
+        try {
+          const res = await noteService.duplicateNote(noteId);
+          if (res?.data) {
+            duplicateResult = res.data;
+          }
+        } catch (apiErr) {
+          console.warn('Server duplicate failed, using local clone:', apiErr);
+        }
+      }
+
+      if (!duplicateResult) {
+        const localId = `note_${Date.now()}`;
+        duplicateResult = {
+          ...original,
+          _id: localId,
+          id: localId,
+          title: `${original.title} (Copy)`,
+          isPinned: false,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString()
+        };
+      }
+
+      setNotes((prev) => [duplicateResult, ...prev]);
+      setStats((prev) => ({ ...prev, totalNotes: (prev.totalNotes || 0) + 1 }));
+
+      await offlineService.saveLocalNote(duplicateResult, true);
+      handleSelectNote(duplicateResult);
       success('Note duplicated');
     } catch (err) {
       console.warn('duplicateNote error:', err);

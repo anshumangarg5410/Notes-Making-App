@@ -16,6 +16,7 @@ export const RecentNotes = ({
   onViewAll,
   onViewTrash,
   onSelectTag,
+  onTogglePin,
   onToggleFavorite,
   onDeleteNote
 }) => {
@@ -172,6 +173,19 @@ export const RecentNotes = ({
                   {/* 3-Dot Dropdown */}
                   {isMenuOpen && (
                     <div className="absolute right-0 mt-1 w-36 rounded-[3px] bg-[#201830] border border-purple-500/30 p-1.5 shadow-xl z-30 animate-in fade-in zoom-in-95 duration-100">
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          if (onTogglePin) onTogglePin(note._id);
+                          setActiveMenuId(null);
+                        }}
+                        className="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-[3px] text-xs text-stone-200 hover:bg-white/10 transition-colors text-left"
+                      >
+                        <Pin className={`w-3.5 h-3.5 ${note.isPinned ? 'fill-purple-400 text-purple-400' : ''}`} />
+                        <span>{note.isPinned ? 'Unpin' : 'Pin to top'}</span>
+                      </button>
+
                       <button
                         type="button"
                         onClick={(e) => {

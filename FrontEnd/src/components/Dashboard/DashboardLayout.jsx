@@ -33,6 +33,7 @@ export const DashboardLayout = ({
   onNewNote,
   onCreateFolder,
   onImportNote,
+  onTogglePin,
   onToggleFavorite,
   onDeleteNote,
   onSelectTag,
@@ -133,6 +134,7 @@ export const DashboardLayout = ({
                   onViewAll={onViewAllNotes}
                   onViewTrash={() => onSelectNav && onSelectNav('trash')}
                   onSelectTag={onSelectTag}
+                  onTogglePin={onTogglePin}
                   onToggleFavorite={onToggleFavorite}
                   onDeleteNote={onDeleteNote}
                 />

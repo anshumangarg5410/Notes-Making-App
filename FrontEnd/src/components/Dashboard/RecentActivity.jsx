@@ -46,3 +46,4 @@ export const RecentActivity = ({
 };
 
 export default RecentActivity;
+

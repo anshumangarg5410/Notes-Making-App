@@ -210,3 +210,4 @@ export const DashboardPage = ({ onOpenNoteInEditor = null }) => {
 };
 
 export default DashboardPage;
+

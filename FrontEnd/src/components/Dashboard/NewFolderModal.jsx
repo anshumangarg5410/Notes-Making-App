@@ -111,3 +111,4 @@ export const NewFolderModal = ({ isOpen, onClose, onCreateFolder, existingFolder
 };
 
 export default NewFolderModal;
+

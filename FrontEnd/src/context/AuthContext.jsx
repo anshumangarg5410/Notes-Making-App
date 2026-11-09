@@ -13,16 +13,20 @@ export const AuthProvider = ({ children }) => {
         const res = await authService.getMe();
         if (res.success && res.data) {
           setUser(res.data);
+          return;
         }
       } catch (err) {
-        const cached = localStorage.getItem('notely_user');
-        if (cached) {
-          try {
-            setUser(JSON.parse(cached));
-          } catch (_) {
-            setUser(null);
+        // Try refreshing token if initial getMe failed
+        try {
+          const refreshRes = await authService.refreshToken();
+          if (refreshRes.success && refreshRes.data) {
+            setUser(refreshRes.data);
+            return;
           }
-        } else {
+        } catch (_) {
+          // If refresh also failed, clear session
+          localStorage.removeItem('notely_token');
+          localStorage.removeItem('notely_user');
           setUser(null);
         }
       } finally {

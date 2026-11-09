@@ -81,3 +81,4 @@ export const UpgradeProModal = ({ isOpen, onClose }) => {
 };
 
 export default UpgradeProModal;
+

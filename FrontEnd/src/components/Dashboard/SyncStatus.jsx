@@ -46,3 +46,4 @@ export const SyncStatus = () => {
 };
 
 export default SyncStatus;
+

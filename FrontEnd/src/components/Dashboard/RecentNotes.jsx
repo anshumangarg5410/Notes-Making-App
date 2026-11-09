@@ -211,3 +211,4 @@ export const RecentNotes = ({
 };
 
 export default RecentNotes;
+

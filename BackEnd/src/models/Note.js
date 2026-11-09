@@ -56,7 +56,9 @@ const noteSchema = new mongoose.Schema(
   {
     timestamps: true,
     toJSON: {
+      virtuals: true,
       transform(doc, ret) {
+        ret.id = ret._id.toString();
         delete ret.__v;
         return ret;
       }
@@ -64,13 +66,8 @@ const noteSchema = new mongoose.Schema(
   }
 );
 
-// Compound indexes for optimal filtering and sorting
-noteSchema.index({ userId: 1, isDeleted: 1, isArchived: 1, isPinned: -1, updatedAt: -1 });
-noteSchema.index({ userId: 1, isFavorite: 1, isDeleted: 1 });
-noteSchema.index({ userId: 1, tags: 1 });
-
-// Full text search index
-noteSchema.index({ title: 'text', plainText: 'text', tags: 'text' });
+noteSchema.index({ userId: 1, isDeleted: 1, isArchived: 1, updatedAt: -1 });
+noteSchema.index({ userId: 1, title: 'text', plainText: 'text' });
 
 const Note = mongoose.model('Note', noteSchema);
 

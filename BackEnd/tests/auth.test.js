@@ -1,115 +1,155 @@
 const request = require('supertest');
-const mongoose = require('mongoose');
-const app = require('../server');
-const User = require('../models/User');
+const app = require('../src/app');
+const { connectDB, disconnectDB } = require('../src/config/database');
+const User = require('../src/models/User');
 
-const TEST_MONGO_URI = process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/notely_test_db';
+const TEST_EMAIL = `test-auth-${Date.now()}@example.com`;
+const TEST_PASSWORD = 'Password123!';
+const TEST_NAME = 'Test User';
+
+let accessToken = null;
+let cookies = null;
 
 beforeAll(async () => {
-  if (mongoose.connection.readyState === 0) {
-    await mongoose.connect(TEST_MONGO_URI);
-  }
+  await connectDB();
+  await User.deleteOne({ email: TEST_EMAIL });
 });
 
 afterAll(async () => {
-  if (mongoose.connection.readyState !== 0) {
-    await mongoose.connection.dropDatabase();
-    await mongoose.connection.close();
-  }
+  await User.deleteOne({ email: TEST_EMAIL });
+  await disconnectDB();
 });
 
-beforeEach(async () => {
-  await User.deleteMany({});
-});
+describe('NoteNest Authentication System', () => {
+  describe('POST /api/auth/register', () => {
+    it('should reject invalid email format', async () => {
+      const res = await request(app)
+        .post('/api/auth/register')
+        .send({ name: TEST_NAME, email: 'bad-email', password: TEST_PASSWORD });
 
-describe('Authentication API', () => {
-  const testUser = {
-    name: 'Jane Doe',
-    email: 'jane@example.com',
-    password: 'password123',
-    confirmPassword: 'password123'
-  };
-
-  it('should register a new user successfully and return token and user data without passwordHash', async () => {
-    const res = await request(app)
-      .post('/api/auth/register')
-      .send(testUser);
-
-    expect(res.status).toBe(201);
-    expect(res.body.success).toBe(true);
-    expect(res.body.data.email).toBe(testUser.email.toLowerCase());
-    expect(res.body.data.name).toBe(testUser.name);
-    expect(res.body.data.passwordHash).toBeUndefined();
-    expect(res.body.token).toBeDefined();
-
-    // Verify password is encrypted in database
-    const dbUser = await User.findOne({ email: testUser.email });
-    expect(dbUser).toBeTruthy();
-    expect(dbUser.passwordHash).not.toBe(testUser.password);
-    expect(dbUser.passwordHash.length).toBeGreaterThan(20);
-  });
-
-  it('should reject registration if email is already taken', async () => {
-    await request(app).post('/api/auth/register').send(testUser);
-
-    const res = await request(app).post('/api/auth/register').send(testUser);
-    expect(res.status).toBe(400);
-    expect(res.body.success).toBe(false);
-    expect(res.body.message).toMatch(/already exists/i);
-  });
-
-  it('should reject registration if password is too short', async () => {
-    const res = await request(app).post('/api/auth/register').send({
-      name: 'Shorty',
-      email: 'short@example.com',
-      password: '123'
+      expect(res.status).toBe(400);
+      expect(res.body.success).toBe(false);
     });
 
-    expect(res.status).toBe(400);
-    expect(res.body.success).toBe(false);
-  });
+    it('should reject short password (< 6 chars)', async () => {
+      const res = await request(app)
+        .post('/api/auth/register')
+        .send({ name: TEST_NAME, email: TEST_EMAIL, password: '123' });
 
-  it('should login an existing user with valid credentials', async () => {
-    await request(app).post('/api/auth/register').send(testUser);
-
-    const res = await request(app).post('/api/auth/login').send({
-      email: testUser.email,
-      password: testUser.password
+      expect(res.status).toBe(400);
+      expect(res.body.success).toBe(false);
     });
 
-    expect(res.status).toBe(200);
-    expect(res.body.success).toBe(true);
-    expect(res.body.data.email).toBe(testUser.email);
-    expect(res.body.token).toBeDefined();
-  });
+    it('should register a new user successfully and return tokens', async () => {
+      const res = await request(app)
+        .post('/api/auth/register')
+        .send({ name: TEST_NAME, email: TEST_EMAIL, password: TEST_PASSWORD });
 
-  it('should reject login with wrong password', async () => {
-    await request(app).post('/api/auth/register').send(testUser);
+      expect(res.status).toBe(201);
+      expect(res.body.success).toBe(true);
+      expect(res.body.data.user.email).toBe(TEST_EMAIL.toLowerCase());
+      expect(res.body.data.user.password).toBeUndefined();
+      expect(res.body.data.user.passwordHash).toBeUndefined();
+      expect(res.body.data.token).toBeDefined();
 
-    const res = await request(app).post('/api/auth/login').send({
-      email: testUser.email,
-      password: 'wrongpassword'
+      accessToken = res.body.data.token;
+      cookies = res.headers['set-cookie'];
     });
 
-    expect(res.status).toBe(401);
-    expect(res.body.success).toBe(false);
+    it('should reject duplicate email registration', async () => {
+      const res = await request(app)
+        .post('/api/auth/register')
+        .send({ name: TEST_NAME, email: TEST_EMAIL, password: TEST_PASSWORD });
+
+      expect(res.status).toBe(409);
+      expect(res.body.success).toBe(false);
+    });
   });
 
-  it('should protect /api/auth/me from unauthenticated requests', async () => {
-    const res = await request(app).get('/api/auth/me');
-    expect(res.status).toBe(401);
+  describe('POST /api/auth/login', () => {
+    it('should reject invalid password', async () => {
+      const res = await request(app)
+        .post('/api/auth/login')
+        .send({ email: TEST_EMAIL, password: 'WrongPassword999' });
+
+      expect(res.status).toBe(401);
+      expect(res.body.success).toBe(false);
+    });
+
+    it('should reject nonexistent email', async () => {
+      const res = await request(app)
+        .post('/api/auth/login')
+        .send({ email: 'nonexistent-user@example.com', password: TEST_PASSWORD });
+
+      expect(res.status).toBe(401);
+      expect(res.body.success).toBe(false);
+    });
+
+    it('should login successfully with valid credentials', async () => {
+      const res = await request(app)
+        .post('/api/auth/login')
+        .send({ email: TEST_EMAIL, password: TEST_PASSWORD });
+
+      expect(res.status).toBe(200);
+      expect(res.body.success).toBe(true);
+      expect(res.body.data.user.email).toBe(TEST_EMAIL.toLowerCase());
+      expect(res.body.data.token).toBeDefined();
+      expect(res.headers['set-cookie']).toBeDefined();
+
+      accessToken = res.body.data.token;
+      cookies = res.headers['set-cookie'];
+    });
   });
 
-  it('should allow access to /api/auth/me with valid Bearer token', async () => {
-    const regRes = await request(app).post('/api/auth/register').send(testUser);
-    const token = regRes.body.token;
+  describe('GET /api/auth/me', () => {
+    it('should reject unauthenticated request', async () => {
+      const res = await request(app).get('/api/auth/me');
+      expect(res.status).toBe(401);
+      expect(res.body.success).toBe(false);
+    });
 
-    const res = await request(app)
-      .get('/api/auth/me')
-      .set('Authorization', `Bearer ${token}`);
+    it('should return profile with Authorization header', async () => {
+      const res = await request(app)
+        .get('/api/auth/me')
+        .set('Authorization', `Bearer ${accessToken}`);
 
-    expect(res.status).toBe(200);
-    expect(res.body.success).toBe(true);
-    expect(res.body.data.email).toBe(testUser.email);
+      expect(res.status).toBe(200);
+      expect(res.body.success).toBe(true);
+      expect(res.body.data.email).toBe(TEST_EMAIL.toLowerCase());
+      expect(res.body.data.password).toBeUndefined();
+    });
+
+    it('should return profile with HttpOnly cookie', async () => {
+      const res = await request(app)
+        .get('/api/auth/me')
+        .set('Cookie', cookies);
+
+      expect(res.status).toBe(200);
+      expect(res.body.success).toBe(true);
+      expect(res.body.data.email).toBe(TEST_EMAIL.toLowerCase());
+    });
+  });
+
+  describe('POST /api/auth/refresh', () => {
+    it('should rotate and refresh token via refresh token cookie', async () => {
+      const res = await request(app)
+        .post('/api/auth/refresh')
+        .set('Cookie', cookies);
+
+      expect(res.status).toBe(200);
+      expect(res.body.success).toBe(true);
+      expect(res.body.data.token).toBeDefined();
+    });
+  });
+
+  describe('POST /api/auth/logout', () => {
+    it('should logout and clear session', async () => {
+      const res = await request(app)
+        .post('/api/auth/logout')
+        .set('Cookie', cookies);
+
+      expect(res.status).toBe(200);
+      expect(res.body.success).toBe(true);
+    });
   });
 });

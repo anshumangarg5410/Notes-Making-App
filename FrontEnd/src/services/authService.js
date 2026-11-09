@@ -8,78 +8,90 @@ export const authService = {
       password,
       confirmPassword
     });
-    if (response.data.token) {
-      localStorage.setItem('notely_token', response.data.token);
+
+    const token = response.data.data?.token || response.data.token;
+    const user = response.data.data?.user || response.data.data;
+
+    if (token) {
+      localStorage.setItem('notely_token', token);
     }
-    return response.data;
+    if (user) {
+      localStorage.setItem('notely_user', JSON.stringify(user));
+    }
+
+    return {
+      success: true,
+      message: response.data.message || 'Account created successfully',
+      data: user,
+      token
+    };
   },
 
   async login(email, password) {
-    try {
-      const response = await api.post('/auth/login', { email, password });
-      if (response.data.token) {
-        localStorage.setItem('notely_token', response.data.token);
-      }
-      if (response.data.data) {
-        localStorage.setItem('notely_user', JSON.stringify(response.data.data));
-      }
-      return response.data;
-    } catch (err) {
-      // Offline fallback: allow local login if offline or backend is unreachable
-      const offlineUser = {
-        _id: 'offline-user-1',
-        name: 'Anshuman Garg',
-        email: email || 'anshuman@notenest.com'
-      };
-      localStorage.setItem('notely_token', 'offline-token-' + Date.now());
-      localStorage.setItem('notely_user', JSON.stringify(offlineUser));
-      return { success: true, data: offlineUser };
+    const response = await api.post('/auth/login', { email, password });
+
+    const token = response.data.data?.token || response.data.token;
+    const user = response.data.data?.user || response.data.data;
+
+    if (token) {
+      localStorage.setItem('notely_token', token);
     }
+    if (user) {
+      localStorage.setItem('notely_user', JSON.stringify(user));
+    }
+
+    return {
+      success: true,
+      message: response.data.message || 'Login successful',
+      data: user,
+      token
+    };
   },
 
   async logout() {
     try {
       await api.post('/auth/logout');
     } catch (_) {
-      // Ignore network errors on logout
+      // Ignore network errors during logout
     } finally {
       localStorage.removeItem('notely_token');
       localStorage.removeItem('notely_user');
     }
+    return { success: true };
   },
 
   async getMe() {
-    try {
-      const response = await api.get('/auth/me');
-      if (response.data?.data) {
-        localStorage.setItem('notely_user', JSON.stringify(response.data.data));
-      }
-      return response.data;
-    } catch (err) {
-      // Offline fallback
-      const cached = localStorage.getItem('notely_user');
-      if (cached) {
-        return { success: true, data: JSON.parse(cached) };
-      }
-      // If token exists, return default user
-      if (localStorage.getItem('notely_token')) {
-        const defaultUser = { _id: 'u-1', name: 'Anshuman Garg', email: 'anshuman@notenest.com' };
-        return { success: true, data: defaultUser };
-      }
-      throw err;
+    const response = await api.get('/auth/me');
+    const user = response.data.data?.user || response.data.data;
+
+    if (user) {
+      localStorage.setItem('notely_user', JSON.stringify(user));
     }
+
+    return {
+      success: true,
+      data: user
+    };
   },
 
-  async updateProfile(data) {
-    const response = await api.put('/users/me', data);
-    return response.data;
-  },
+  async refreshToken() {
+    const response = await api.post('/auth/refresh');
+    const token = response.data.data?.token || response.data.token;
+    const user = response.data.data?.user || response.data.data;
 
-  async updatePassword(currentPassword, newPassword) {
-    const response = await api.put('/users/me/password', {
-      currentPassword,
-      newPassword
-    });
-    return response.data;
+    if (token) {
+      localStorage.setItem('notely_token', token);
+    }
+    if (user) {
+      localStorage.setItem('notely_user', JSON.stringify(user));
+    }
+
+    return {
+      success: true,
+      data: user,
+      token
+    };
   }
 };
+
+export default authService;

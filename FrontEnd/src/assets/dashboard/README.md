@@ -14,3 +14,4 @@ This directory contains the illustrations, icons, and visual assets used by the 
 - `sidebar-quote-light.png`: Light quote badge graphic.
 - `dashboard-bg-dark.png`: Background texture for dark dashboard.
 - `dashboard-bg-light.png`: Background texture for light dashboard.
+

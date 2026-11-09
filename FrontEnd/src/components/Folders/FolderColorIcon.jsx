@@ -54,3 +54,4 @@ export const FolderColorIcon = ({ name = '', color = 'purple', size = 'md' }) =>
     </div>
   );
 };
+

@@ -11,6 +11,7 @@ import { DashboardPage } from './pages/DashboardPage';
 import { WorkspacePage } from './pages/WorkspacePage';
 import { NoteEditorPage } from './pages/NoteEditorPage';
 import { FoldersPage } from './pages/FoldersPage';
+import { TrashPage } from './pages/TrashPage';
 import { LoginPage } from './pages/LoginPage';
 import { RegisterPage } from './pages/RegisterPage';
 import { ErrorBoundary } from './components/common/ErrorBoundary';
@@ -56,6 +57,16 @@ export function App() {
                     element={
                       <ProtectedRoute>
                         <FoldersPage />
+                      </ProtectedRoute>
+                    }
+                  />
+
+                  {/* Dedicated Trash Management Page (Exact Reference Design) */}
+                  <Route
+                    path="/trash"
+                    element={
+                      <ProtectedRoute>
+                        <TrashPage />
                       </ProtectedRoute>
                     }
                   />

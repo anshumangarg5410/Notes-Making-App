@@ -171,7 +171,9 @@ export const DashboardPage = ({ onOpenNoteInEditor = null }) => {
     setActiveNav(navId);
     if (navId === 'folders') {
       navigate('/folders');
-    } else if (navId === 'all-notes' || navId === 'favorites' || navId === 'trash') {
+    } else if (navId === 'trash') {
+      navigate('/trash');
+    } else if (navId === 'all-notes' || navId === 'favorites') {
       navigate(`/notes?view=${navId}`);
     } else if (navId.startsWith('folder-')) {
       const folderName = navId.replace('folder-', '');

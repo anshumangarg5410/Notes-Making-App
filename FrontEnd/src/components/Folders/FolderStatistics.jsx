@@ -48,3 +48,4 @@ export const FolderStatistics = ({ stats = {} }) => {
     </div>
   );
 };
+

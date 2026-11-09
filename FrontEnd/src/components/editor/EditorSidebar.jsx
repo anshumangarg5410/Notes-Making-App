@@ -309,11 +309,7 @@ export const EditorSidebar = ({
         {/* Trash */}
         <div className="pt-2 border-t border-[#1e1e2c]">
           <button
-            onClick={() => {
-              onSelectNav('trash');
-              onSelectFolder?.(null);
-              onSelectTag?.(null);
-            }}
+            onClick={() => navigate('/trash')}
             className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-[3px] transition-colors ${
               activeNav === 'trash'
                 ? 'bg-purple-900/30 text-purple-200 border-l-2 border-purple-500 font-medium'

@@ -529,9 +529,4 @@ Time:        ~10s
 
 ## 👥 Team & License
 
-### Core Engineering Team
-- **Anshuman Garg** (`anshumangarg5410@gmail.com`) — Frontend Architecture, Landing System, Workspace Dashboard & Layout
-- **Parth-Sohal** (`sohalparth72@gmail.com`) — Rich Text Editor Engine, Media Pipeline & Cloudinary, Folder Tree UI
-- **Samarjeet-001** (`samarjeetd09@gmail.com`) — Backend Architecture, Authentication & Security, Offline Dexie Sync Engine
-
 Released under the **MIT License**. Free for personal and commercial development.

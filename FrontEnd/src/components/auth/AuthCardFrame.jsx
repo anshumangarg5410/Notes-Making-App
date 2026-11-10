@@ -3,7 +3,7 @@ import { X, BookOpen, Sun, Moon } from 'lucide-react';
 import { useTheme } from '../../context/ThemeContext';
 
 export const AuthCardFrame = ({ children, onClose, themeOverride = null }) => {
-  const { theme, toggleTheme } = useTheme();
+  const { theme } = useTheme();
   const activeTheme = themeOverride || theme;
   const isDark = activeTheme === 'dark';
 
@@ -35,24 +35,10 @@ export const AuthCardFrame = ({ children, onClose, themeOverride = null }) => {
         ))}
       </div>
 
-      {/* Header: NoteNest logo, theme toggle, and close button */}
+      {/* Header: NoteNest logo and close button */}
       <div className="relative pt-5 px-6 sm:px-8 flex items-center justify-between z-30">
         {/* Placeholder spacer on left to center the logo */}
-        <div className="w-16 flex items-center pl-4 sm:pl-3">
-          {/* Quick theme toggle pill */}
-          <button
-            type="button"
-            onClick={toggleTheme}
-            title={isDark ? 'Switch to Light Theme' : 'Switch to Dark Theme'}
-            className={`p-1.5 rounded-[3px] transition-all text-xs flex items-center gap-1 cursor-pointer ${
-              isDark
-                ? 'bg-purple-900/40 hover:bg-purple-800/60 text-purple-300 border border-purple-500/25'
-                : 'bg-purple-100 hover:bg-purple-200 text-purple-800 border border-purple-200'
-            }`}
-          >
-            {isDark ? <Sun className="w-3.5 h-3.5 text-amber-300" /> : <Moon className="w-3.5 h-3.5 text-purple-700" />}
-          </button>
-        </div>
+        <div className="w-16 flex items-center pl-4 sm:pl-3" />
 
         {/* Centered NoteNest Brand Logo */}
         <div className="flex items-center gap-2 cursor-pointer select-none">

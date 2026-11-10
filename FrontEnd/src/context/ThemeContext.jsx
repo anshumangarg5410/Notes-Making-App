@@ -5,26 +5,24 @@ const ThemeContext = createContext(null);
 export const ThemeProvider = ({ children }) => {
   const [theme, setTheme] = useState(() => {
     if (typeof window !== 'undefined') {
-      const urlParams = new URLSearchParams(window.location.search);
-      const urlTheme = urlParams.get('theme');
-      if (urlTheme === 'light' || urlTheme === 'dark') return urlTheme;
-
       const saved = localStorage.getItem('notely_theme');
-      if (saved) return saved;
-
-      return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
-        ? 'dark'
-        : 'light';
+      if (saved === 'dark') return 'dark';
+      // Default to dark mode strictly
+      localStorage.setItem('notely_theme', 'dark');
+      return 'dark';
     }
     return 'dark';
   });
 
   useEffect(() => {
     const root = document.documentElement;
+    root.classList.add('dark');
     if (theme === 'dark') {
       root.classList.add('dark');
+      root.classList.remove('light');
     } else {
       root.classList.remove('dark');
+      root.classList.add('light');
     }
     localStorage.setItem('notely_theme', theme);
   }, [theme]);

@@ -19,7 +19,7 @@ import { useTheme } from '../../context/ThemeContext';
 
 export const Navbar = () => {
   const { user, isAuthenticated, logout } = useAuth();
-  const { isDark, toggleTheme } = useTheme();
+  const { isDark } = useTheme();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
@@ -129,16 +129,6 @@ export const Navbar = () => {
             <span>Add Note</span>
           </button>
 
-          {/* Theme Toggle */}
-          <button
-            onClick={toggleTheme}
-            className="p-2 rounded-[3px] text-charcoal-600 dark:text-charcoal-300 hover:text-orange-500 dark:hover:text-orange-400 hover:bg-cream-100 dark:hover:bg-charcoal-800 transition-colors"
-            title={isDark ? 'Switch to Light Theme' : 'Switch to Dark Theme'}
-            aria-label="Toggle Theme"
-          >
-            {isDark ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
-          </button>
-
           {/* User Auth Info or Login/Register */}
           {isAuthenticated ? (
             <div className="flex items-center pl-2 space-x-2 border-l border-warm-border dark:border-charcoal-800">
@@ -182,13 +172,6 @@ export const Navbar = () => {
 
         {/* Mobile Hamburger Trigger */}
         <div className="flex items-center space-x-1 md:hidden">
-          <button
-            onClick={toggleTheme}
-            className="p-2 rounded-[3px] text-charcoal-600 dark:text-charcoal-300"
-            aria-label="Toggle Theme"
-          >
-            {isDark ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
-          </button>
           <button
             onClick={() => setMobileMenuOpen((prev) => !prev)}
             className="p-2 rounded-[3px] text-charcoal-600 dark:text-charcoal-300 hover:bg-cream-100 dark:hover:bg-charcoal-800 transition-colors"

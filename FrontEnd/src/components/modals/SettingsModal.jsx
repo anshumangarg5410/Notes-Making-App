@@ -1,13 +1,11 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { X, User, Lock, CheckCircle2, AlertCircle, LogOut } from 'lucide-react';
+import { X, User, Lock, CheckCircle2, AlertCircle } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { authService } from '../../services/authService';
 import { useToast } from '../../context/ToastContext';
 
 export const SettingsModal = ({ isOpen, onClose }) => {
-  const navigate = useNavigate();
-  const { user, updateUser, logout } = useAuth();
+  const { user, updateUser } = useAuth();
   const { success, error: toastError } = useToast();
 
   const [activeTab, setActiveTab] = useState('profile'); // 'profile' | 'password'
@@ -220,29 +218,6 @@ export const SettingsModal = ({ isOpen, onClose }) => {
               </div>
             </form>
           )}
-        </div>
-
-        {/* Modal Footer with Quick Logout */}
-        <div className="p-3.5 bg-cream-100/50 dark:bg-charcoal-900/60 border-t border-warm-border dark:border-charcoal-700 flex items-center justify-between">
-          <button
-            type="button"
-            onClick={async () => {
-              onClose();
-              if (logout) await logout();
-              navigate('/');
-            }}
-            className="flex items-center gap-1.5 text-xs text-red-500 hover:text-red-400 font-medium py-1 px-2 rounded hover:bg-red-500/10 transition-colors"
-          >
-            <LogOut className="w-3.5 h-3.5" />
-            <span>Log Out</span>
-          </button>
-          <button
-            type="button"
-            onClick={onClose}
-            className="px-3 py-1 border border-warm-border dark:border-charcoal-600 text-charcoal-600 dark:text-cream-200 rounded-[3px] text-xs font-medium hover:bg-cream-100"
-          >
-            Close
-          </button>
         </div>
       </div>
     </div>

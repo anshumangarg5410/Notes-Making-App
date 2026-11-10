@@ -10,7 +10,7 @@ export const PencilNavbar = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { openLogin, openSignup, openLogout } = useAuthModal();
   const { isAuthenticated } = useAuth();
-  const { isDark, toggleTheme } = useTheme();
+  const { isDark } = useTheme();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -137,20 +137,6 @@ export const PencilNavbar = () => {
           </nav>
 
           <div className="col-start-2 row-start-1 flex items-center justify-end gap-2 sm:gap-3 xl:col-start-3">
-            <button
-              type="button"
-              onClick={toggleTheme}
-              title={isDark ? 'Switch to Light Theme' : 'Switch to Dark Theme'}
-              aria-label={isDark ? 'Switch to light theme' : 'Switch to dark theme'}
-              className={`hidden h-10 w-10 items-center justify-center rounded-full border transition-all xl:flex ${
-                isDark
-                  ? 'border-indigo-400/30 bg-indigo-500/10 text-indigo-200 hover:border-indigo-300/60 hover:bg-indigo-500/20'
-                  : 'border-indigo-200 bg-white/70 text-indigo-700 hover:border-indigo-400 hover:bg-indigo-50'
-              }`}
-            >
-              {isDark ? <Moon className="h-4 w-4 fill-current" /> : <Sun className="h-4 w-4" />}
-            </button>
-
             {isAuthenticated ? (
               <>
                 <Link
@@ -208,21 +194,7 @@ export const PencilNavbar = () => {
       </div>
 
       {mobileMenuOpen && (
-        <div className={`mx-auto mt-3 max-w-[1280px] rounded-2xl border p-3 shadow-2xl backdrop-blur-md xl:hidden ${
-          isDark ? 'border-indigo-400/30 bg-[#0E131F]/95' : 'border-slate-200 bg-[#F8FAFC]/95'
-        }`}>
-          <div className="mb-3 flex items-center">
-            <button
-              type="button"
-              onClick={toggleTheme}
-              className={`inline-flex items-center gap-2 rounded-xl border px-3 py-2 text-sm ${
-                isDark ? 'border-indigo-300/25 text-slate-200' : 'border-indigo-200 text-indigo-700'
-              }`}
-            >
-              {isDark ? <Moon className="h-4 w-4" /> : <Sun className="h-4 w-4" />}
-              {isDark ? 'Dark mode' : 'Light mode'}
-            </button>
-          </div>
+        <div className="mx-auto mt-3 max-w-[1280px] rounded-2xl border border-indigo-400/30 bg-[#0E131F]/95 p-3 shadow-2xl backdrop-blur-md xl:hidden">
           <div className="grid grid-cols-2 gap-2">
             {navLinks.map((link) => (
               <button

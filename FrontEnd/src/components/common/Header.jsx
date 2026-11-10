@@ -17,7 +17,7 @@ import { useAuth } from '../../context/AuthContext';
 import { useAuthModal } from '../../context/AuthModalContext';
 
 export const Header = ({ onToggleSidebar, onOpenSettings, onToggleFocusMode, isFocusMode, onNewNote }) => {
-  const { toggleTheme, isDark } = useTheme();
+  const { isDark } = useTheme();
   const { user, logout } = useAuth();
   const { openLogout } = useAuthModal();
   const [profileOpen, setProfileOpen] = useState(false);
@@ -91,15 +91,6 @@ export const Header = ({ onToggleSidebar, onOpenSettings, onToggleFocusMode, isF
             <span>New Note</span>
           </button>
         )}
-
-        {/* Theme Toggle (Sun / Moon) */}
-        <button
-          onClick={toggleTheme}
-          className="p-2 rounded-[3px] text-charcoal-600 dark:text-charcoal-300 hover:text-orange-500 dark:hover:text-orange-400 hover:bg-cream-200/60 dark:hover:bg-charcoal-800 transition-colors"
-          title={isDark ? 'Switch to Light Theme' : 'Switch to Dark Theme'}
-        >
-          {isDark ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
-        </button>
 
         {/* Notification Bell with Badge */}
         <button

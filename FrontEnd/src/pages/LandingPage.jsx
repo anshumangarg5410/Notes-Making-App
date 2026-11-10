@@ -13,14 +13,10 @@ export const LandingPage = () => {
 
   return (
     <div
-      className={`min-h-screen w-full relative flex flex-col overflow-x-hidden transition-colors duration-300 ${
-        isDark ? 'text-slate-100' : 'text-slate-900'
-      }`}
+      className="min-h-screen w-full relative flex flex-col overflow-x-hidden text-slate-100"
       style={{
-        backgroundImage: isDark
-          ? `linear-gradient(rgba(9, 13, 22, 0.18), rgba(9, 13, 22, 0.3)), url(${landingBgDark})`
-          : 'radial-gradient(ellipse at 82% 4%, rgba(192, 132, 252, 0.16), transparent 38%), radial-gradient(ellipse at 8% 52%, rgba(251, 191, 36, 0.06), transparent 34%), linear-gradient(180deg, #FFFAFF 0%, #FBF7FF 55%, #F8F3FF 100%)',
-        backgroundColor: isDark ? '#090D16' : '#FFFAFF',
+        backgroundImage: `linear-gradient(rgba(9, 13, 22, 0.18), rgba(9, 13, 22, 0.3)), url(${landingBgDark})`,
+        backgroundColor: '#090D16',
         backgroundSize: 'cover',
         backgroundPosition: 'center',
         backgroundRepeat: 'no-repeat',

@@ -6,10 +6,7 @@ import { FeaturesOverview } from '../components/landing/FeaturesOverview';
 import { EditorShowcase } from '../components/landing/EditorShowcase';
 import { AboutSection } from '../components/landing/AboutSection';
 import { Footer } from '../components/footer/Footer';
-import { HeroToFeaturesDivider } from '../components/landing/dividers/HeroToFeaturesDivider';
-import { FeaturesToEditorDivider } from '../components/landing/dividers/FeaturesToEditorDivider';
-import { EditorToAboutDivider } from '../components/landing/dividers/EditorToAboutDivider';
-import { AboutToFooterDivider } from '../components/landing/dividers/AboutToFooterDivider';
+import { SectionDivider } from '../components/landing/SectionDivider';
 import { useTheme } from '../context/ThemeContext';
 import landingBgDark from '../assets/landing/hero-bg-dark.png';
 
@@ -75,9 +72,9 @@ export const LandingPage = () => {
         </div>
 
         {/* ============================================================== */}
-        {/* Creative Section Separator 1: Washi Tape & Brass Binder Clip   */}
+        {/* Section Divider: Hero & Feature Cards -> Features Overview     */}
         {/* ============================================================== */}
-        <HeroToFeaturesDivider />
+        <SectionDivider id="divider-hero-features" />
 
         {/* ============================================================== */}
         {/* 2. DOWNSTREAM PAGES / SECTIONS (Scroll down above background)   */}
@@ -86,25 +83,25 @@ export const LandingPage = () => {
         <FeaturesOverview />
 
         {/* ============================================================== */}
-        {/* Creative Section Separator 2: Drafting Ruler & Pencil Guide     */}
+        {/* Section Divider: Features Overview -> Editor Showcase          */}
         {/* ============================================================== */}
-        <FeaturesToEditorDivider />
+        <SectionDivider id="divider-features-editor" />
 
         {/* Editor Showcase Section (Obsidian Rich-Text Editor Experience) */}
         <EditorShowcase />
 
         {/* ============================================================== */}
-        {/* Creative Section Separator 3: Satin Ribbon & Sticky Heart Note */}
+        {/* Section Divider: Editor Showcase -> About NoteNest             */}
         {/* ============================================================== */}
-        <EditorToAboutDivider />
+        <SectionDivider id="divider-editor-about" />
 
         {/* About NoteNest Section */}
         <AboutSection />
 
         {/* ============================================================== */}
-        {/* Creative Section Separator 4: Perforated Tear & Origami Flight */}
+        {/* Section Divider: About NoteNest -> Footer                      */}
         {/* ============================================================== */}
-        <AboutToFooterDivider />
+        <SectionDivider id="divider-about-footer" />
 
         {/* Four-Column Footer */}
         <Footer />

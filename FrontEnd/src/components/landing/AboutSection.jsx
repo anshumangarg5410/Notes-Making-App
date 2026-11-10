@@ -33,14 +33,18 @@ export const AboutSection = () => {
   return (
     <section
       id="about"
-      className="relative py-20 px-4 sm:px-6 lg:px-8 overflow-hidden transition-colors duration-300"
-      style={{
-        background: isDark
-          ? 'radial-gradient(ellipse at 80% 50%, #201338 0%, #0e0a19 60%, #090712 100%)'
-          : 'radial-gradient(ellipse at 80% 50%, #faedf9 0%, #faf8f5 60%, #f4eff8 100%)'
-      }}
+      className="relative py-20 px-4 sm:px-6 lg:px-8 overflow-hidden transition-colors duration-300 bg-transparent text-white"
     >
-      <div className="max-w-7xl mx-auto">
+      {/* Background Ambience & Soft Purple Lighting */}
+      <div className="absolute inset-0 pointer-events-none overflow-hidden">
+        <div
+          className={`absolute top-1/2 right-1/4 -translate-y-1/2 w-[600px] h-[450px] rounded-full blur-[140px] pointer-events-none transition-opacity duration-500 ${
+            isDark ? 'bg-purple-600/15 opacity-80' : 'bg-purple-400/10 opacity-60'
+          }`}
+        />
+      </div>
+
+      <div className="max-w-7xl mx-auto relative z-10">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
 
           {/* Left Column: Visual Card Showcase */}
@@ -52,9 +56,10 @@ export const AboutSection = () => {
             />
 
             {/* Layered Card Container */}
-            <div className="relative w-full max-w-md rounded-3xl p-3 border shadow-2xl transition-all duration-300 hover:scale-[1.02] group"
+            <div
+              className="relative w-full max-w-md rounded-3xl p-3 border shadow-2xl transition-all duration-300 hover:scale-[1.02] group backdrop-blur-md"
               style={{
-                backgroundColor: isDark ? '#181228' : '#ffffff',
+                backgroundColor: isDark ? 'rgba(24, 18, 40, 0.75)' : '#ffffff',
                 borderColor: isDark ? 'rgba(168,85,247,0.3)' : 'rgba(217,119,6,0.2)',
                 boxShadow: isDark
                   ? '0 20px 50px -10px rgba(0,0,0,0.8), 0 0 30px rgba(168,85,247,0.15)'
@@ -125,9 +130,9 @@ export const AboutSection = () => {
                 return (
                   <div
                     key={idx}
-                    className={`p-4 rounded-2xl border transition-all duration-200 hover:-translate-y-0.5 ${
+                    className={`p-4 rounded-2xl border transition-all duration-200 hover:-translate-y-0.5 backdrop-blur-md ${
                       isDark
-                        ? 'bg-[#161026]/70 border-purple-900/30 hover:border-purple-500/40 shadow-sm'
+                        ? 'bg-[#161026]/75 border-purple-900/40 hover:border-purple-500/50 shadow-sm'
                         : 'bg-white/90 border-stone-200 hover:border-amber-400/40 shadow-sm'
                     }`}
                   >

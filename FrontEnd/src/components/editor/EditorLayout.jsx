@@ -25,7 +25,7 @@ export const EditorLayout = ({
 }) => {
   const { success, error: toastError, info } = useToast();
   const { isDark } = useTheme();
-  const { defaultFormat, autoSaveEnabled, autoSaveIntervalMs } = useEditorSettings();
+  const { defaultFormat, setDefaultFormat, autoSaveEnabled, autoSaveIntervalMs } = useEditorSettings();
 
   // Network connectivity state
   const [isOnline, setIsOnline] = useState(navigator.onLine);
@@ -60,6 +60,7 @@ export const EditorLayout = ({
   const [saveStatus, setSaveStatus] = useState('saved'); // 'saved', 'saving', 'unsaved', 'offline'
   const [lastSavedTime, setLastSavedTime] = useState('Just now');
   const [wordStats, setWordStats] = useState({ words: 1248, chars: 7862, readingTime: 3 });
+  const [noteModes, setNoteModes] = useState({});
 
   // Debounce save ref
   const saveTimeoutRef = useRef(null);
@@ -524,6 +525,64 @@ export const EditorLayout = ({
     success('Note saved');
   }, [performSave, success]);
 
+  // Active note formatting mode ('Markdown' | 'Rich Text' | 'Plain Text')
+  const currentMode =
+    noteModes[activeTabId] ||
+    (activeNote?.title?.endsWith('.md')
+      ? 'Markdown'
+      : activeNote?.title?.endsWith('.txt')
+      ? 'Plain Text'
+      : defaultFormat === 'markdown'
+      ? 'Markdown'
+      : defaultFormat === 'plaintext'
+      ? 'Plain Text'
+      : 'Rich Text');
+
+  // Switch editor mode handler
+  const handleSelectMode = (newMode) => {
+    if (!newMode) return;
+
+    if (activeTabId) {
+      setNoteModes((prev) => ({
+        ...prev,
+        [activeTabId]: newMode
+      }));
+    }
+
+    if (activeNote) {
+      const currentTitle = activeNote.title || 'Untitled Note';
+      let nextTitle = currentTitle;
+
+      if (newMode === 'Markdown') {
+        if (currentTitle.endsWith('.txt')) {
+          nextTitle = currentTitle.replace(/\.txt$/, '.md');
+        } else if (!currentTitle.endsWith('.md')) {
+          nextTitle = `${currentTitle}.md`;
+        }
+      } else if (newMode === 'Plain Text') {
+        if (currentTitle.endsWith('.md')) {
+          nextTitle = currentTitle.replace(/\.md$/, '.txt');
+        } else if (!currentTitle.endsWith('.txt')) {
+          nextTitle = `${currentTitle}.txt`;
+        }
+      } else if (newMode === 'Rich Text') {
+        if (currentTitle.endsWith('.md') || currentTitle.endsWith('.txt')) {
+          nextTitle = currentTitle.replace(/\.(md|txt)$/, '');
+        }
+      }
+
+      if (nextTitle !== currentTitle) {
+        handleUpdateNote({ title: nextTitle });
+      }
+    }
+
+    // Persist default format in settings
+    const formatKey = newMode === 'Markdown' ? 'markdown' : newMode === 'Plain Text' ? 'plaintext' : 'richtext';
+    setDefaultFormat(formatKey);
+
+    success(`Switched to ${newMode} mode`);
+  };
+
   // Global Ctrl+S / Cmd+S and Ctrl+K / Cmd+K shortcuts
   useEffect(() => {
     const handleKeyDown = (e) => {
@@ -870,8 +929,9 @@ export const EditorLayout = ({
             {/* Tiptap Writing Workspace */}
             <div className="flex-1 overflow-hidden relative flex flex-col">
               <RichTextEditor
-                key={activeTabId || 'editor-default'}
+                key={`${activeTabId || 'editor-default'}-${currentMode}`}
                 note={activeNote}
+                mode={currentMode}
                 onUpdateNote={handleUpdateNote}
                 onWordCountChange={setWordStats}
                 onManualSave={handleManualSave}
@@ -885,17 +945,8 @@ export const EditorLayout = ({
               readingTime={wordStats.readingTime}
               lastSaved={lastSavedTime}
               isOnline={isOnline}
-              mode={
-                activeNote?.title?.endsWith('.md')
-                  ? 'Markdown'
-                  : activeNote?.title?.endsWith('.txt')
-                  ? 'Plain Text'
-                  : defaultFormat === 'markdown'
-                  ? 'Markdown'
-                  : defaultFormat === 'plaintext'
-                  ? 'Plain Text'
-                  : 'Rich Text'
-              }
+              mode={currentMode}
+              onSelectMode={handleSelectMode}
             />
           </main>
 

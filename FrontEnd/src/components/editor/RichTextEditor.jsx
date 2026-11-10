@@ -11,12 +11,22 @@ import TableRow from '@tiptap/extension-table-row';
 import TableCell from '@tiptap/extension-table-cell';
 import TableHeader from '@tiptap/extension-table-header';
 import Placeholder from '@tiptap/extension-placeholder';
+import {
+  Eye,
+  Code,
+  FileText,
+  Type,
+  Copy,
+  Check
+} from 'lucide-react';
 import { useEditorSettings } from '../../context/EditorSettingsContext';
 import { useTheme } from '../../context/ThemeContext';
 import { EditorToolbar } from './EditorToolbar';
+import { markdownToHtml, htmlToMarkdown, stripHtmlToPlainText } from '../../utils/markdownUtils';
 
 export const RichTextEditor = ({
   note,
+  mode = 'Rich Text',
   onUpdateNote,
   onWordCountChange,
   onInsertImageRef,
@@ -26,6 +36,27 @@ export const RichTextEditor = ({
   const { isDark } = useTheme();
   const [title, setTitle] = useState(note?.title || 'Untitled Note');
   const fileInputRef = useRef(null);
+
+  // Markdown Mode State: 'wysiwyg' | 'source'
+  const [markdownView, setMarkdownView] = useState('wysiwyg');
+  const [markdownSource, setMarkdownSource] = useState(() => {
+    if (note?.plainText && typeof note.plainText === 'string' && note.plainText.trim()) {
+      return note.plainText;
+    }
+    return htmlToMarkdown(note?.content || '');
+  });
+
+  // Plain Text Mode State
+  const [plainTextValue, setPlainTextValue] = useState(() => {
+    if (note?.plainText && typeof note.plainText === 'string' && note.plainText.trim()) {
+      return note.plainText;
+    }
+    return stripHtmlToPlainText(note?.content || '');
+  });
+  const [isMonospace, setIsMonospace] = useState(true);
+  const [copied, setCopied] = useState(false);
+
+  const rawTextareaRef = useRef(null);
 
   // Determine initial content from the note object
   const getInitialContent = () => {
@@ -78,14 +109,6 @@ export const RichTextEditor = ({
         autocorrect: spellCheck ? 'on' : 'off',
         autocapitalize: spellCheck ? 'on' : 'off',
         class: 'focus:outline-none'
-      },
-      handleKeyDown: (view, event) => {
-        if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 's') {
-          event.preventDefault();
-          onManualSave?.();
-          return true;
-        }
-        return false;
       },
       handlePaste: (view, event) => {
         const items = event.clipboardData?.items;
@@ -153,9 +176,9 @@ export const RichTextEditor = ({
     }
   });
 
-  // Calculate statistics initially
+  // Calculate statistics initially for WYSIWYG
   useEffect(() => {
-    if (editor) {
+    if (editor && (mode === 'Rich Text' || (mode === 'Markdown' && markdownView === 'wysiwyg'))) {
       const text = editor.getText();
       const words = text.trim() ? text.trim().split(/\s+/).length : 0;
       onWordCountChange?.({
@@ -164,16 +187,27 @@ export const RichTextEditor = ({
         readingTime: Math.max(1, Math.ceil(words / 200))
       });
     }
-  }, [editor]);
+  }, [editor, mode, markdownView]);
 
-  // Sync title & content when selected note changes
+  // Synchronize state when selected note changes
   useEffect(() => {
     if (note) {
       setTitle(note.title || 'Untitled Note');
-      if (editor) {
-        const nextContent = note.content || (note.plainText ? `<p>${note.plainText}</p>` : '');
+
+      const nextContent = note.content || (note.plainText ? `<p>${note.plainText}</p>` : '');
+      if (editor && editor.getHTML() !== nextContent) {
         editor.commands.setContent(nextContent);
       }
+
+      const md = note.plainText && typeof note.plainText === 'string' && note.plainText.trim()
+        ? note.plainText
+        : htmlToMarkdown(note.content || '');
+      setMarkdownSource(md);
+
+      const pt = note.plainText && typeof note.plainText === 'string' && note.plainText.trim()
+        ? note.plainText
+        : stripHtmlToPlainText(note.content || '');
+      setPlainTextValue(pt);
     }
   }, [note?._id, note?.id]);
 
@@ -187,10 +221,22 @@ export const RichTextEditor = ({
   const handleTitleChange = (e) => {
     const newTitle = e.target.value;
     setTitle(newTitle);
+
+    let contentToSave = editor ? editor.getHTML() : note?.content;
+    let plainToSave = editor ? editor.getText() : note?.plainText;
+
+    if (mode === 'Plain Text') {
+      contentToSave = plainTextValue;
+      plainToSave = plainTextValue;
+    } else if (mode === 'Markdown' && markdownView === 'source') {
+      contentToSave = markdownToHtml(markdownSource);
+      plainToSave = markdownSource;
+    }
+
     onUpdateNote?.({
       title: newTitle,
-      content: editor ? editor.getHTML() : note?.content,
-      plainText: editor ? editor.getText() : note?.plainText
+      content: contentToSave,
+      plainText: plainToSave
     });
   };
 
@@ -215,6 +261,92 @@ export const RichTextEditor = ({
     }
   };
 
+  // Plain text changes
+  const handlePlainTextChange = (e) => {
+    const val = e.target.value;
+    setPlainTextValue(val);
+
+    const words = val.trim() ? val.trim().split(/\s+/).length : 0;
+    onWordCountChange?.({
+      words,
+      chars: val.length,
+      readingTime: Math.max(1, Math.ceil(words / 200))
+    });
+
+    onUpdateNote?.({
+      title,
+      content: val,
+      plainText: val
+    });
+  };
+
+  // Copy plain text content
+  const handleCopyPlainText = () => {
+    navigator.clipboard.writeText(plainTextValue);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  // Markdown source changes
+  const handleMarkdownSourceChange = (e) => {
+    const val = e.target.value;
+    setMarkdownSource(val);
+
+    const words = val.trim() ? val.trim().split(/\s+/).length : 0;
+    onWordCountChange?.({
+      words,
+      chars: val.length,
+      readingTime: Math.max(1, Math.ceil(words / 200))
+    });
+
+    const parsedHtml = markdownToHtml(val);
+    onUpdateNote?.({
+      title,
+      content: parsedHtml,
+      plainText: val
+    });
+  };
+
+  // Insert markdown syntax helper
+  const handleInsertMarkdownSyntax = (prefix, suffix = '') => {
+    const textarea = rawTextareaRef.current;
+    if (!textarea) return;
+
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+    const current = markdownSource;
+    const selected = current.substring(start, end);
+
+    const replacement = `${prefix}${selected || 'text'}${suffix}`;
+    const nextValue = current.substring(0, start) + replacement + current.substring(end);
+
+    setMarkdownSource(nextValue);
+
+    const parsedHtml = markdownToHtml(nextValue);
+    onUpdateNote?.({
+      title,
+      content: parsedHtml,
+      plainText: nextValue
+    });
+
+    setTimeout(() => {
+      textarea.focus();
+      textarea.setSelectionRange(start + prefix.length, start + prefix.length + (selected ? selected.length : 4));
+    }, 10);
+  };
+
+  // Toggle between Markdown Live View and Markdown Source View
+  const handleToggleMarkdownView = (view) => {
+    setMarkdownView(view);
+    if (view === 'wysiwyg' && editor) {
+      const renderedHtml = markdownToHtml(markdownSource);
+      editor.commands.setContent(renderedHtml);
+    } else if (view === 'source' && editor) {
+      const currentMd = htmlToMarkdown(editor.getHTML());
+      setMarkdownSource(currentMd);
+    }
+  };
+
   return (
     <div className={`flex-1 flex flex-col h-full overflow-hidden select-text transition-colors duration-150 ${
       isDark ? 'bg-[#0e0e14] text-gray-200' : 'bg-white text-[#181326]'
@@ -228,14 +360,207 @@ export const RichTextEditor = ({
         className="hidden"
       />
 
-      {/* Formatting Toolbar */}
-      <EditorToolbar
-        editor={editor}
-        onInsertImage={() => fileInputRef.current?.click()}
-        onInsertImageUrl={handleInsertImageUrl}
-      />
+      {/* ============================================================== */}
+      {/* 1. TOOLBAR AREA (Adapts to Mode)                               */}
+      {/* ============================================================== */}
+      {mode === 'Plain Text' ? (
+        /* Plain Text Minimal Header Bar */
+        <div
+          className={`h-9 border-b px-4 flex items-center justify-between text-xs select-none transition-colors duration-150 ${
+            isDark ? 'bg-[#12121c] border-[#222232] text-gray-400' : 'bg-[#FAFAFD] border-[#EAE6F4] text-[#6B7280]'
+          }`}
+        >
+          <div className="flex items-center gap-2">
+            <span
+              className="font-mono text-[10px] px-1.5 py-0.5 rounded font-bold"
+              style={{
+                backgroundColor: 'var(--accent-bg, rgba(168, 85, 247, 0.15))',
+                color: 'var(--accent-text, #c084fc)'
+              }}
+            >
+              TXT
+            </span>
+            <span className="font-semibold text-xs">Plain Text Editor</span>
+            <span className="text-[11px] opacity-60">• Clean, unformatted text</span>
+          </div>
 
-      {/* Main Document Canvas Scroll Area */}
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => setIsMonospace(!isMonospace)}
+              className={`flex items-center gap-1.5 px-2 py-1 rounded text-xs transition-colors cursor-pointer ${
+                isMonospace
+                  ? isDark ? 'bg-purple-900/30 text-purple-300 border border-purple-500/30' : 'bg-purple-100 text-purple-700 border border-purple-300'
+                  : isDark ? 'text-gray-400 hover:text-white' : 'text-slate-600 hover:text-slate-900'
+              }`}
+            >
+              <Type className="w-3.5 h-3.5" />
+              <span>{isMonospace ? 'Monospace Font' : 'Proportional Font'}</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={handleCopyPlainText}
+              className={`flex items-center gap-1.5 px-2 py-1 rounded text-xs transition-colors cursor-pointer ${
+                isDark ? 'text-gray-300 hover:bg-white/5 hover:text-white' : 'text-slate-600 hover:bg-purple-50 hover:text-purple-700'
+              }`}
+            >
+              {copied ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
+              <span>{copied ? 'Copied' : 'Copy All'}</span>
+            </button>
+          </div>
+        </div>
+      ) : mode === 'Markdown' ? (
+        /* Markdown Mode Header Bar with Source / Live View Toggle */
+        <div
+          className={`h-9 border-b px-4 flex items-center justify-between text-xs select-none transition-colors duration-150 ${
+            isDark ? 'bg-[#12121c] border-[#222232] text-gray-400' : 'bg-[#FAFAFD] border-[#EAE6F4] text-[#6B7280]'
+          }`}
+        >
+          {/* Left: Format Label & Syntax Helpers */}
+          <div className="flex items-center gap-2">
+            <span
+              className="font-mono text-[10px] px-1.5 py-0.5 rounded font-bold"
+              style={{
+                backgroundColor: 'var(--accent-bg, rgba(168, 85, 247, 0.15))',
+                color: 'var(--accent-text, #c084fc)'
+              }}
+            >
+              MD
+            </span>
+
+            {/* Quick Syntax Insertion Buttons (Visible in Source Mode) */}
+            {markdownView === 'source' ? (
+              <div className="flex items-center gap-1 pl-2 border-l border-purple-500/20">
+                <button
+                  type="button"
+                  onClick={() => handleInsertMarkdownSyntax('# ')}
+                  title="Heading 1"
+                  className="px-1.5 py-0.5 rounded text-[11px] font-mono hover:bg-purple-500/15 hover:text-purple-400 cursor-pointer"
+                >
+                  H1
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleInsertMarkdownSyntax('## ')}
+                  title="Heading 2"
+                  className="px-1.5 py-0.5 rounded text-[11px] font-mono hover:bg-purple-500/15 hover:text-purple-400 cursor-pointer"
+                >
+                  H2
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleInsertMarkdownSyntax('**', '**')}
+                  title="Bold"
+                  className="px-1.5 py-0.5 rounded text-[11px] font-bold hover:bg-purple-500/15 hover:text-purple-400 cursor-pointer"
+                >
+                  B
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleInsertMarkdownSyntax('*', '*')}
+                  title="Italic"
+                  className="px-1.5 py-0.5 rounded text-[11px] italic hover:bg-purple-500/15 hover:text-purple-400 cursor-pointer"
+                >
+                  I
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleInsertMarkdownSyntax('`', '`')}
+                  title="Code snippet"
+                  className="px-1.5 py-0.5 rounded text-[11px] font-mono hover:bg-purple-500/15 hover:text-purple-400 cursor-pointer"
+                >
+                  &lt;/&gt;
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleInsertMarkdownSyntax('> ')}
+                  title="Blockquote"
+                  className="px-1.5 py-0.5 rounded text-[11px] hover:bg-purple-500/15 hover:text-purple-400 cursor-pointer"
+                >
+                  Quote
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleInsertMarkdownSyntax('- ')}
+                  title="List item"
+                  className="px-1.5 py-0.5 rounded text-[11px] hover:bg-purple-500/15 hover:text-purple-400 cursor-pointer"
+                >
+                  List
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleInsertMarkdownSyntax('[', '](https://)')}
+                  title="Link"
+                  className="px-1.5 py-0.5 rounded text-[11px] hover:bg-purple-500/15 hover:text-purple-400 cursor-pointer"
+                >
+                  Link
+                </button>
+              </div>
+            ) : null}
+          </div>
+
+          {/* Right: Segmented Switcher for [Live View] vs [Raw Markdown Source] */}
+          <div
+            className={`flex items-center p-0.5 rounded-lg border ${
+              isDark ? 'bg-[#181624] border-[#2c2c3e]' : 'bg-[#f4effc] border-purple-200'
+            }`}
+          >
+            <button
+              type="button"
+              onClick={() => handleToggleMarkdownView('wysiwyg')}
+              className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium transition-all cursor-pointer ${
+                markdownView === 'wysiwyg'
+                  ? isDark
+                    ? 'bg-purple-600 text-white shadow-sm'
+                    : 'bg-white text-purple-700 shadow-xs border border-purple-200'
+                  : isDark
+                    ? 'text-gray-400 hover:text-white'
+                    : 'text-slate-600 hover:text-slate-900'
+              }`}
+            >
+              <Eye className="w-3.5 h-3.5" />
+              <span>Live Preview</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => handleToggleMarkdownView('source')}
+              className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium transition-all cursor-pointer ${
+                markdownView === 'source'
+                  ? isDark
+                    ? 'bg-purple-600 text-white shadow-sm'
+                    : 'bg-white text-purple-700 shadow-xs border border-purple-200'
+                  : isDark
+                    ? 'text-gray-400 hover:text-white'
+                    : 'text-slate-600 hover:text-slate-900'
+              }`}
+            >
+              <Code className="w-3.5 h-3.5" />
+              <span>Markdown Source</span>
+            </button>
+          </div>
+        </div>
+      ) : (
+        /* Rich Text Formatting Toolbar */
+        <EditorToolbar
+          editor={editor}
+          onInsertImage={() => fileInputRef.current?.click()}
+          onInsertImageUrl={handleInsertImageUrl}
+        />
+      )}
+
+      {/* In Markdown Live View, also show the formatting toolbar if desired */}
+      {mode === 'Markdown' && markdownView === 'wysiwyg' && (
+        <EditorToolbar
+          editor={editor}
+          onInsertImage={() => fileInputRef.current?.click()}
+          onInsertImageUrl={handleInsertImageUrl}
+        />
+      )}
+
+      {/* ============================================================== */}
+      {/* 2. MAIN DOCUMENT CANVAS SCROLL AREA                            */}
+      {/* ============================================================== */}
       <div className="flex-1 overflow-y-auto obsidian-scrollbar px-6 sm:px-12 py-8 max-w-4xl mx-auto w-full space-y-4">
         {/* Document Title Header with accent vertical cursor bar */}
         <div
@@ -256,13 +581,45 @@ export const RichTextEditor = ({
           <span className="title-cursor" />
         </div>
 
-        {/* Tiptap Rich-Text Editor Content Canvas */}
-        <div
-          className={`obsidian-editor flex-1 pt-2 min-h-[350px] transition-all duration-150 ${lineNumbers ? 'show-line-numbers' : ''}`}
-          style={{ fontSize: `${fontSize}px` }}
-        >
-          <EditorContent editor={editor} spellCheck={spellCheck} />
-        </div>
+        {/* Dynamic Editor Content View */}
+        {mode === 'Plain Text' ? (
+          /* PLAIN TEXT MODE */
+          <div className="flex-1 pt-2 min-h-[380px]">
+            <textarea
+              value={plainTextValue}
+              onChange={handlePlainTextChange}
+              placeholder="Start typing unformatted plain text..."
+              spellCheck={spellCheck}
+              className={`w-full min-h-[400px] bg-transparent border-none focus:outline-none leading-relaxed transition-all resize-none ${
+                isMonospace ? 'font-mono text-sm' : 'font-sans text-base'
+              } ${isDark ? 'text-gray-200 placeholder-gray-500' : 'text-[#181326] placeholder-slate-400'}`}
+              style={{ fontSize: `${fontSize}px` }}
+            />
+          </div>
+        ) : mode === 'Markdown' && markdownView === 'source' ? (
+          /* MARKDOWN SOURCE MODE */
+          <div className="flex-1 pt-2 min-h-[380px]">
+            <textarea
+              ref={rawTextareaRef}
+              value={markdownSource}
+              onChange={handleMarkdownSourceChange}
+              placeholder="# Markdown Heading&#10;&#10;Write **bold**, *italic*, - list, or [links](url)..."
+              spellCheck={spellCheck}
+              className={`w-full min-h-[400px] bg-transparent border-none focus:outline-none font-mono text-sm leading-relaxed transition-all resize-none ${
+                isDark ? 'text-purple-200/90 placeholder-gray-600' : 'text-purple-950 placeholder-slate-400'
+              }`}
+              style={{ fontSize: `${fontSize}px` }}
+            />
+          </div>
+        ) : (
+          /* WYSIWYG / RICH-TEXT MODE (Tiptap Canvas) */
+          <div
+            className={`obsidian-editor flex-1 pt-2 min-h-[350px] transition-all duration-150 ${lineNumbers ? 'show-line-numbers' : ''}`}
+            style={{ fontSize: `${fontSize}px` }}
+          >
+            <EditorContent editor={editor} spellCheck={spellCheck} />
+          </div>
+        )}
       </div>
     </div>
   );

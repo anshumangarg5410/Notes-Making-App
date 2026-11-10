@@ -19,10 +19,18 @@ import {
   Plus,
   Trash2,
   Upload,
-  Globe
+  Globe,
+  Pencil,
+  PenTool
 } from 'lucide-react';
 
-export const EditorToolbar = ({ editor, onInsertImage, onInsertImageUrl }) => {
+export const EditorToolbar = ({
+  editor,
+  onInsertImage,
+  onInsertImageUrl,
+  onOpenDrawingModal,
+  onOpenQuickScribble
+}) => {
   const { isDark } = useTheme();
   const [headingDropdownOpen, setHeadingDropdownOpen] = useState(false);
   const [imageDropdownOpen, setImageDropdownOpen] = useState(false);
@@ -341,9 +349,47 @@ export const EditorToolbar = ({ editor, onInsertImage, onInsertImageUrl }) => {
                 <Globe className="w-3.5 h-3.5 text-purple-500" />
                 <span>Insert from URL...</span>
               </button>
+              <div className={`my-1 border-t ${isDark ? 'border-[#2a2a3d]' : 'border-[#EAE6F4]'}`} />
+              <button
+                type="button"
+                onClick={() => {
+                  setImageDropdownOpen(false);
+                  onOpenDrawingModal?.();
+                }}
+                className={`w-full text-left px-3 py-1.5 flex items-center gap-2 ${
+                  isDark ? 'text-gray-300 hover:bg-[#272738]' : 'text-[#374151] hover:bg-[#F3F0F9]'
+                }`}
+              >
+                <PenTool className="w-3.5 h-3.5 text-purple-500" />
+                <span>Create New Drawing...</span>
+              </button>
             </div>
           )}
         </div>
+
+        {/* 8b. Quick Scribble */}
+        <button
+          type="button"
+          onClick={onOpenQuickScribble}
+          className={`p-1.5 rounded-[3px] transition-colors ${
+            isDark ? 'text-gray-400 hover:text-purple-300 hover:bg-[#202030]' : 'text-[#6B7280] hover:text-[#7C3AED] hover:bg-[#F3F0F9]'
+          }`}
+          title="Quick Scribble - Sketch or write handwritten notes"
+        >
+          <Pencil className="w-3.5 h-3.5" />
+        </button>
+
+        {/* 8c. Insert Drawing (Dedicated modal) */}
+        <button
+          type="button"
+          onClick={onOpenDrawingModal}
+          className={`p-1.5 rounded-[3px] transition-colors ${
+            isDark ? 'text-gray-400 hover:text-purple-300 hover:bg-[#202030]' : 'text-[#6B7280] hover:text-[#7C3AED] hover:bg-[#F3F0F9]'
+          }`}
+          title="Insert Drawing & Diagrams - Full canvas workspace"
+        >
+          <PenTool className="w-3.5 h-3.5" />
+        </button>
 
         {/* 9. Table (Inserts 3x3 table or opens options when inside table) */}
         <div className="relative" ref={tableRef}>

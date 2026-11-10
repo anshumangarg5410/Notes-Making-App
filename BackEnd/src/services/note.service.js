@@ -4,7 +4,7 @@ const { logActivity } = require('../utils/activityLogger');
 
 class NoteService {
   async create(userId, noteData) {
-    const { title, content, plainText, tags, color, icon, isPinned, isFavorite, folderId, folder } = noteData;
+    const { title, content, plainText, tags, color, icon, isPinned, isFavorite, folderId, folder, drawings } = noteData;
 
     const text = plainText || (typeof content === 'string' ? content : '');
     const wordCount = text.trim() ? text.trim().split(/\s+/).length : 0;
@@ -24,6 +24,7 @@ class NoteService {
       isFavorite: Boolean(isFavorite),
       wordCount,
       charCount,
+      drawings: Array.isArray(drawings) ? drawings : [],
       revision: 1,
       isArchived: false,
       isDeleted: false
@@ -132,7 +133,8 @@ class NoteService {
       'icon',
       'isPinned',
       'isFavorite',
-      'isArchived'
+      'isArchived',
+      'drawings'
     ];
     const filteredUpdates = {};
     for (const key of allowed) {

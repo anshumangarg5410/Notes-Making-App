@@ -18,6 +18,7 @@ router.get('/preferences', userController.getPreferences);
 router.patch('/preferences', userController.updatePreferences);
 
 router.patch('/password', userController.changePassword);
+router.put('/password', userController.changePassword);
 router.patch('/email', userController.changeEmail);
 router.delete('/account', userController.deleteAccount);
 

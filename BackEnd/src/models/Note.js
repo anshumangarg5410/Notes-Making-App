@@ -92,6 +92,10 @@ const noteSchema = new mongoose.Schema(
     charCount: {
       type: Number,
       default: 0
+    },
+    drawings: {
+      type: Array,
+      default: []
     }
   },
   {

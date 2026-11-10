@@ -6,6 +6,7 @@ import { RichTextEditor } from './RichTextEditor';
 import { DocumentInspector } from './DocumentInspector';
 import { EditorStatusBar } from './EditorStatusBar';
 import { SettingsView } from './SettingsView';
+import { DrawingWorkspace } from '../drawing/DrawingWorkspace';
 import { noteService } from '../../services/noteService';
 import { folderService } from '../../services/folderService';
 import { offlineService, db } from '../../services/db';
@@ -824,6 +825,85 @@ export const EditorLayout = ({
     handleUpdateNote({ tags: updatedTags });
   };
 
+  const handleSaveDrawingFromWorkspace = async (drawingData, svgDataUri) => {
+    try {
+      const imgTag = `<img src="${svgDataUri}" data-drawing-id="${drawingData.id}" data-drawing-title="${drawingData.title || ''}" alt="${drawingData.title || 'Drawing'}" style="max-width: 100%; height: auto; border-radius: 8px; margin: 16px 0; border: 1px solid rgba(124, 58, 237, 0.25); cursor: pointer;" />`;
+
+      if (activeNote && !activeNote.isDeleted) {
+        const existingDrawings = Array.isArray(activeNote.drawings) ? [...activeNote.drawings] : [];
+        const idx = existingDrawings.findIndex((d) => d.id === drawingData.id);
+        if (idx >= 0) {
+          existingDrawings[idx] = drawingData;
+        } else {
+          existingDrawings.push(drawingData);
+        }
+
+        let newContent = activeNote.content || '';
+        if (!newContent.includes(`data-drawing-id="${drawingData.id}"`)) {
+          newContent = newContent ? `${newContent}<p>${imgTag}</p>` : `<p>${imgTag}</p>`;
+        }
+
+        await handleUpdateNote({ drawings: existingDrawings, content: newContent });
+        success('Drawing inserted into current note');
+        setActiveNav('all');
+      } else {
+        let createdNote = null;
+        const initialTitle = drawingData.title || 'Untitled Sketch';
+        const initialContent = `<p>${imgTag}</p>`;
+
+        if (navigator.onLine) {
+          try {
+            const res = await noteService.createNote({
+              title: initialTitle,
+              content: initialContent,
+              plainText: '',
+              tags: ['sketch', 'drawing'],
+              folder: selectedFolder || 'Personal',
+              category: selectedFolder || 'Personal',
+              drawings: [drawingData],
+              isPinned: false,
+              isFavorite: false
+            });
+            if (res?.data) {
+              createdNote = res.data;
+            }
+          } catch (err) {
+            console.warn('Backend note creation failed, falling back to local creation:', err);
+          }
+        }
+
+        if (!createdNote) {
+          const localId = `note_${Date.now()}`;
+          createdNote = {
+            _id: localId,
+            id: localId,
+            title: initialTitle,
+            plainText: '',
+            content: initialContent,
+            drawings: [drawingData],
+            tags: ['sketch', 'drawing'],
+            category: selectedFolder || 'Personal',
+            folder: selectedFolder || 'Personal',
+            isPinned: false,
+            isFavorite: false,
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString()
+          };
+        }
+
+        await offlineService.saveLocalNote(createdNote, true);
+        setNotes((prev) => [createdNote, ...prev]);
+        setStats((prev) => ({ ...prev, totalNotes: (prev.totalNotes || 0) + 1 }));
+        handleSelectNote(createdNote);
+        success('Sketch saved as new note');
+        setActiveNav('all');
+      }
+    } catch (err) {
+      console.error('Failed to save drawing from workspace:', err);
+      toastError('Failed to save drawing');
+    }
+  };
+
   return (
     <div className={`editor-workspace flex h-screen w-screen overflow-hidden font-sans antialiased ${isDark ? 'editor-workspace-dark' : 'editor-workspace-light'}`}>
       {/* PANE 1: Left Navigation Sidebar */}
@@ -846,13 +926,19 @@ export const EditorLayout = ({
         />
       )}
 
-      {/* Main Workspace: Settings View OR Notes Explorer + Writing Area */}
+      {/* Main Workspace: Settings View OR Dedicated Drawing Canvas OR Notes Explorer + Writing Area */}
       {activeNav === 'settings' ? (
         <SettingsView
           onClose={() => setActiveNav('all')}
           notes={notes}
           folders={folders}
           stats={stats}
+        />
+      ) : activeNav === 'drawing' ? (
+        <DrawingWorkspace
+          onBack={() => setActiveNav('all')}
+          activeNote={activeNote}
+          onSaveToNotes={handleSaveDrawingFromWorkspace}
         />
       ) : (
         <>

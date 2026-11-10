@@ -104,3 +104,19 @@
 .editor-workspace-light .obsidian-scrollbar::-webkit-scrollbar-thumb:hover {
   background: #D1D5DB;
 }
+
+/* Embedded Drawings inside Note Editor */
+.ProseMirror img[data-drawing-id] {
+  cursor: pointer;
+  border-radius: 8px;
+  display: inline-block;
+  max-width: 100%;
+  transition: all 0.2s ease-in-out;
+}
+
+.ProseMirror img[data-drawing-id]:hover {
+  outline: 2px solid #8b5cf6;
+  outline-offset: 3px;
+  box-shadow: 0 8px 24px -4px rgba(139, 92, 246, 0.35);
+}
+

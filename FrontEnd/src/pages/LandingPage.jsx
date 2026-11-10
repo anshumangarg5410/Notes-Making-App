@@ -98,11 +98,6 @@ export const LandingPage = () => {
         {/* About NoteNest Section */}
         <AboutSection />
 
-        {/* ============================================================== */}
-        {/* Section Divider: About NoteNest -> Footer                      */}
-        {/* ============================================================== */}
-        <SectionDivider id="divider-about-footer" />
-
         {/* Four-Column Footer */}
         <Footer />
       </div>

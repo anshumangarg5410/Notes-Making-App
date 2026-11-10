@@ -248,7 +248,7 @@ const note = {
   return (
     <section
       id="features"
-      className="relative w-full pt-28 pb-20 lg:pt-36 lg:pb-28 px-4 sm:px-6 lg:px-8 select-none overflow-hidden transition-colors duration-300 bg-transparent text-white scroll-mt-24 sm:scroll-mt-28 lg:scroll-mt-32"
+      className="relative w-full pt-6 pb-20 sm:pt-8 sm:pb-24 lg:pt-10 lg:pb-28 px-4 sm:px-6 lg:px-8 select-none overflow-hidden transition-colors duration-300 bg-transparent text-white scroll-mt-24 sm:scroll-mt-28 lg:scroll-mt-32"
     >
       {/* Background Ambience & Lighting */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden">

@@ -33,18 +33,18 @@ export const SectionDivider = ({ className = '', id }) => {
       ref={dividerRef}
       id={id}
       aria-hidden="true"
-      className={`w-full flex items-center justify-center py-1 sm:py-2 select-none overflow-hidden pointer-events-none transition-opacity duration-500 ease-out ${
+      className={`w-full flex items-center justify-center -my-2 sm:-my-3 py-0 select-none overflow-hidden pointer-events-none transition-opacity duration-500 ease-out ${
         isVisible ? 'opacity-100' : 'opacity-0'
       } ${className}`}
     >
-      <div className="w-48 sm:w-56 md:w-64 max-w-[260px] flex items-center justify-center">
+      <div className="w-40 sm:w-48 md:w-56 max-w-[220px] flex items-center justify-center">
         <img
           src={dividerImg}
           alt=""
           loading="lazy"
           decoding="async"
           style={{ aspectRatio: '2172 / 724' }}
-          className="w-full h-auto max-h-16 sm:max-h-20 object-contain select-none pointer-events-none"
+          className="w-full h-auto max-h-14 sm:max-h-16 object-contain select-none pointer-events-none"
         />
       </div>
     </div>

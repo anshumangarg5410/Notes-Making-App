@@ -172,17 +172,10 @@ export const EditorShowcase = () => {
   return (
     <section
       id="editor-showcase"
-      className="relative w-full py-20 lg:py-28 px-4 sm:px-6 lg:px-8 select-none overflow-hidden transition-colors duration-300 bg-transparent text-white"
+      className="relative w-full py-14 sm:py-16 lg:py-20 px-4 sm:px-6 lg:px-8 select-none overflow-hidden transition-colors duration-300 bg-transparent text-white"
     >
       {/* Background Ambience & Lighting */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden">
-        {/* Top central purple radial light */}
-        <div
-          className={`absolute top-0 left-1/2 -translate-x-1/2 w-[800px] lg:w-[1100px] h-[550px] rounded-full blur-[150px] transition-opacity duration-500 ${
-            isDark ? 'bg-purple-600/20 opacity-100' : 'bg-purple-400/15 opacity-80'
-          }`}
-        />
-
         {/* Subtle starlight specks in dark mode */}
         {isDark && (
           <div
@@ -194,40 +187,6 @@ export const EditorShowcase = () => {
             }}
           />
         )}
-
-        {/* Bottom Horizon Mountain Silhouette & Neon Beam */}
-        <div className="absolute bottom-0 inset-x-0 h-48 pointer-events-none overflow-hidden">
-          {/* Luminous Horizon Beam */}
-          <div
-            className={`absolute bottom-6 inset-x-0 h-[2px] transition-opacity duration-500 ${
-              isDark
-                ? 'bg-gradient-to-r from-transparent via-purple-500 to-transparent shadow-[0_0_24px_rgba(192,132,252,0.9)] opacity-90'
-                : 'bg-gradient-to-r from-transparent via-purple-300 to-transparent opacity-60'
-            }`}
-          />
-          {/* Horizon mist glow */}
-          <div
-            className={`absolute bottom-0 inset-x-0 h-28 bg-gradient-to-t ${
-              isDark
-                ? 'from-purple-950/40 via-purple-900/15 to-transparent'
-                : 'from-purple-100/50 via-purple-50/20 to-transparent'
-            }`}
-          />
-          {/* SVG Mountain Silhouettes */}
-          <svg
-            className={`absolute bottom-0 inset-x-0 w-full h-24 object-cover ${
-              isDark ? 'text-[#06030e] fill-current opacity-95' : 'text-purple-100/70 fill-current opacity-60'
-            }`}
-            viewBox="0 0 1440 120"
-            preserveAspectRatio="none"
-          >
-            <path d="M0,120 L0,75 L120,40 L220,70 L340,25 L460,80 L580,35 L680,65 L780,20 L900,75 L1020,30 L1140,80 L1260,35 L1360,65 L1440,40 L1440,120 Z" />
-            <path
-              d="M0,120 L0,90 L90,65 L180,85 L280,50 L400,95 L520,60 L640,85 L740,55 L860,90 L980,50 L1100,90 L1220,60 L1320,85 L1440,65 L1440,120 Z"
-              opacity="0.6"
-            />
-          </svg>
-        </div>
       </div>
 
       <div className="max-w-[1440px] mx-auto relative z-10">

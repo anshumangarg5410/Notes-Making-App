@@ -23,6 +23,31 @@ import { useEditorSettings } from '../../context/EditorSettingsContext';
 import { useTheme } from '../../context/ThemeContext';
 import { EditorToolbar } from './EditorToolbar';
 import { markdownToHtml, htmlToMarkdown, stripHtmlToPlainText } from '../../utils/markdownUtils';
+import { DrawingModal } from '../drawing/DrawingModal';
+
+// Enhanced Image extension preserving drawing vector metadata
+const CustomImage = Image.extend({
+  addAttributes() {
+    return {
+      ...this.parent?.(),
+      'data-drawing-id': {
+        default: null,
+        parseHTML: (el) => el.getAttribute('data-drawing-id'),
+        renderHTML: (attrs) => (attrs['data-drawing-id'] ? { 'data-drawing-id': attrs['data-drawing-id'] } : {})
+      },
+      'data-drawing-title': {
+        default: null,
+        parseHTML: (el) => el.getAttribute('data-drawing-title'),
+        renderHTML: (attrs) => (attrs['data-drawing-title'] ? { 'data-drawing-title': attrs['data-drawing-title'] } : {})
+      },
+      'data-drawing-data': {
+        default: null,
+        parseHTML: (el) => el.getAttribute('data-drawing-data'),
+        renderHTML: (attrs) => (attrs['data-drawing-data'] ? { 'data-drawing-data': attrs['data-drawing-data'] } : {})
+      }
+    };
+  }
+});
 
 export const RichTextEditor = ({
   note,
@@ -58,6 +83,108 @@ export const RichTextEditor = ({
 
   const rawTextareaRef = useRef(null);
 
+  // Drawing & Scribble Modal State
+  const [isDrawingModalOpen, setIsDrawingModalOpen] = useState(false);
+  const [isQuickScribble, setIsQuickScribble] = useState(false);
+  const [editingDrawing, setEditingDrawing] = useState(null);
+
+  const handleOpenInsertDrawing = () => {
+    setEditingDrawing(null);
+    setIsQuickScribble(false);
+    setIsDrawingModalOpen(true);
+  };
+
+  const handleOpenQuickScribble = () => {
+    setEditingDrawing(null);
+    setIsQuickScribble(true);
+    setIsDrawingModalOpen(true);
+  };
+
+  const handleSaveDrawing = (drawingData, svgDataUri) => {
+    const existingDrawings = Array.isArray(note?.drawings) ? [...note.drawings] : [];
+    const existingIndex = existingDrawings.findIndex((d) => d.id === drawingData.id);
+
+    let updatedDrawings;
+    if (existingIndex >= 0) {
+      updatedDrawings = existingDrawings.map((d, i) => (i === existingIndex ? drawingData : d));
+    } else {
+      updatedDrawings = [...existingDrawings, drawingData];
+    }
+
+    if (editor) {
+      if (editingDrawing) {
+        let updated = false;
+        editor.state.doc.descendants((node, pos) => {
+          if (updated) return false;
+          if (node.type.name === 'image' && node.attrs['data-drawing-id'] === drawingData.id) {
+            updated = true;
+            editor.commands.setNodeSelection(pos);
+            editor.commands.updateAttributes('image', {
+              src: svgDataUri,
+              alt: drawingData.title || 'Drawing',
+              'data-drawing-id': drawingData.id,
+              'data-drawing-title': drawingData.title,
+              'data-drawing-data': JSON.stringify(drawingData)
+            });
+          }
+        });
+
+        if (!updated) {
+          editor.chain().focus().insertContent({
+            type: 'image',
+            attrs: {
+              src: svgDataUri,
+              alt: drawingData.title || 'Drawing',
+              'data-drawing-id': drawingData.id,
+              'data-drawing-title': drawingData.title,
+              'data-drawing-data': JSON.stringify(drawingData)
+            }
+          }).run();
+        }
+      } else {
+        editor.chain().focus().insertContent({
+          type: 'image',
+          attrs: {
+            src: svgDataUri,
+            alt: drawingData.title || 'Drawing',
+            'data-drawing-id': drawingData.id,
+            'data-drawing-title': drawingData.title,
+            'data-drawing-data': JSON.stringify(drawingData)
+          }
+        }).run();
+      }
+    }
+
+    onUpdateNote?.({
+      content: editor ? editor.getHTML() : note?.content,
+      plainText: editor ? editor.getText() : note?.plainText,
+      drawings: updatedDrawings
+    });
+  };
+
+  const handleEditorClick = (e) => {
+    const img = e.target.closest('img');
+    if (img) {
+      const drawingId = img.getAttribute('data-drawing-id');
+      const rawData = img.getAttribute('data-drawing-data');
+      let drawingData = null;
+      if (rawData) {
+        try {
+          drawingData = JSON.parse(rawData);
+        } catch (_) {}
+      }
+      if (!drawingData && drawingId && Array.isArray(note?.drawings)) {
+        drawingData = note.drawings.find((d) => d.id === drawingId);
+      }
+
+      if (drawingData) {
+        setEditingDrawing(drawingData);
+        setIsQuickScribble(false);
+        setIsDrawingModalOpen(true);
+      }
+    }
+  };
+
   // Determine initial content from the note object
   const getInitialContent = () => {
     if (note?.content && typeof note.content === 'string' && note.content.trim()) {
@@ -82,11 +209,11 @@ export const RichTextEditor = ({
           class: 'text-purple-400 underline underline-offset-2 cursor-pointer'
         }
       }),
-      Image.configure({
+      CustomImage.configure({
         inline: false,
         allowBase64: true,
         HTMLAttributes: {
-          class: 'editor-image rounded-md border border-purple-500/30 max-h-96 my-3 object-cover shadow-md'
+          class: 'editor-image rounded-md border border-purple-500/30 max-h-[500px] my-3 object-cover shadow-md'
         }
       }),
       TaskList,
@@ -546,6 +673,8 @@ export const RichTextEditor = ({
           editor={editor}
           onInsertImage={() => fileInputRef.current?.click()}
           onInsertImageUrl={handleInsertImageUrl}
+          onOpenDrawingModal={handleOpenInsertDrawing}
+          onOpenQuickScribble={handleOpenQuickScribble}
         />
       )}
 
@@ -555,6 +684,8 @@ export const RichTextEditor = ({
           editor={editor}
           onInsertImage={() => fileInputRef.current?.click()}
           onInsertImageUrl={handleInsertImageUrl}
+          onOpenDrawingModal={handleOpenInsertDrawing}
+          onOpenQuickScribble={handleOpenQuickScribble}
         />
       )}
 
@@ -614,6 +745,8 @@ export const RichTextEditor = ({
         ) : (
           /* WYSIWYG / RICH-TEXT MODE (Tiptap Canvas) */
           <div
+            onClick={handleEditorClick}
+            onDoubleClick={handleEditorClick}
             className={`obsidian-editor flex-1 pt-2 min-h-[350px] transition-all duration-150 ${lineNumbers ? 'show-line-numbers' : ''}`}
             style={{ fontSize: `${fontSize}px` }}
           >
@@ -621,6 +754,16 @@ export const RichTextEditor = ({
           </div>
         )}
       </div>
+
+      {/* Interactive Drawing & Scribble Modal */}
+      <DrawingModal
+        isOpen={isDrawingModalOpen}
+        onClose={() => setIsDrawingModalOpen(false)}
+        onSave={handleSaveDrawing}
+        initialData={editingDrawing}
+        isQuickScribble={isQuickScribble}
+        noteTitle={title}
+      />
     </div>
   );
 };

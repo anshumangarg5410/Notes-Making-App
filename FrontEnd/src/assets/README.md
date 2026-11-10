@@ -58,11 +58,21 @@ FrontEnd/src/assets/
 │   ├── notenest-logo-dark.png       # NoteNest glow logo (dark)
 │   └── notenest-logo-light.png      # NoteNest logo (light)
 │
+├── contact/
+│   ├── envelope-message-dark.png    # Glassmorphic envelope message illustration (dark)
+│   └── envelope-message-glow.png    # Glowing envelope message illustration with purple ambient light
+│
 ├── landingDark.png                  # Master dark theme clipart & mockup asset sheet
 ├── landingLight.png                 # Master light theme clipart & mockup asset sheet
 ├── footerDark.png                   # Master dark theme footer illustration asset sheet
 └── footerLight.png                  # Master light theme footer illustration asset sheet
 ```
+
+## Section Dividers on Landing Page
+- **Hero to Features Divider**: Combines `torn-divider-dark.png` deckle edge, `binder-clip-dark.png`, and diagonal washi tape.
+- **Features to Editor Divider**: Features an architect's millimeter drafting ruler with `pencil-tip-realistic.png` precision tool.
+- **Editor to About Divider**: Uses `footer-ribbon-dark.png` stationery bookmark ribbon and `pinned-heart-dark.png` sticky note.
+- **About to Footer Divider**: Incorporates `paper-airplane-dark.png` on an SVG dashed flight trajectory with perforated tear-off coupon line.
 
 ## Source & Processing
 - **Source**: User-provided dark & light theme design mockups and clipart packs.

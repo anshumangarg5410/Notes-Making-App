@@ -18,7 +18,8 @@ import {
   PanelLeftClose,
   Check,
   X,
-  LogOut
+  LogOut,
+  PenTool
 } from 'lucide-react';
 
 export const EditorSidebar = ({
@@ -337,6 +338,50 @@ export const EditorSidebar = ({
             </div>
             {!isCollapsed && stats.favorites !== undefined && (
               <span className={`text-[10px] ${isDark ? 'text-gray-500' : 'text-[#9CA3AF]'}`}>{stats.favorites}</span>
+            )}
+          </button>
+
+          <button
+            onClick={() => {
+              onSelectNav('drawing');
+              onSelectFolder?.(null);
+              onSelectTag?.(null);
+            }}
+            style={
+              activeNav === 'drawing'
+                ? {
+                    backgroundColor: 'var(--accent-bg, rgba(168, 85, 247, 0.15))',
+                    color: 'var(--accent-text, #c084fc)',
+                    borderLeftColor: 'var(--accent, #a855f7)'
+                  }
+                : undefined
+            }
+            className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-[3px] transition-colors ${
+              activeNav === 'drawing'
+                ? 'border-l-2 font-medium'
+                : isDark
+                  ? 'text-gray-300 hover:text-gray-100 hover:bg-[#1a1a24]'
+                  : 'text-[#4B5563] hover:text-[#111827] hover:bg-[#F4F2FA]'
+            }`}
+            title="Scribble / Drawing Workspace"
+          >
+            <div className="flex items-center gap-2.5">
+              <PenTool
+                className="w-4 h-4"
+                style={
+                  activeNav === 'drawing'
+                    ? { color: 'var(--accent, #a855f7)' }
+                    : undefined
+                }
+              />
+              {!isCollapsed && <span>Drawing Canvas</span>}
+            </div>
+            {!isCollapsed && (
+              <span className={`text-[9px] font-mono px-1 rounded ${
+                isDark ? 'bg-purple-950/60 text-purple-300' : 'bg-purple-100 text-purple-700'
+              }`}>
+                New
+              </span>
             )}
           </button>
         </div>

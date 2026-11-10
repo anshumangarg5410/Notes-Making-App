@@ -6,6 +6,10 @@ import { FeaturesOverview } from '../components/landing/FeaturesOverview';
 import { EditorShowcase } from '../components/landing/EditorShowcase';
 import { AboutSection } from '../components/landing/AboutSection';
 import { Footer } from '../components/footer/Footer';
+import { HeroToFeaturesDivider } from '../components/landing/dividers/HeroToFeaturesDivider';
+import { FeaturesToEditorDivider } from '../components/landing/dividers/FeaturesToEditorDivider';
+import { EditorToAboutDivider } from '../components/landing/dividers/EditorToAboutDivider';
+import { AboutToFooterDivider } from '../components/landing/dividers/AboutToFooterDivider';
 import { useTheme } from '../context/ThemeContext';
 import landingBgDark from '../assets/landing/hero-bg-dark.png';
 
@@ -64,16 +68,36 @@ export const LandingPage = () => {
         </div>
 
         {/* ============================================================== */}
+        {/* Creative Section Separator 1: Washi Tape & Brass Binder Clip   */}
+        {/* ============================================================== */}
+        <HeroToFeaturesDivider />
+
+        {/* ============================================================== */}
         {/* 2. DOWNSTREAM PAGES / SECTIONS (Scroll down above background)   */}
         {/* ============================================================== */}
         {/* Features Overview Section (Interconnected Knowledge Universe) */}
         <FeaturesOverview />
 
+        {/* ============================================================== */}
+        {/* Creative Section Separator 2: Drafting Ruler & Pencil Guide     */}
+        {/* ============================================================== */}
+        <FeaturesToEditorDivider />
+
         {/* Editor Showcase Section (Obsidian Rich-Text Editor Experience) */}
         <EditorShowcase />
 
+        {/* ============================================================== */}
+        {/* Creative Section Separator 3: Satin Ribbon & Sticky Heart Note */}
+        {/* ============================================================== */}
+        <EditorToAboutDivider />
+
         {/* About NoteNest Section */}
         <AboutSection />
+
+        {/* ============================================================== */}
+        {/* Creative Section Separator 4: Perforated Tear & Origami Flight */}
+        {/* ============================================================== */}
+        <AboutToFooterDivider />
 
         {/* Four-Column Footer */}
         <Footer />

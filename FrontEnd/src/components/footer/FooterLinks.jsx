@@ -1,4 +1,5 @@
 import React from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import {
   Home,
   LayoutGrid,
@@ -19,6 +20,8 @@ import { useTheme } from '../../context/ThemeContext';
 
 export const FooterLinks = () => {
   const { isDark } = useTheme();
+  const navigate = useNavigate();
+  const location = useLocation();
 
   const productLinks = [
     { label: 'Home', icon: Home, href: '#home' },
@@ -37,13 +40,24 @@ export const FooterLinks = () => {
 
   const companyLinks = [
     { label: 'About', icon: Info, href: '#about' },
-    { label: 'Contact', icon: Mail, href: '#contact' },
-    { label: 'Documentation', icon: BookOpen, href: '#docs' },
-    { label: 'Privacy Policy', icon: ShieldCheck, href: '#privacy' },
-    { label: 'Terms of Service', icon: FileText, href: '#terms' },
+    { label: 'Contact', icon: Mail, href: '/contact' },
+    { label: 'Documentation', icon: BookOpen, href: '#features' },
+    { label: 'Privacy Policy', icon: ShieldCheck, href: '#features' },
+    { label: 'Terms of Service', icon: FileText, href: '#features' },
   ];
 
   const handleScroll = (href) => {
+    if (href.startsWith('/')) {
+      navigate(href);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      return;
+    }
+
+    if (location.pathname !== '/') {
+      navigate(`/${href}`);
+      return;
+    }
+
     if (href.startsWith('#')) {
       const el = document.querySelector(href);
       if (el) {

@@ -11,14 +11,19 @@ import TableRow from '@tiptap/extension-table-row';
 import TableCell from '@tiptap/extension-table-cell';
 import TableHeader from '@tiptap/extension-table-header';
 import Placeholder from '@tiptap/extension-placeholder';
+import { useEditorSettings } from '../../context/EditorSettingsContext';
+import { useTheme } from '../../context/ThemeContext';
 import { EditorToolbar } from './EditorToolbar';
 
 export const RichTextEditor = ({
   note,
   onUpdateNote,
   onWordCountChange,
-  onInsertImageRef
+  onInsertImageRef,
+  onManualSave
 }) => {
+  const { fontSize, lineNumbers, spellCheck } = useEditorSettings();
+  const { isDark } = useTheme();
   const [title, setTitle] = useState(note?.title || 'Untitled Note');
   const fileInputRef = useRef(null);
 
@@ -68,6 +73,20 @@ export const RichTextEditor = ({
       TableCell
     ],
     editorProps: {
+      attributes: {
+        spellcheck: spellCheck ? 'true' : 'false',
+        autocorrect: spellCheck ? 'on' : 'off',
+        autocapitalize: spellCheck ? 'on' : 'off',
+        class: 'focus:outline-none'
+      },
+      handleKeyDown: (view, event) => {
+        if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 's') {
+          event.preventDefault();
+          onManualSave?.();
+          return true;
+        }
+        return false;
+      },
       handlePaste: (view, event) => {
         const items = event.clipboardData?.items;
         if (items) {
@@ -158,6 +177,13 @@ export const RichTextEditor = ({
     }
   }, [note?._id, note?.id]);
 
+  // Synchronize spellcheck on editor DOM dynamically
+  useEffect(() => {
+    if (editor?.view?.dom) {
+      editor.view.dom.setAttribute('spellcheck', spellCheck ? 'true' : 'false');
+    }
+  }, [spellCheck, editor]);
+
   const handleTitleChange = (e) => {
     const newTitle = e.target.value;
     setTitle(newTitle);
@@ -190,7 +216,9 @@ export const RichTextEditor = ({
   };
 
   return (
-    <div className="flex-1 flex flex-col h-full bg-[#0e0e14] overflow-hidden select-text text-gray-200">
+    <div className={`flex-1 flex flex-col h-full overflow-hidden select-text transition-colors duration-150 ${
+      isDark ? 'bg-[#0e0e14] text-gray-200' : 'bg-white text-[#181326]'
+    }`}>
       {/* Hidden file input for inserting images */}
       <input
         type="file"
@@ -209,21 +237,31 @@ export const RichTextEditor = ({
 
       {/* Main Document Canvas Scroll Area */}
       <div className="flex-1 overflow-y-auto obsidian-scrollbar px-6 sm:px-12 py-8 max-w-4xl mx-auto w-full space-y-4">
-        {/* Document Title Header with purple vertical cursor bar */}
-        <div className="flex items-center gap-1 group relative pb-2 border-b border-purple-500/15">
+        {/* Document Title Header with accent vertical cursor bar */}
+        <div
+          className={`flex items-center gap-1 group relative pb-2 border-b ${
+            isDark ? 'border-purple-500/20' : 'border-[#EAE6F4]'
+          }`}
+        >
           <input
             type="text"
             value={title}
             onChange={handleTitleChange}
+            spellCheck={spellCheck}
             placeholder="Untitled Note"
-            className="text-2xl sm:text-3xl font-bold text-white bg-transparent border-none focus:outline-none w-full tracking-tight"
+            className={`text-2xl sm:text-3xl font-bold bg-transparent border-none focus:outline-none w-full tracking-tight ${
+              isDark ? 'text-white' : 'text-[#111827]'
+            }`}
           />
           <span className="title-cursor" />
         </div>
 
         {/* Tiptap Rich-Text Editor Content Canvas */}
-        <div className="obsidian-editor flex-1 pt-2 min-h-[350px]">
-          <EditorContent editor={editor} />
+        <div
+          className={`obsidian-editor flex-1 pt-2 min-h-[350px] transition-all duration-150 ${lineNumbers ? 'show-line-numbers' : ''}`}
+          style={{ fontSize: `${fontSize}px` }}
+        >
+          <EditorContent editor={editor} spellCheck={spellCheck} />
         </div>
       </div>
     </div>

@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { useTheme } from '../../context/ThemeContext';
 import {
   Bold,
   Italic,
@@ -22,6 +23,7 @@ import {
 } from 'lucide-react';
 
 export const EditorToolbar = ({ editor, onInsertImage, onInsertImageUrl }) => {
+  const { isDark } = useTheme();
   const [headingDropdownOpen, setHeadingDropdownOpen] = useState(false);
   const [imageDropdownOpen, setImageDropdownOpen] = useState(false);
   const [tableDropdownOpen, setTableDropdownOpen] = useState(false);
@@ -132,35 +134,56 @@ export const EditorToolbar = ({ editor, onInsertImage, onInsertImageUrl }) => {
     }
   };
 
+  const getBtnClass = (isActive) =>
+    `p-1.5 rounded-[3px] transition-colors ${
+      isActive
+        ? isDark
+          ? 'bg-purple-900/40 text-purple-300 border border-purple-500/40'
+          : 'bg-[#EDE9FE] text-[#7C3AED] border border-[#DDD6FE]'
+        : isDark
+          ? 'text-gray-400 hover:text-gray-200 hover:bg-[#202030]'
+          : 'text-[#6B7280] hover:text-[#181326] hover:bg-[#F3F0F9]'
+    }`;
+
   return (
-    <div className="h-9 bg-[#161622] border-b border-[#222230] px-4 flex items-center justify-between select-none text-xs">
+    <div className={`h-9 border-b px-4 flex items-center justify-between select-none text-xs transition-colors duration-150 ${
+      isDark ? 'bg-[#161622] border-[#222230]' : 'bg-[#FAFAFD] border-[#EAE6F4]'
+    }`}>
       <div className="flex items-center gap-1 overflow-x-auto obsidian-scrollbar py-1">
         {/* 1. Heading Dropdown */}
         <div className="relative mr-1" ref={headingRef}>
           <button
             type="button"
             onClick={() => setHeadingDropdownOpen(!headingDropdownOpen)}
-            className="flex items-center gap-1 px-2 py-1 rounded-[3px] bg-[#1d1d2b] hover:bg-[#252538] text-gray-200 text-xs font-semibold border border-[#2b2b3d] transition-colors"
+            className={`flex items-center gap-1 px-2 py-1 rounded-[3px] text-xs font-semibold border transition-colors ${
+              isDark
+                ? 'bg-[#1d1d2b] hover:bg-[#252538] text-gray-200 border-[#2b2b3d]'
+                : 'bg-white hover:bg-[#F3F0F9] text-[#181326] border-[#E2DEEE]'
+            }`}
             title="Heading Style"
           >
             <span>{getHeadingLabel()}</span>
-            <ChevronDown className="w-3 h-3 text-gray-400" />
+            <ChevronDown className={`w-3 h-3 ${isDark ? 'text-gray-400' : 'text-[#6B7280]'}`} />
           </button>
 
           {headingDropdownOpen && (
-            <div className="absolute top-full left-0 mt-1 bg-[#1c1c28] border border-[#2b2b3d] shadow-2xl rounded-[4px] py-1 z-50 w-36 text-xs backdrop-blur-sm">
+            <div className={`absolute top-full left-0 mt-1 border shadow-2xl rounded-[4px] py-1 z-50 w-36 text-xs backdrop-blur-sm ${
+              isDark ? 'bg-[#1c1c28] border-[#2b2b3d]' : 'bg-white border-[#E2DEEE] shadow-purple-100'
+            }`}>
               <button
                 type="button"
                 onClick={() => {
                   editor.chain().focus().toggleHeading({ level: 1 }).run();
                   setHeadingDropdownOpen(false);
                 }}
-                className={`w-full text-left px-3 py-1.5 hover:bg-[#272738] flex items-center justify-between ${
-                  editor.isActive('heading', { level: 1 }) ? 'text-purple-400 font-bold bg-[#272738]/50' : 'text-gray-300'
+                className={`w-full text-left px-3 py-1.5 flex items-center justify-between transition-colors ${
+                  editor.isActive('heading', { level: 1 })
+                    ? isDark ? 'text-purple-400 font-bold bg-[#272738]/50' : 'text-[#7C3AED] font-bold bg-[#EDE9FE]'
+                    : isDark ? 'text-gray-300 hover:bg-[#272738]' : 'text-[#374151] hover:bg-[#F3F0F9]'
                 }`}
               >
                 <span>Heading 1</span>
-                <span className="text-[10px] text-gray-500 font-mono">H1</span>
+                <span className={`text-[10px] font-mono ${isDark ? 'text-gray-500' : 'text-[#9CA3AF]'}`}>H1</span>
               </button>
               <button
                 type="button"
@@ -168,12 +191,14 @@ export const EditorToolbar = ({ editor, onInsertImage, onInsertImageUrl }) => {
                   editor.chain().focus().toggleHeading({ level: 2 }).run();
                   setHeadingDropdownOpen(false);
                 }}
-                className={`w-full text-left px-3 py-1.5 hover:bg-[#272738] flex items-center justify-between ${
-                  editor.isActive('heading', { level: 2 }) ? 'text-purple-400 font-bold bg-[#272738]/50' : 'text-gray-300'
+                className={`w-full text-left px-3 py-1.5 flex items-center justify-between transition-colors ${
+                  editor.isActive('heading', { level: 2 })
+                    ? isDark ? 'text-purple-400 font-bold bg-[#272738]/50' : 'text-[#7C3AED] font-bold bg-[#EDE9FE]'
+                    : isDark ? 'text-gray-300 hover:bg-[#272738]' : 'text-[#374151] hover:bg-[#F3F0F9]'
                 }`}
               >
                 <span>Heading 2</span>
-                <span className="text-[10px] text-gray-500 font-mono">H2</span>
+                <span className={`text-[10px] font-mono ${isDark ? 'text-gray-500' : 'text-[#9CA3AF]'}`}>H2</span>
               </button>
               <button
                 type="button"
@@ -181,43 +206,43 @@ export const EditorToolbar = ({ editor, onInsertImage, onInsertImageUrl }) => {
                   editor.chain().focus().toggleHeading({ level: 3 }).run();
                   setHeadingDropdownOpen(false);
                 }}
-                className={`w-full text-left px-3 py-1.5 hover:bg-[#272738] flex items-center justify-between ${
-                  editor.isActive('heading', { level: 3 }) ? 'text-purple-400 font-bold bg-[#272738]/50' : 'text-gray-300'
+                className={`w-full text-left px-3 py-1.5 flex items-center justify-between transition-colors ${
+                  editor.isActive('heading', { level: 3 })
+                    ? isDark ? 'text-purple-400 font-bold bg-[#272738]/50' : 'text-[#7C3AED] font-bold bg-[#EDE9FE]'
+                    : isDark ? 'text-gray-300 hover:bg-[#272738]' : 'text-[#374151] hover:bg-[#F3F0F9]'
                 }`}
               >
                 <span>Heading 3</span>
-                <span className="text-[10px] text-gray-500 font-mono">H3</span>
+                <span className={`text-[10px] font-mono ${isDark ? 'text-gray-500' : 'text-[#9CA3AF]'}`}>H3</span>
               </button>
-              <div className="my-1 border-t border-[#2a2a3d]" />
+              <div className={`my-1 border-t ${isDark ? 'border-[#2a2a3d]' : 'border-[#EAE6F4]'}`} />
               <button
                 type="button"
                 onClick={() => {
                   editor.chain().focus().setParagraph().run();
                   setHeadingDropdownOpen(false);
                 }}
-                className={`w-full text-left px-3 py-1.5 hover:bg-[#272738] flex items-center justify-between ${
-                  editor.isActive('paragraph') ? 'text-purple-400 font-semibold bg-[#272738]/50' : 'text-gray-300'
+                className={`w-full text-left px-3 py-1.5 flex items-center justify-between transition-colors ${
+                  editor.isActive('paragraph')
+                    ? isDark ? 'text-purple-400 font-semibold bg-[#272738]/50' : 'text-[#7C3AED] font-semibold bg-[#EDE9FE]'
+                    : isDark ? 'text-gray-300 hover:bg-[#272738]' : 'text-[#374151] hover:bg-[#F3F0F9]'
                 }`}
               >
                 <span>Paragraph</span>
-                <span className="text-[10px] text-gray-500 font-mono">P</span>
+                <span className={`text-[10px] font-mono ${isDark ? 'text-gray-500' : 'text-[#9CA3AF]'}`}>P</span>
               </button>
             </div>
           )}
         </div>
 
         {/* Separator */}
-        <div className="w-[1px] h-4 bg-[#262638] mx-0.5" />
+        <div className={`w-[1px] h-4 mx-0.5 ${isDark ? 'bg-[#262638]' : 'bg-[#EAE6F4]'}`} />
 
         {/* 2. Bold */}
         <button
           type="button"
           onClick={() => editor.chain().focus().toggleBold().run()}
-          className={`p-1.5 rounded-[3px] transition-colors ${
-            editor.isActive('bold')
-              ? 'bg-purple-900/40 text-purple-300 border border-purple-500/40'
-              : 'text-gray-400 hover:text-gray-200 hover:bg-[#202030]'
-          }`}
+          className={getBtnClass(editor.isActive('bold'))}
           title="Bold (Cmd+B)"
         >
           <Bold className="w-3.5 h-3.5" />
@@ -227,11 +252,7 @@ export const EditorToolbar = ({ editor, onInsertImage, onInsertImageUrl }) => {
         <button
           type="button"
           onClick={() => editor.chain().focus().toggleItalic().run()}
-          className={`p-1.5 rounded-[3px] transition-colors ${
-            editor.isActive('italic')
-              ? 'bg-purple-900/40 text-purple-300 border border-purple-500/40'
-              : 'text-gray-400 hover:text-gray-200 hover:bg-[#202030]'
-          }`}
+          className={getBtnClass(editor.isActive('italic'))}
           title="Italic (Cmd+I)"
         >
           <Italic className="w-3.5 h-3.5" />
@@ -241,11 +262,7 @@ export const EditorToolbar = ({ editor, onInsertImage, onInsertImageUrl }) => {
         <button
           type="button"
           onClick={() => editor.chain().focus().toggleUnderline().run()}
-          className={`p-1.5 rounded-[3px] transition-colors ${
-            editor.isActive('underline')
-              ? 'bg-purple-900/40 text-purple-300 border border-purple-500/40'
-              : 'text-gray-400 hover:text-gray-200 hover:bg-[#202030]'
-          }`}
+          className={getBtnClass(editor.isActive('underline'))}
           title="Underline (Cmd+U)"
         >
           <Underline className="w-3.5 h-3.5" />
@@ -255,11 +272,7 @@ export const EditorToolbar = ({ editor, onInsertImage, onInsertImageUrl }) => {
         <button
           type="button"
           onClick={() => editor.chain().focus().toggleStrike().run()}
-          className={`p-1.5 rounded-[3px] transition-colors ${
-            editor.isActive('strike')
-              ? 'bg-purple-900/40 text-purple-300 border border-purple-500/40'
-              : 'text-gray-400 hover:text-gray-200 hover:bg-[#202030]'
-          }`}
+          className={getBtnClass(editor.isActive('strike'))}
           title="Strikethrough"
         >
           <Strikethrough className="w-3.5 h-3.5" />
@@ -269,28 +282,20 @@ export const EditorToolbar = ({ editor, onInsertImage, onInsertImageUrl }) => {
         <button
           type="button"
           onClick={handleCodeToggle}
-          className={`p-1.5 rounded-[3px] transition-colors ${
-            editor.isActive('code') || editor.isActive('codeBlock')
-              ? 'bg-purple-900/40 text-purple-300 border border-purple-500/40'
-              : 'text-gray-400 hover:text-gray-200 hover:bg-[#202030]'
-          }`}
+          className={getBtnClass(editor.isActive('code') || editor.isActive('codeBlock'))}
           title="Code / Code Block"
         >
           <Code className="w-3.5 h-3.5" />
         </button>
 
         {/* Separator */}
-        <div className="w-[1px] h-4 bg-[#262638] mx-0.5" />
+        <div className={`w-[1px] h-4 mx-0.5 ${isDark ? 'bg-[#262638]' : 'bg-[#EAE6F4]'}`} />
 
         {/* 7. Link */}
         <button
           type="button"
           onClick={handleLink}
-          className={`p-1.5 rounded-[3px] transition-colors ${
-            editor.isActive('link')
-              ? 'bg-purple-900/40 text-purple-300 border border-purple-500/40'
-              : 'text-gray-400 hover:text-gray-200 hover:bg-[#202030]'
-          }`}
+          className={getBtnClass(editor.isActive('link'))}
           title={editor.isActive('link') ? 'Edit or Remove Link' : 'Insert Link'}
         >
           <LinkIcon className="w-3.5 h-3.5" />
@@ -301,31 +306,39 @@ export const EditorToolbar = ({ editor, onInsertImage, onInsertImageUrl }) => {
           <button
             type="button"
             onClick={() => setImageDropdownOpen(!imageDropdownOpen)}
-            className="p-1.5 rounded-[3px] text-gray-400 hover:text-gray-200 hover:bg-[#202030] transition-colors"
+            className={`p-1.5 rounded-[3px] transition-colors ${
+              isDark ? 'text-gray-400 hover:text-gray-200 hover:bg-[#202030]' : 'text-[#6B7280] hover:text-[#181326] hover:bg-[#F3F0F9]'
+            }`}
             title="Insert Image"
           >
             <ImageIcon className="w-3.5 h-3.5" />
           </button>
 
           {imageDropdownOpen && (
-            <div className="absolute top-full left-0 mt-1 bg-[#1c1c28] border border-[#2b2b3d] shadow-2xl rounded-[4px] py-1 z-50 w-44 text-xs backdrop-blur-sm">
+            <div className={`absolute top-full left-0 mt-1 border shadow-2xl rounded-[4px] py-1 z-50 w-44 text-xs backdrop-blur-sm ${
+              isDark ? 'bg-[#1c1c28] border-[#2b2b3d]' : 'bg-white border-[#E2DEEE] shadow-purple-100'
+            }`}>
               <button
                 type="button"
                 onClick={() => {
                   setImageDropdownOpen(false);
                   onInsertImage?.();
                 }}
-                className="w-full text-left px-3 py-1.5 hover:bg-[#272738] flex items-center gap-2 text-gray-300"
+                className={`w-full text-left px-3 py-1.5 flex items-center gap-2 ${
+                  isDark ? 'text-gray-300 hover:bg-[#272738]' : 'text-[#374151] hover:bg-[#F3F0F9]'
+                }`}
               >
-                <Upload className="w-3.5 h-3.5 text-purple-400" />
+                <Upload className="w-3.5 h-3.5 text-purple-500" />
                 <span>Upload from device</span>
               </button>
               <button
                 type="button"
                 onClick={handlePromptImageUrl}
-                className="w-full text-left px-3 py-1.5 hover:bg-[#272738] flex items-center gap-2 text-gray-300"
+                className={`w-full text-left px-3 py-1.5 flex items-center gap-2 ${
+                  isDark ? 'text-gray-300 hover:bg-[#272738]' : 'text-[#374151] hover:bg-[#F3F0F9]'
+                }`}
               >
-                <Globe className="w-3.5 h-3.5 text-purple-400" />
+                <Globe className="w-3.5 h-3.5 text-purple-500" />
                 <span>Insert from URL...</span>
               </button>
             </div>
@@ -337,27 +350,27 @@ export const EditorToolbar = ({ editor, onInsertImage, onInsertImageUrl }) => {
           <button
             type="button"
             onClick={handleTableButtonClick}
-            className={`p-1.5 rounded-[3px] transition-colors ${
-              isInsideTable
-                ? 'bg-purple-900/40 text-purple-300 border border-purple-500/40'
-                : 'text-gray-400 hover:text-gray-200 hover:bg-[#202030]'
-            }`}
+            className={getBtnClass(isInsideTable)}
             title={isInsideTable ? 'Table Actions' : 'Insert 3x3 Table'}
           >
             <TableIcon className="w-3.5 h-3.5" />
           </button>
 
           {tableDropdownOpen && isInsideTable && (
-            <div className="absolute top-full left-0 mt-1 bg-[#1c1c28] border border-[#2b2b3d] shadow-2xl rounded-[4px] py-1 z-50 w-44 text-xs backdrop-blur-sm">
+            <div className={`absolute top-full left-0 mt-1 border shadow-2xl rounded-[4px] py-1 z-50 w-44 text-xs backdrop-blur-sm ${
+              isDark ? 'bg-[#1c1c28] border-[#2b2b3d]' : 'bg-white border-[#E2DEEE] shadow-purple-100'
+            }`}>
               <button
                 type="button"
                 onClick={() => {
                   editor.chain().focus().addRowBefore().run();
                   setTableDropdownOpen(false);
                 }}
-                className="w-full text-left px-3 py-1.5 hover:bg-[#272738] flex items-center gap-2 text-gray-300"
+                className={`w-full text-left px-3 py-1.5 flex items-center gap-2 ${
+                  isDark ? 'text-gray-300 hover:bg-[#272738]' : 'text-[#374151] hover:bg-[#F3F0F9]'
+                }`}
               >
-                <Plus className="w-3 h-3 text-purple-400" />
+                <Plus className="w-3 h-3 text-purple-500" />
                 <span>Add Row Above</span>
               </button>
               <button
@@ -366,9 +379,11 @@ export const EditorToolbar = ({ editor, onInsertImage, onInsertImageUrl }) => {
                   editor.chain().focus().addRowAfter().run();
                   setTableDropdownOpen(false);
                 }}
-                className="w-full text-left px-3 py-1.5 hover:bg-[#272738] flex items-center gap-2 text-gray-300"
+                className={`w-full text-left px-3 py-1.5 flex items-center gap-2 ${
+                  isDark ? 'text-gray-300 hover:bg-[#272738]' : 'text-[#374151] hover:bg-[#F3F0F9]'
+                }`}
               >
-                <Plus className="w-3 h-3 text-purple-400" />
+                <Plus className="w-3 h-3 text-purple-500" />
                 <span>Add Row Below</span>
               </button>
               <button
@@ -377,21 +392,23 @@ export const EditorToolbar = ({ editor, onInsertImage, onInsertImageUrl }) => {
                   editor.chain().focus().deleteRow().run();
                   setTableDropdownOpen(false);
                 }}
-                className="w-full text-left px-3 py-1.5 hover:bg-[#272738] flex items-center gap-2 text-red-300"
+                className="w-full text-left px-3 py-1.5 hover:bg-red-500/10 flex items-center gap-2 text-red-500"
               >
-                <Trash2 className="w-3 h-3 text-red-400" />
+                <Trash2 className="w-3 h-3 text-red-500" />
                 <span>Delete Row</span>
               </button>
-              <div className="my-1 border-t border-[#2a2a3d]" />
+              <div className={`my-1 border-t ${isDark ? 'border-[#2a2a3d]' : 'border-[#EAE6F4]'}`} />
               <button
                 type="button"
                 onClick={() => {
                   editor.chain().focus().addColumnBefore().run();
                   setTableDropdownOpen(false);
                 }}
-                className="w-full text-left px-3 py-1.5 hover:bg-[#272738] flex items-center gap-2 text-gray-300"
+                className={`w-full text-left px-3 py-1.5 flex items-center gap-2 ${
+                  isDark ? 'text-gray-300 hover:bg-[#272738]' : 'text-[#374151] hover:bg-[#F3F0F9]'
+                }`}
               >
-                <Plus className="w-3 h-3 text-purple-400" />
+                <Plus className="w-3 h-3 text-purple-500" />
                 <span>Add Column Before</span>
               </button>
               <button
@@ -400,9 +417,11 @@ export const EditorToolbar = ({ editor, onInsertImage, onInsertImageUrl }) => {
                   editor.chain().focus().addColumnAfter().run();
                   setTableDropdownOpen(false);
                 }}
-                className="w-full text-left px-3 py-1.5 hover:bg-[#272738] flex items-center gap-2 text-gray-300"
+                className={`w-full text-left px-3 py-1.5 flex items-center gap-2 ${
+                  isDark ? 'text-gray-300 hover:bg-[#272738]' : 'text-[#374151] hover:bg-[#F3F0F9]'
+                }`}
               >
-                <Plus className="w-3 h-3 text-purple-400" />
+                <Plus className="w-3 h-3 text-purple-500" />
                 <span>Add Column After</span>
               </button>
               <button
@@ -411,21 +430,21 @@ export const EditorToolbar = ({ editor, onInsertImage, onInsertImageUrl }) => {
                   editor.chain().focus().deleteColumn().run();
                   setTableDropdownOpen(false);
                 }}
-                className="w-full text-left px-3 py-1.5 hover:bg-[#272738] flex items-center gap-2 text-red-300"
+                className="w-full text-left px-3 py-1.5 hover:bg-red-500/10 flex items-center gap-2 text-red-500"
               >
-                <Trash2 className="w-3 h-3 text-red-400" />
+                <Trash2 className="w-3 h-3 text-red-500" />
                 <span>Delete Column</span>
               </button>
-              <div className="my-1 border-t border-[#2a2a3d]" />
+              <div className={`my-1 border-t ${isDark ? 'border-[#2a2a3d]' : 'border-[#EAE6F4]'}`} />
               <button
                 type="button"
                 onClick={() => {
                   editor.chain().focus().deleteTable().run();
                   setTableDropdownOpen(false);
                 }}
-                className="w-full text-left px-3 py-1.5 hover:bg-[#272738] flex items-center gap-2 text-red-400 font-semibold"
+                className="w-full text-left px-3 py-1.5 hover:bg-red-500/10 flex items-center gap-2 text-red-500 font-semibold"
               >
-                <Trash2 className="w-3 h-3 text-red-400" />
+                <Trash2 className="w-3 h-3 text-red-500" />
                 <span>Delete Table</span>
               </button>
             </div>
@@ -433,17 +452,13 @@ export const EditorToolbar = ({ editor, onInsertImage, onInsertImageUrl }) => {
         </div>
 
         {/* Separator */}
-        <div className="w-[1px] h-4 bg-[#262638] mx-0.5" />
+        <div className={`w-[1px] h-4 mx-0.5 ${isDark ? 'bg-[#262638]' : 'bg-[#EAE6F4]'}`} />
 
         {/* 10. Checklist / TaskList */}
         <button
           type="button"
           onClick={() => editor.chain().focus().toggleTaskList().run()}
-          className={`p-1.5 rounded-[3px] transition-colors ${
-            editor.isActive('taskList')
-              ? 'bg-purple-900/40 text-purple-300 border border-purple-500/40'
-              : 'text-gray-400 hover:text-gray-200 hover:bg-[#202030]'
-          }`}
+          className={getBtnClass(editor.isActive('taskList'))}
           title="Checklist / Task List"
         >
           <CheckSquare className="w-3.5 h-3.5" />
@@ -453,11 +468,7 @@ export const EditorToolbar = ({ editor, onInsertImage, onInsertImageUrl }) => {
         <button
           type="button"
           onClick={() => editor.chain().focus().toggleBulletList().run()}
-          className={`p-1.5 rounded-[3px] transition-colors ${
-            editor.isActive('bulletList')
-              ? 'bg-purple-900/40 text-purple-300 border border-purple-500/40'
-              : 'text-gray-400 hover:text-gray-200 hover:bg-[#202030]'
-          }`}
+          className={getBtnClass(editor.isActive('bulletList'))}
           title="Bullet List"
         >
           <List className="w-3.5 h-3.5" />
@@ -467,11 +478,7 @@ export const EditorToolbar = ({ editor, onInsertImage, onInsertImageUrl }) => {
         <button
           type="button"
           onClick={() => editor.chain().focus().toggleOrderedList().run()}
-          className={`p-1.5 rounded-[3px] transition-colors ${
-            editor.isActive('orderedList')
-              ? 'bg-purple-900/40 text-purple-300 border border-purple-500/40'
-              : 'text-gray-400 hover:text-gray-200 hover:bg-[#202030]'
-          }`}
+          className={getBtnClass(editor.isActive('orderedList'))}
           title="Numbered List"
         >
           <ListOrdered className="w-3.5 h-3.5" />
@@ -481,11 +488,7 @@ export const EditorToolbar = ({ editor, onInsertImage, onInsertImageUrl }) => {
         <button
           type="button"
           onClick={() => editor.chain().focus().toggleBlockquote().run()}
-          className={`p-1.5 rounded-[3px] transition-colors ${
-            editor.isActive('blockquote')
-              ? 'bg-purple-900/40 text-purple-300 border border-purple-500/40'
-              : 'text-gray-400 hover:text-gray-200 hover:bg-[#202030]'
-          }`}
+          className={getBtnClass(editor.isActive('blockquote'))}
           title="Blockquote / Callout"
         >
           <Quote className="w-3.5 h-3.5" />
@@ -498,7 +501,9 @@ export const EditorToolbar = ({ editor, onInsertImage, onInsertImageUrl }) => {
           type="button"
           onClick={() => editor.chain().focus().undo().run()}
           disabled={!editor.can().undo()}
-          className="p-1.5 rounded-[3px] text-gray-400 hover:text-gray-200 hover:bg-[#202030] disabled:opacity-30 disabled:hover:bg-transparent transition-colors"
+          className={`p-1.5 rounded-[3px] disabled:opacity-30 disabled:hover:bg-transparent transition-colors ${
+            isDark ? 'text-gray-400 hover:text-gray-200 hover:bg-[#202030]' : 'text-[#6B7280] hover:text-[#181326] hover:bg-[#F3F0F9]'
+          }`}
           title="Undo (Cmd+Z)"
         >
           <Undo2 className="w-3.5 h-3.5" />
@@ -508,7 +513,9 @@ export const EditorToolbar = ({ editor, onInsertImage, onInsertImageUrl }) => {
           type="button"
           onClick={() => editor.chain().focus().redo().run()}
           disabled={!editor.can().redo()}
-          className="p-1.5 rounded-[3px] text-gray-400 hover:text-gray-200 hover:bg-[#202030] disabled:opacity-30 disabled:hover:bg-transparent transition-colors"
+          className={`p-1.5 rounded-[3px] disabled:opacity-30 disabled:hover:bg-transparent transition-colors ${
+            isDark ? 'text-gray-400 hover:text-gray-200 hover:bg-[#202030]' : 'text-[#6B7280] hover:text-[#181326] hover:bg-[#F3F0F9]'
+          }`}
           title="Redo (Cmd+Shift+Z)"
         >
           <Redo2 className="w-3.5 h-3.5" />

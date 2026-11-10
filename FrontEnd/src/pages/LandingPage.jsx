@@ -1,15 +1,27 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { PencilNavbar } from '../components/landing/PencilNavbar';
 import { HeroSection } from '../components/landing/HeroSection';
 import { FeatureCards } from '../components/landing/FeatureCards';
 import { FeaturesOverview } from '../components/landing/FeaturesOverview';
 import { EditorShowcase } from '../components/landing/EditorShowcase';
+import { AboutSection } from '../components/landing/AboutSection';
 import { Footer } from '../components/footer/Footer';
 import { useTheme } from '../context/ThemeContext';
 import landingBgDark from '../assets/landing/hero-bg-dark.png';
 
 export const LandingPage = () => {
   const { isDark } = useTheme();
+
+  // Scroll to hash section if present in URL
+  useEffect(() => {
+    if (window.location.hash) {
+      const id = window.location.hash.replace('#', '');
+      const el = document.getElementById(id);
+      if (el) {
+        setTimeout(() => el.scrollIntoView({ behavior: 'smooth' }), 120);
+      }
+    }
+  }, []);
 
   return (
     <div className="min-h-screen w-full relative flex flex-col overflow-x-hidden text-slate-100 bg-[#090D16]">
@@ -59,6 +71,9 @@ export const LandingPage = () => {
 
         {/* Editor Showcase Section (Obsidian Rich-Text Editor Experience) */}
         <EditorShowcase />
+
+        {/* About NoteNest Section */}
+        <AboutSection />
 
         {/* Four-Column Footer */}
         <Footer />

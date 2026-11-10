@@ -14,7 +14,7 @@ export const WorkspacePage = () => {
   const tagParam = searchParams.get('tag');
 
   return (
-    <div className={`h-screen w-screen overflow-hidden ${isDark ? 'bg-[#090D16]' : 'bg-[#F8FAFC]'}`}>
+    <div className={`h-screen w-screen overflow-hidden ${isDark ? 'bg-[#090D16]' : 'bg-[#FAF8FD]'}`}>
       <EditorLayout
         initialNoteId={noteId}
         initialNav={navParam}

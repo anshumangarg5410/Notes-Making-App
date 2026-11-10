@@ -1,15 +1,21 @@
 import React, { useState } from 'react';
 import { PenTool, Type, FileCode, Check } from 'lucide-react';
 import { useToast } from '../../context/ToastContext';
+import { useEditorSettings } from '../../context/EditorSettingsContext';
 
 export const EditorSettings = () => {
   const { success } = useToast();
+  const {
+    fontSize,
+    setFontSize,
+    lineNumbers,
+    setLineNumbers,
+    spellCheck,
+    setSpellCheck
+  } = useEditorSettings();
   const [fontFamily, setFontFamily] = useState('inter');
-  const [fontSize, setFontSize] = useState('14');
   const [lineHeight, setLineHeight] = useState('1.6');
-  const [spellCheck, setSpellCheck] = useState(true);
   const [vimMode, setVimMode] = useState(false);
-  const [lineNumbers, setLineNumbers] = useState(false);
 
   const handleSave = () => {
     localStorage.setItem('notenest_editor_settings', JSON.stringify({
@@ -52,14 +58,15 @@ export const EditorSettings = () => {
           <div>
             <label className="block text-gray-400 font-medium mb-1.5">Font Size</label>
             <select
-              value={fontSize}
-              onChange={(e) => setFontSize(e.target.value)}
+              value={String(fontSize)}
+              onChange={(e) => setFontSize(Number(e.target.value))}
               className="w-full bg-[#1b1b26] border border-[#2e2e42] rounded-[5px] px-3 py-2 text-xs text-white focus:outline-none focus:border-purple-500"
             >
               <option value="12">12px - Compact</option>
               <option value="14">14px - Regular</option>
               <option value="16">16px - Large</option>
               <option value="18">18px - Extra Large</option>
+              <option value="20">20px - Huge</option>
             </select>
           </div>
 

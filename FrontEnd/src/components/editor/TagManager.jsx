@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useTheme } from '../../context/ThemeContext';
 import { Tag, Plus, X, Hash } from 'lucide-react';
 
 export const TagManager = ({
@@ -7,6 +8,7 @@ export const TagManager = ({
   onRemoveTag,
   suggestedTags = ['projects', 'system-design', 'dbms', 'ui-ux', 'go', 'dsa']
 }) => {
+  const { isDark } = useTheme();
   const [inputVal, setInputVal] = useState('');
 
   const handleSubmit = (e) => {
@@ -20,23 +22,27 @@ export const TagManager = ({
 
   return (
     <div className="space-y-3 select-none text-xs">
-      <div className="flex items-center justify-between text-[11px] font-semibold text-gray-400 uppercase tracking-wider">
+      <div className={`flex items-center justify-between text-[11px] font-semibold uppercase tracking-wider ${isDark ? 'text-gray-400' : 'text-[#6B7280]'}`}>
         <div className="flex items-center gap-1.5">
-          <Tag className="w-3.5 h-3.5 text-purple-400" />
+          <Tag className="w-3.5 h-3.5 text-purple-500" />
           <span>Tags</span>
         </div>
-        <span className="text-[10px] text-gray-500">{tags.length} assigned</span>
+        <span className={`text-[10px] ${isDark ? 'text-gray-500' : 'text-[#9CA3AF]'}`}>{tags.length} assigned</span>
       </div>
 
       {/* Active tags pills */}
       <div className="flex flex-wrap gap-1.5">
         {tags.length === 0 ? (
-          <div className="text-gray-500 text-xs py-1">No tags assigned.</div>
+          <div className={`text-xs py-1 ${isDark ? 'text-gray-500' : 'text-[#9CA3AF]'}`}>No tags assigned.</div>
         ) : (
           tags.map((t) => (
             <span
               key={t}
-              className="inline-flex items-center gap-1 px-2 py-0.5 rounded-[3px] bg-purple-950/60 text-purple-300 border border-purple-500/30 text-[11px]"
+              className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-[3px] border text-[11px] ${
+                isDark
+                  ? 'bg-purple-950/60 text-purple-300 border-purple-500/30'
+                  : 'bg-[#EDE9FE] text-[#7C3AED] border-[#DDD6FE]'
+              }`}
             >
               <Hash className="w-2.5 h-2.5 opacity-60" />
               <span>{t}</span>
@@ -44,7 +50,7 @@ export const TagManager = ({
                 <button
                   type="button"
                   onClick={() => onRemoveTag(t)}
-                  className="hover:text-red-400 p-0.5 ml-0.5"
+                  className="hover:text-red-500 p-0.5 ml-0.5"
                   title="Remove tag"
                 >
                   <X className="w-2.5 h-2.5" />
@@ -63,7 +69,11 @@ export const TagManager = ({
             value={inputVal}
             onChange={(e) => setInputVal(e.target.value)}
             placeholder="Add tag (e.g. system-design)..."
-            className="flex-1 bg-[#1b1b26] border border-[#272738] focus:border-purple-500/60 rounded-[3px] px-2 py-1 text-xs text-gray-200 placeholder-gray-500 focus:outline-none"
+            className={`flex-1 rounded-[3px] px-2 py-1 text-xs focus:outline-none border ${
+              isDark
+                ? 'bg-[#1b1b26] border-[#272738] text-gray-200 placeholder-gray-500 focus:border-purple-500/60'
+                : 'bg-white border-[#E2DEEE] text-[#181326] placeholder-[#9CA3AF] focus:border-purple-500'
+            }`}
           />
           <button
             type="submit"
@@ -79,7 +89,7 @@ export const TagManager = ({
       {/* Suggested tags */}
       {suggestedTags && suggestedTags.length > 0 && (
         <div className="pt-2">
-          <div className="text-[10px] text-gray-500 uppercase tracking-wider mb-1.5">Suggestions</div>
+          <div className={`text-[10px] uppercase tracking-wider mb-1.5 ${isDark ? 'text-gray-500' : 'text-[#9CA3AF]'}`}>Suggestions</div>
           <div className="flex flex-wrap gap-1">
             {suggestedTags
               .filter((st) => !tags.includes(st))
@@ -89,7 +99,11 @@ export const TagManager = ({
                   key={st}
                   type="button"
                   onClick={() => onAddTag && onAddTag(st)}
-                  className="text-[10px] text-gray-400 hover:text-purple-300 bg-[#161622] hover:bg-purple-950/40 border border-[#252538] hover:border-purple-500/30 px-1.5 py-0.5 rounded-[2px] transition-colors"
+                  className={`text-[10px] px-1.5 py-0.5 rounded-[2px] border transition-colors ${
+                    isDark
+                      ? 'text-gray-400 hover:text-purple-300 bg-[#161622] hover:bg-purple-950/40 border-[#252538] hover:border-purple-500/30'
+                      : 'text-[#6B7280] hover:text-[#7C3AED] bg-white hover:bg-[#EDE9FE] border-[#E2DEEE] hover:border-[#DDD6FE]'
+                  }`}
                 >
                   +{st}
                 </button>

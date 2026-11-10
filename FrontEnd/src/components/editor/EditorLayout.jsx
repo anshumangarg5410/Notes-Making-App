@@ -11,6 +11,7 @@ import { folderService } from '../../services/folderService';
 import { offlineService, db } from '../../services/db';
 import { useToast } from '../../context/ToastContext';
 import { useTheme } from '../../context/ThemeContext';
+import { useEditorSettings } from '../../context/EditorSettingsContext';
 import { RotateCcw, Trash2 } from 'lucide-react';
 import './editorTheme.css';
 
@@ -24,6 +25,7 @@ export const EditorLayout = ({
 }) => {
   const { success, error: toastError, info } = useToast();
   const { isDark } = useTheme();
+  const { defaultFormat, autoSaveEnabled, autoSaveIntervalMs } = useEditorSettings();
 
   // Network connectivity state
   const [isOnline, setIsOnline] = useState(navigator.onLine);
@@ -368,17 +370,24 @@ export const EditorLayout = ({
     }
   };
 
-  // Create new note
+  // Create new note respecting defaultFormat preference
   const handleNewNote = async () => {
     let createdNote = null;
+    const formatExt = defaultFormat === 'markdown' ? '.md' : defaultFormat === 'plaintext' ? '.txt' : '';
+    const initialTitle = formatExt ? `Untitled Note${formatExt}` : 'Untitled Note';
+    const initialContent = defaultFormat === 'markdown'
+      ? '# Untitled Note\n\nStart writing in markdown...'
+      : defaultFormat === 'plaintext'
+      ? 'Start typing plain text...'
+      : '<p>Start writing...</p>';
 
     // 1. If online, attempt to create directly on backend for permanent ObjectId
     if (navigator.onLine) {
       try {
         const res = await noteService.createNote({
-          title: 'Untitled Note',
-          content: '',
-          plainText: '',
+          title: initialTitle,
+          content: initialContent,
+          plainText: defaultFormat === 'markdown' ? '# Untitled Note\n\nStart writing in markdown...' : '',
           tags: selectedTag ? [selectedTag] : [],
           folder: selectedFolder || 'Personal',
           category: selectedFolder || 'Personal',
@@ -399,9 +408,9 @@ export const EditorLayout = ({
       createdNote = {
         _id: localId,
         id: localId,
-        title: 'Untitled Note',
+        title: initialTitle,
         plainText: '',
-        content: '',
+        content: initialContent,
         tags: selectedTag ? [selectedTag] : [],
         category: selectedFolder || 'Personal',
         folder: selectedFolder || 'Personal',
@@ -420,11 +429,61 @@ export const EditorLayout = ({
 
     // Open in tab
     handleSelectNote(createdNote);
-    success('New note created');
+    success(`New ${defaultFormat === 'markdown' ? 'Markdown' : defaultFormat === 'plaintext' ? 'Plain Text' : 'Rich Text'} note created`);
   };
 
-  // Debounced auto-save handler
+  const pendingUpdatesRef = useRef({});
+
+  // Core save executor
+  const performSave = useCallback(async (updatedFields = {}) => {
+    if (!activeNote) return;
+    setSaveStatus('saving');
+
+    try {
+      const merged = {
+        ...activeNote,
+        ...updatedFields,
+        updatedAt: new Date().toISOString()
+      };
+
+      // 1. Persist to local Dexie database
+      await offlineService.saveLocalNote(merged, true);
+
+      // 2. Persist to backend if online and valid ID
+      const targetId = activeNote?._id || activeNote?.id;
+      const isValidServerId = targetId && String(targetId).length === 24 && !String(targetId).includes('-');
+
+      if (navigator.onLine && isValidServerId) {
+        await noteService.updateNote(targetId, updatedFields);
+        setSaveStatus('saved');
+      } else {
+        setSaveStatus(navigator.onLine ? 'saved' : 'offline');
+      }
+
+      setLastSavedTime(
+        new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+      );
+
+      // Update in notes list
+      setNotes((prev) =>
+        prev.map((n) =>
+          (n._id || n.id) === targetId ? merged : n
+        )
+      );
+
+      // Clear unsaved badge on tab
+      setTabs((prev) =>
+        prev.map((t) => (t.id === activeTabId ? { ...t, isUnsaved: false } : t))
+      );
+    } catch (err) {
+      console.warn('Save error:', err);
+      setSaveStatus('offline');
+    }
+  }, [activeNote, activeTabId]);
+
+  // Debounced auto-save handler respecting autoSaveEnabled and interval
   const handleUpdateNote = (updatedFields) => {
+    pendingUpdatesRef.current = { ...pendingUpdatesRef.current, ...updatedFields };
     setSaveStatus('unsaved');
 
     // Update current tab title if title changed
@@ -442,51 +501,52 @@ export const EditorLayout = ({
       clearTimeout(saveTimeoutRef.current);
     }
 
+    // If auto-save is disabled, leave unsaved until manual save
+    if (!autoSaveEnabled) {
+      return;
+    }
+
     saveTimeoutRef.current = setTimeout(async () => {
-      setSaveStatus('saving');
-
-      try {
-        const merged = {
-          ...activeNote,
-          ...updatedFields,
-          updatedAt: new Date().toISOString()
-        };
-
-        // 1. Persist to local Dexie database
-        await offlineService.saveLocalNote(merged, true);
-
-        // 2. Persist to backend if online and valid ID
-        const targetId = activeNote?._id || activeNote?.id;
-        const isValidServerId = targetId && String(targetId).length === 24 && !String(targetId).includes('-');
-
-        if (navigator.onLine && isValidServerId) {
-          await noteService.updateNote(targetId, updatedFields);
-          setSaveStatus('saved');
-        } else {
-          setSaveStatus(navigator.onLine ? 'saved' : 'offline');
-        }
-
-        setLastSavedTime(
-          new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-        );
-
-        // Update in notes list
-        setNotes((prev) =>
-          prev.map((n) =>
-            (n._id || n.id) === targetId ? merged : n
-          )
-        );
-
-        // Clear unsaved badge on tab
-        setTabs((prev) =>
-          prev.map((t) => (t.id === activeTabId ? { ...t, isUnsaved: false } : t))
-        );
-      } catch (err) {
-        console.warn('Auto-save error:', err);
-        setSaveStatus('offline');
-      }
-    }, 600);
+      const toSave = { ...pendingUpdatesRef.current };
+      pendingUpdatesRef.current = {};
+      await performSave(toSave);
+    }, autoSaveIntervalMs);
   };
+
+  // Manual save handler (Save button or Ctrl+S)
+  const handleManualSave = useCallback(async () => {
+    if (saveTimeoutRef.current) {
+      clearTimeout(saveTimeoutRef.current);
+    }
+    const toSave = { ...pendingUpdatesRef.current };
+    pendingUpdatesRef.current = {};
+    await performSave(toSave);
+    success('Note saved');
+  }, [performSave, success]);
+
+  // Global Ctrl+S / Cmd+S and Ctrl+K / Cmd+K shortcuts
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's') {
+        e.preventDefault();
+        handleManualSave();
+      } else if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        if (activeNav === 'settings') {
+          setActiveNav('all');
+        }
+        setTimeout(() => {
+          const searchEl = document.getElementById('notes-search-input');
+          if (searchEl) {
+            searchEl.focus();
+            searchEl.select();
+          }
+        }, 50);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [handleManualSave, activeNav]);
 
   // Note actions
   const handleTogglePin = async (noteId) => {
@@ -761,7 +821,9 @@ export const EditorLayout = ({
           )}
 
           {/* PANE 3: Main Writing Area */}
-          <main className="editor-main flex-1 flex flex-col h-full overflow-hidden min-w-0 bg-[#0e0e14]">
+          <main className={`editor-main flex-1 flex flex-col h-full overflow-hidden min-w-0 transition-colors duration-150 ${
+            isDark ? 'bg-[#0e0e14]' : 'bg-white'
+          }`}>
             {/* Tab Bar at the top */}
             <EditorTabBar
               tabs={tabs}
@@ -774,6 +836,7 @@ export const EditorLayout = ({
               onToggleInspector={() => setIsInspectorOpen(!isInspectorOpen)}
               isFocusMode={isFocusMode}
               onToggleFocusMode={() => setIsFocusMode(!isFocusMode)}
+              onManualSave={handleManualSave}
             />
 
             {/* Trash Banner if Active Note is Deleted */}
@@ -811,6 +874,7 @@ export const EditorLayout = ({
                 note={activeNote}
                 onUpdateNote={handleUpdateNote}
                 onWordCountChange={setWordStats}
+                onManualSave={handleManualSave}
               />
             </div>
 
@@ -821,6 +885,17 @@ export const EditorLayout = ({
               readingTime={wordStats.readingTime}
               lastSaved={lastSavedTime}
               isOnline={isOnline}
+              mode={
+                activeNote?.title?.endsWith('.md')
+                  ? 'Markdown'
+                  : activeNote?.title?.endsWith('.txt')
+                  ? 'Plain Text'
+                  : defaultFormat === 'markdown'
+                  ? 'Markdown'
+                  : defaultFormat === 'plaintext'
+                  ? 'Plain Text'
+                  : 'Rich Text'
+              }
             />
           </main>
 

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import { useTheme } from '../../context/ThemeContext';
 import {
   ChevronDown,
   ChevronRight,
@@ -95,6 +96,7 @@ export const EditorSidebar = ({
   };
 
   const { user, logout } = useAuth();
+  const { isDark } = useTheme();
   const displayName = user?.name || user?.username || 'User';
   const initials = displayName
     .split(' ')
@@ -158,12 +160,16 @@ export const EditorSidebar = ({
 
   return (
     <aside
-      className={`h-full bg-[#13131b] border-r border-[#222230] flex flex-col justify-between select-none text-xs transition-all duration-200 ${
+      className={`h-full border-r flex flex-col justify-between select-none text-xs transition-all duration-200 ${
+        isDark ? 'bg-[#13131b] border-[#222230]' : 'bg-white border-[#EAE6F4]'
+      } ${
         isCollapsed ? 'w-14' : 'w-64 min-w-[240px]'
       }`}
     >
       {/* Top Brand / User Header */}
-      <div className="relative p-3.5 border-b border-[#222230] flex items-center justify-between">
+      <div className={`relative p-3.5 border-b flex items-center justify-between ${
+        isDark ? 'border-[#222230]' : 'border-[#EAE6F4]'
+      }`}>
         <div
           onClick={() => setUserMenuOpen(!userMenuOpen)}
           className="flex items-center gap-2.5 cursor-pointer hover:opacity-90 transition-opacity"
@@ -182,8 +188,10 @@ export const EditorSidebar = ({
           )}
           {!isCollapsed && (
             <div className="flex items-center gap-1.5">
-              <span className="font-semibold text-sm text-gray-100 tracking-tight">NoteNest</span>
-              <ChevronDown className={`w-3.5 h-3.5 text-gray-400 transition-transform duration-150 ${userMenuOpen ? 'rotate-180 text-purple-400' : ''}`} />
+              <span className={`font-semibold text-sm tracking-tight ${isDark ? 'text-gray-100' : 'text-[#181326]'}`}>NoteNest</span>
+              <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-150 ${
+                userMenuOpen ? 'rotate-180 text-purple-500' : isDark ? 'text-gray-400' : 'text-[#6B7280]'
+              }`} />
             </div>
           )}
         </div>
@@ -195,10 +203,12 @@ export const EditorSidebar = ({
               className="fixed inset-0 z-40"
               onClick={() => setUserMenuOpen(false)}
             />
-            <div className="absolute top-14 left-3 w-56 bg-[#161622] border border-[#2b2b3e] rounded-md shadow-2xl z-50 py-1 text-xs animate-in fade-in zoom-in-95 duration-100">
-              <div className="px-3 py-2 border-b border-[#242436]">
-                <div className="font-semibold text-gray-100 truncate">{displayName}</div>
-                <div className="text-[11px] text-gray-400 truncate">{user?.email || 'Logged in'}</div>
+            <div className={`absolute top-14 left-3 w-56 border rounded-md shadow-2xl z-50 py-1 text-xs animate-in fade-in zoom-in-95 duration-100 ${
+              isDark ? 'bg-[#161622] border-[#2b2b3e]' : 'bg-white border-[#EAE6F4] shadow-purple-200/40'
+            }`}>
+              <div className={`px-3 py-2 border-b ${isDark ? 'border-[#242436]' : 'border-[#EAE6F4]'}`}>
+                <div className={`font-semibold truncate ${isDark ? 'text-gray-100' : 'text-[#181326]'}`}>{displayName}</div>
+                <div className={`text-[11px] truncate ${isDark ? 'text-gray-400' : 'text-[#6B7280]'}`}>{user?.email || 'Logged in'}</div>
               </div>
 
               <button
@@ -208,13 +218,15 @@ export const EditorSidebar = ({
                   if (onOpenSettings) onOpenSettings();
                   else onSelectNav?.('settings');
                 }}
-                className="w-full flex items-center gap-2.5 px-3 py-2 text-gray-300 hover:text-white hover:bg-[#202030] transition-colors text-left"
+                className={`w-full flex items-center gap-2.5 px-3 py-2 transition-colors text-left ${
+                  isDark ? 'text-gray-300 hover:text-white hover:bg-[#202030]' : 'text-[#374151] hover:text-[#111827] hover:bg-[#F9F8FD]'
+                }`}
               >
-                <Settings className="w-3.5 h-3.5 text-purple-400" />
+                <Settings className="w-3.5 h-3.5 text-purple-500" />
                 <span>Account Settings</span>
               </button>
 
-              <div className="h-[1px] bg-[#242436] my-1" />
+              <div className={`h-[1px] my-1 ${isDark ? 'bg-[#242436]' : 'bg-[#EAE6F4]'}`} />
 
               <button
                 type="button"
@@ -222,7 +234,7 @@ export const EditorSidebar = ({
                   setUserMenuOpen(false);
                   handleLogout();
                 }}
-                className="w-full flex items-center gap-2.5 px-3 py-2 text-red-400 hover:text-red-300 hover:bg-red-950/30 transition-colors text-left font-medium"
+                className="w-full flex items-center gap-2.5 px-3 py-2 text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors text-left font-medium"
               >
                 <LogOut className="w-3.5 h-3.5" />
                 <span>Log Out</span>
@@ -234,7 +246,9 @@ export const EditorSidebar = ({
         {onToggleCollapse && !isCollapsed && (
           <button
             onClick={onToggleCollapse}
-            className="p-1 rounded-[3px] text-gray-400 hover:text-gray-200 hover:bg-[#1f1f2c] transition-colors"
+            className={`p-1 rounded-[3px] transition-colors ${
+              isDark ? 'text-gray-400 hover:text-gray-200 hover:bg-[#1f1f2c]' : 'text-[#6B7280] hover:text-[#181326] hover:bg-[#F3F0F9]'
+            }`}
             title="Collapse Sidebar"
           >
             <PanelLeftClose className="w-4 h-4" />
@@ -252,19 +266,37 @@ export const EditorSidebar = ({
               onSelectFolder?.(null);
               onSelectTag?.(null);
             }}
+            style={
+              activeNav === 'all' && !selectedFolder && !selectedTag
+                ? {
+                    backgroundColor: 'var(--accent-bg, rgba(168, 85, 247, 0.15))',
+                    color: 'var(--accent-text, #c084fc)',
+                    borderLeftColor: 'var(--accent, #a855f7)'
+                  }
+                : undefined
+            }
             className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-[3px] transition-colors ${
               activeNav === 'all' && !selectedFolder && !selectedTag
-                ? 'bg-purple-900/30 text-purple-200 border-l-2 border-purple-500 font-medium'
-                : 'text-gray-300 hover:text-gray-100 hover:bg-[#1a1a24]'
+                ? 'border-l-2 font-medium'
+                : isDark
+                  ? 'text-gray-300 hover:text-gray-100 hover:bg-[#1a1a24]'
+                  : 'text-[#4B5563] hover:text-[#111827] hover:bg-[#F4F2FA]'
             }`}
             title="All Notes"
           >
             <div className="flex items-center gap-2.5">
-              <FileText className={`w-4 h-4 ${activeNav === 'all' && !selectedFolder && !selectedTag ? 'text-purple-400' : 'text-gray-400'}`} />
+              <FileText
+                className="w-4 h-4"
+                style={
+                  activeNav === 'all' && !selectedFolder && !selectedTag
+                    ? { color: 'var(--accent, #a855f7)' }
+                    : undefined
+                }
+              />
               {!isCollapsed && <span>All Notes</span>}
             </div>
             {!isCollapsed && stats.totalNotes !== undefined && (
-              <span className="text-[10px] text-gray-500">{stats.totalNotes}</span>
+              <span className={`text-[10px] ${isDark ? 'text-gray-500' : 'text-[#9CA3AF]'}`}>{stats.totalNotes}</span>
             )}
           </button>
 
@@ -274,33 +306,53 @@ export const EditorSidebar = ({
               onSelectFolder?.(null);
               onSelectTag?.(null);
             }}
+            style={
+              activeNav === 'favorites'
+                ? {
+                    backgroundColor: 'var(--accent-bg, rgba(168, 85, 247, 0.15))',
+                    color: 'var(--accent-text, #c084fc)',
+                    borderLeftColor: 'var(--accent, #a855f7)'
+                  }
+                : undefined
+            }
             className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-[3px] transition-colors ${
               activeNav === 'favorites'
-                ? 'bg-purple-900/30 text-purple-200 border-l-2 border-purple-500 font-medium'
-                : 'text-gray-300 hover:text-gray-100 hover:bg-[#1a1a24]'
+                ? 'border-l-2 font-medium'
+                : isDark
+                  ? 'text-gray-300 hover:text-gray-100 hover:bg-[#1a1a24]'
+                  : 'text-[#4B5563] hover:text-[#111827] hover:bg-[#F4F2FA]'
             }`}
             title="Favorites"
           >
             <div className="flex items-center gap-2.5">
-              <Star className={`w-4 h-4 ${activeNav === 'favorites' ? 'text-purple-400' : 'text-gray-400'}`} />
+              <Star
+                className="w-4 h-4"
+                style={
+                  activeNav === 'favorites'
+                    ? { color: 'var(--accent, #a855f7)' }
+                    : undefined
+                }
+              />
               {!isCollapsed && <span>Favorites</span>}
             </div>
             {!isCollapsed && stats.favorites !== undefined && (
-              <span className="text-[10px] text-gray-500">{stats.favorites}</span>
+              <span className={`text-[10px] ${isDark ? 'text-gray-500' : 'text-[#9CA3AF]'}`}>{stats.favorites}</span>
             )}
           </button>
         </div>
 
         {/* Folders Section */}
         {!isCollapsed && (
-          <div className="pt-2 border-t border-[#1e1e2c]">
+          <div className={`pt-2 border-t ${isDark ? 'border-[#1e1e2c]' : 'border-[#EAE6F4]'}`}>
             {/* Folders Header */}
             <div
               onClick={() => setFoldersOpen(!foldersOpen)}
-              className="flex items-center justify-between px-2.5 py-1 text-gray-400 hover:text-gray-200 cursor-pointer text-[11px] font-medium uppercase tracking-wider"
+              className={`flex items-center justify-between px-2.5 py-1 cursor-pointer text-[11px] font-medium uppercase tracking-wider ${
+                isDark ? 'text-gray-400 hover:text-gray-200' : 'text-[#6B7280] hover:text-[#181326]'
+              }`}
             >
               <div className="flex items-center gap-2">
-                <Folder className="w-3.5 h-3.5 text-gray-400" />
+                <Folder className="w-3.5 h-3.5 text-purple-500" />
                 <span>Folders</span>
               </div>
               <div className="flex items-center gap-1">
@@ -310,7 +362,9 @@ export const EditorSidebar = ({
                     e.stopPropagation();
                     setIsCreatingFolder(!isCreatingFolder);
                   }}
-                  className="p-1 hover:bg-[#252536] rounded text-gray-400 hover:text-purple-300 transition-colors"
+                  className={`p-1 rounded transition-colors ${
+                    isDark ? 'hover:bg-[#252536] text-gray-400 hover:text-purple-300' : 'hover:bg-[#EAE6F4] text-[#6B7280] hover:text-purple-600'
+                  }`}
                   title="Add new folder"
                 >
                   <Plus className="w-3.5 h-3.5" />
@@ -329,7 +383,11 @@ export const EditorSidebar = ({
                   value={newFolderName}
                   onChange={(e) => setNewFolderName(e.target.value)}
                   placeholder="New folder name..."
-                  className="flex-1 bg-[#1b1b26] border border-purple-500/50 rounded-[3px] px-2 py-1 text-xs text-gray-200 focus:outline-none"
+                  className={`flex-1 rounded-[3px] px-2 py-1 text-xs focus:outline-none border ${
+                    isDark
+                      ? 'bg-[#1b1b26] border-purple-500/50 text-gray-200'
+                      : 'bg-white border-[#DDD6FE] text-[#181326]'
+                  }`}
                   onKeyDown={(e) => {
                     if (e.key === 'Escape') setIsCreatingFolder(false);
                   }}
@@ -340,7 +398,7 @@ export const EditorSidebar = ({
                 <button
                   type="button"
                   onClick={() => setIsCreatingFolder(false)}
-                  className="p-1 text-gray-400 hover:text-gray-200"
+                  className={`p-1 ${isDark ? 'text-gray-400 hover:text-gray-200' : 'text-[#6B7280] hover:text-[#181326]'}`}
                   title="Cancel"
                 >
                   <X className="w-3.5 h-3.5" />
@@ -366,8 +424,12 @@ export const EditorSidebar = ({
                       <div
                         className={`group relative flex items-center justify-between px-2 py-1 rounded-[3px] transition-colors ${
                           isSelected
-                            ? 'bg-purple-900/30 text-purple-200 font-medium'
-                            : 'text-gray-300 hover:text-gray-100 hover:bg-[#1a1a24]'
+                            ? isDark
+                              ? 'bg-purple-900/30 text-purple-200 font-medium'
+                              : 'bg-[#EDE9FE] text-[#7C3AED] font-semibold'
+                            : isDark
+                              ? 'text-gray-300 hover:text-gray-100 hover:bg-[#1a1a24]'
+                              : 'text-[#4B5563] hover:text-[#111827] hover:bg-[#F4F2FA]'
                         }`}
                       >
                         <div className="flex items-center gap-1.5 flex-1 min-w-0 mr-1">
@@ -379,7 +441,9 @@ export const EditorSidebar = ({
                                 e.stopPropagation();
                                 toggleFolderExpanded(folderId);
                               }}
-                              className="p-0.5 hover:bg-[#252538] rounded text-gray-400 hover:text-gray-200 transition-colors"
+                              className={`p-0.5 rounded transition-colors ${
+                                isDark ? 'hover:bg-[#252538] text-gray-400 hover:text-gray-200' : 'hover:bg-[#EAE6F4] text-[#6B7280] hover:text-[#181326]'
+                              }`}
                               title={expanded ? 'Collapse subfolders' : 'Expand subfolders'}
                             >
                               <ChevronRight
@@ -398,9 +462,9 @@ export const EditorSidebar = ({
                             title={folder.name}
                           >
                             {expanded || isSelected ? (
-                              <FolderOpen className={`w-3.5 h-3.5 shrink-0 ${isSelected ? 'text-purple-400' : 'text-gray-400'}`} />
+                              <FolderOpen className="w-3.5 h-3.5 shrink-0 text-purple-500" />
                             ) : (
-                              <Folder className={`w-3.5 h-3.5 shrink-0 ${isSelected ? 'text-purple-400' : 'text-gray-400'}`} />
+                              <Folder className="w-3.5 h-3.5 shrink-0 text-purple-500" />
                             )}
                             <span className="truncate">{folder.name}</span>
                           </button>
@@ -433,7 +497,7 @@ export const EditorSidebar = ({
                         ) : (
                           <div className="flex items-center gap-1 shrink-0">
                             {/* Note count (visible when not hovering) */}
-                            <span className="text-[10px] text-gray-500 group-hover:hidden">
+                            <span className={`text-[10px] group-hover:hidden ${isDark ? 'text-gray-500' : 'text-[#9CA3AF]'}`}>
                               {noteCount}
                             </span>
 
@@ -447,7 +511,9 @@ export const EditorSidebar = ({
                                   setNewSubfolderName('');
                                   setExpandedFolders((prev) => ({ ...prev, [folderId]: true }));
                                 }}
-                                className="p-1 hover:bg-[#252538] rounded text-gray-400 hover:text-purple-300 transition-colors"
+                                className={`p-1 rounded transition-colors ${
+                                  isDark ? 'hover:bg-[#252538] text-gray-400 hover:text-purple-300' : 'hover:bg-[#EAE6F4] text-[#6B7280] hover:text-purple-600'
+                                }`}
                                 title="Add subfolder"
                               >
                                 <Plus className="w-3 h-3" />
@@ -458,7 +524,9 @@ export const EditorSidebar = ({
                                   e.stopPropagation();
                                   setConfirmDeleteId(folderId);
                                 }}
-                                className="p-1 hover:bg-red-950/60 rounded text-gray-400 hover:text-red-400 transition-colors"
+                                className={`p-1 rounded transition-colors ${
+                                  isDark ? 'hover:bg-red-950/60 text-gray-400 hover:text-red-400' : 'hover:bg-red-50 text-[#6B7280] hover:text-red-600'
+                                }`}
                                 title="Delete folder"
                               >
                                 <Trash2 className="w-3 h-3" />
@@ -472,16 +540,20 @@ export const EditorSidebar = ({
                       {isAddingSub && (
                         <form
                           onSubmit={(e) => handleCreateSubfolderSubmit(e, folderId)}
-                          className="flex items-center gap-1.5 py-1 px-2 my-0.5 ml-6 bg-[#1b1b28] border border-purple-500/50 rounded-[3px]"
+                          className={`flex items-center gap-1.5 py-1 px-2 my-0.5 ml-6 border rounded-[3px] ${
+                            isDark ? 'bg-[#1b1b28] border-purple-500/50' : 'bg-white border-[#DDD6FE]'
+                          }`}
                         >
-                          <Folder className="w-3 h-3 text-purple-400 shrink-0" />
+                          <Folder className="w-3 h-3 text-purple-500 shrink-0" />
                           <input
                             type="text"
                             autoFocus
                             value={newSubfolderName}
                             onChange={(e) => setNewSubfolderName(e.target.value)}
                             placeholder="Subfolder name..."
-                            className="flex-1 bg-transparent text-xs text-gray-200 outline-none placeholder-gray-500"
+                            className={`flex-1 bg-transparent text-xs outline-none ${
+                              isDark ? 'text-gray-200 placeholder-gray-500' : 'text-[#181326] placeholder-[#9CA3AF]'
+                            }`}
                             onKeyDown={(e) => {
                               if (e.key === 'Escape') setActiveAddSubfolderParentId(null);
                             }}
@@ -496,7 +568,7 @@ export const EditorSidebar = ({
                           <button
                             type="button"
                             onClick={() => setActiveAddSubfolderParentId(null)}
-                            className="p-0.5 text-gray-400 hover:text-gray-200"
+                            className={`p-0.5 ${isDark ? 'text-gray-400 hover:text-gray-200' : 'text-[#6B7280] hover:text-[#181326]'}`}
                             title="Cancel"
                           >
                             <X className="w-3.5 h-3.5" />
@@ -506,7 +578,7 @@ export const EditorSidebar = ({
 
                       {/* Subfolders List (Indented Tree) */}
                       {hasSubfolders && expanded && (
-                        <div className="ml-5 pl-2.5 border-l border-[#242436] space-y-0.5">
+                        <div className={`ml-5 pl-2.5 border-l space-y-0.5 ${isDark ? 'border-[#242436]' : 'border-[#EAE6F4]'}`}>
                           {subfolders.map((sub) => {
                             const subId = sub._id || sub.id;
                             const isSubSelected = selectedFolder?.toLowerCase() === sub.name?.toLowerCase();
@@ -518,8 +590,12 @@ export const EditorSidebar = ({
                                 <div
                                   className={`group relative flex items-center justify-between px-2 py-0.5 rounded-[3px] transition-colors ${
                                     isSubSelected
-                                      ? 'bg-purple-900/30 text-purple-200 font-medium'
-                                      : 'text-gray-400 hover:text-gray-200 hover:bg-[#1a1a24]'
+                                      ? isDark
+                                        ? 'bg-purple-900/30 text-purple-200 font-medium'
+                                        : 'bg-[#EDE9FE] text-[#7C3AED] font-semibold'
+                                      : isDark
+                                        ? 'text-gray-400 hover:text-gray-200 hover:bg-[#1a1a24]'
+                                        : 'text-[#6B7280] hover:text-[#181326] hover:bg-[#F4F2FA]'
                                   }`}
                                 >
                                   {/* Subfolder Select Button */}
@@ -531,7 +607,7 @@ export const EditorSidebar = ({
                                   >
                                     <span
                                       className={`w-1.5 h-1.5 rounded-full shrink-0 ${
-                                        isSubSelected ? 'bg-purple-400' : 'bg-purple-500/40'
+                                        isSubSelected ? 'bg-purple-500' : 'bg-purple-400/50'
                                       }`}
                                     />
                                     <span className="truncate text-[11px]">{sub.name}</span>
@@ -564,7 +640,7 @@ export const EditorSidebar = ({
                                   ) : (
                                     <div className="flex items-center gap-1 shrink-0">
                                       {/* Subfolder note count */}
-                                      <span className="text-[10px] text-gray-500 group-hover:hidden">
+                                      <span className={`text-[10px] group-hover:hidden ${isDark ? 'text-gray-500' : 'text-[#9CA3AF]'}`}>
                                         {subCount}
                                       </span>
 
@@ -577,7 +653,9 @@ export const EditorSidebar = ({
                                             setActiveAddSubfolderParentId(subId);
                                             setNewSubfolderName('');
                                           }}
-                                          className="p-1 hover:bg-[#252538] rounded text-gray-400 hover:text-purple-300 transition-colors"
+                                          className={`p-1 rounded transition-colors ${
+                                            isDark ? 'hover:bg-[#252538] text-gray-400 hover:text-purple-300' : 'hover:bg-[#EAE6F4] text-[#6B7280] hover:text-purple-600'
+                                          }`}
                                           title="Add nested subfolder"
                                         >
                                           <Plus className="w-3 h-3" />
@@ -588,7 +666,9 @@ export const EditorSidebar = ({
                                             e.stopPropagation();
                                             setConfirmDeleteId(subId);
                                           }}
-                                          className="p-1 hover:bg-red-950/60 rounded text-gray-400 hover:text-red-400 transition-colors"
+                                          className={`p-1 rounded transition-colors ${
+                                            isDark ? 'hover:bg-red-950/60 text-gray-400 hover:text-red-400' : 'hover:bg-red-50 text-[#6B7280] hover:text-red-600'
+                                          }`}
                                           title="Delete this subfolder"
                                         >
                                           <Trash2 className="w-3 h-3" />
@@ -602,16 +682,20 @@ export const EditorSidebar = ({
                                 {isSubAddingNested && (
                                   <form
                                     onSubmit={(e) => handleCreateSubfolderSubmit(e, subId)}
-                                    className="flex items-center gap-1.5 py-1 px-2 my-0.5 ml-4 bg-[#1b1b28] border border-purple-500/50 rounded-[3px]"
+                                    className={`flex items-center gap-1.5 py-1 px-2 my-0.5 ml-4 border rounded-[3px] ${
+                                      isDark ? 'bg-[#1b1b28] border-purple-500/50' : 'bg-white border-[#DDD6FE]'
+                                    }`}
                                   >
-                                    <Folder className="w-3 h-3 text-purple-400 shrink-0" />
+                                    <Folder className="w-3 h-3 text-purple-500 shrink-0" />
                                     <input
                                       type="text"
                                       autoFocus
                                       value={newSubfolderName}
                                       onChange={(e) => setNewSubfolderName(e.target.value)}
                                       placeholder="Nested folder name..."
-                                      className="flex-1 bg-transparent text-xs text-gray-200 outline-none placeholder-gray-500"
+                                      className={`flex-1 bg-transparent text-xs outline-none ${
+                                        isDark ? 'text-gray-200 placeholder-gray-500' : 'text-[#181326] placeholder-[#9CA3AF]'
+                                      }`}
                                       onKeyDown={(e) => {
                                         if (e.key === 'Escape') setActiveAddSubfolderParentId(null);
                                       }}
@@ -626,7 +710,7 @@ export const EditorSidebar = ({
                                     <button
                                       type="button"
                                       onClick={() => setActiveAddSubfolderParentId(null)}
-                                      className="p-0.5 text-gray-400 hover:text-gray-200"
+                                      className={`p-0.5 ${isDark ? 'text-gray-400 hover:text-gray-200' : 'text-[#6B7280] hover:text-[#181326]'}`}
                                       title="Cancel"
                                     >
                                       <X className="w-3.5 h-3.5" />
@@ -648,13 +732,15 @@ export const EditorSidebar = ({
 
         {/* Tags Section */}
         {!isCollapsed && (
-          <div className="pt-2 border-t border-[#1e1e2c]">
+          <div className={`pt-2 border-t ${isDark ? 'border-[#1e1e2c]' : 'border-[#EAE6F4]'}`}>
             <div
               onClick={() => setTagsOpen(!tagsOpen)}
-              className="flex items-center justify-between px-2.5 py-1 text-gray-400 hover:text-gray-200 cursor-pointer text-[11px] font-medium uppercase tracking-wider"
+              className={`flex items-center justify-between px-2.5 py-1 cursor-pointer text-[11px] font-medium uppercase tracking-wider ${
+                isDark ? 'text-gray-400 hover:text-gray-200' : 'text-[#6B7280] hover:text-[#181326]'
+              }`}
             >
               <div className="flex items-center gap-2">
-                <Tag className="w-3.5 h-3.5 text-gray-400" />
+                <Tag className="w-3.5 h-3.5 text-purple-500" />
                 <span>Tags</span>
               </div>
               {tagsOpen ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
@@ -671,8 +757,12 @@ export const EditorSidebar = ({
                       onClick={() => onSelectTag(isSelected ? null : rawTag)}
                       className={`px-2 py-0.5 rounded-[3px] text-[11px] transition-colors ${
                         isSelected
-                          ? 'bg-purple-600/30 text-purple-200 border border-purple-500/40'
-                          : 'bg-[#1b1b26] text-gray-400 hover:text-gray-200 border border-[#252536] hover:border-gray-600'
+                          ? isDark
+                            ? 'bg-purple-600/30 text-purple-200 border border-purple-500/40'
+                            : 'bg-[#EDE9FE] text-[#7C3AED] border border-[#DDD6FE] font-semibold'
+                          : isDark
+                            ? 'bg-[#1b1b26] text-gray-400 hover:text-gray-200 border border-[#252536] hover:border-gray-600'
+                            : 'bg-white text-[#6B7280] hover:text-[#181326] border border-[#E2DEEE] hover:border-[#DDD6FE]'
                       }`}
                     >
                       {tag}
@@ -685,52 +775,82 @@ export const EditorSidebar = ({
         )}
 
         {/* Trash */}
-        <div className="pt-2 border-t border-[#1e1e2c]">
+        <div className={`pt-2 border-t ${isDark ? 'border-[#1e1e2c]' : 'border-[#EAE6F4]'}`}>
           <button
             onClick={() => {
               onSelectNav('trash');
               onSelectFolder?.(null);
               onSelectTag?.(null);
             }}
+            style={
+              activeNav === 'trash'
+                ? {
+                    backgroundColor: 'var(--accent-bg, rgba(168, 85, 247, 0.15))',
+                    color: 'var(--accent-text, #c084fc)',
+                    borderLeftColor: 'var(--accent, #a855f7)'
+                  }
+                : undefined
+            }
             className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-[3px] transition-colors ${
               activeNav === 'trash'
-                ? 'bg-purple-900/30 text-purple-200 border-l-2 border-purple-500 font-medium'
-                : 'text-gray-400 hover:text-gray-200 hover:bg-[#1a1a24]'
+                ? 'border-l-2 font-medium'
+                : isDark
+                  ? 'text-gray-400 hover:text-gray-200 hover:bg-[#1a1a24]'
+                  : 'text-[#6B7280] hover:text-[#181326] hover:bg-[#F4F2FA]'
             }`}
             title="Trash"
           >
             <div className="flex items-center gap-2.5">
-              <Trash2 className="w-4 h-4 text-gray-400" />
+              <Trash2
+                className="w-4 h-4"
+                style={activeNav === 'trash' ? { color: 'var(--accent, #a855f7)' } : undefined}
+              />
               {!isCollapsed && <span>Trash</span>}
             </div>
             {!isCollapsed && stats.trash !== undefined && (
-              <span className="text-[10px] text-gray-500">{stats.trash}</span>
+              <span className={`text-[10px] ${isDark ? 'text-gray-500' : 'text-[#9CA3AF]'}`}>{stats.trash}</span>
             )}
           </button>
         </div>
       </div>
 
       {/* Bottom Storage & Footer */}
-      <div className="p-3 border-t border-[#222230] space-y-3 bg-[#111118]">
+      <div className={`p-3 border-t space-y-3 ${
+        isDark ? 'border-[#222230] bg-[#111118]' : 'border-[#EAE6F4] bg-[#FAF8FD]'
+      }`}>
         {/* Storage Widget matching reference */}
         {!isCollapsed && (
-          <div className="bg-[#171722] border border-[#242436] rounded-[4px] p-2.5 space-y-2">
+          <div className={`rounded-[4px] p-2.5 space-y-2 border ${
+            isDark ? 'bg-[#171722] border-[#242436]' : 'bg-[#F7F5FC] border-[#EAE6F3]'
+          }`}>
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-1.5 text-gray-300 font-medium text-[11px]">
-                <Cloud className="w-3.5 h-3.5 text-purple-400" />
+              <div className={`flex items-center gap-1.5 font-medium text-[11px] ${
+                isDark ? 'text-gray-300' : 'text-[#374151]'
+              }`}>
+                <Cloud className="w-3.5 h-3.5" style={{ color: 'var(--accent, #a855f7)' }} />
                 <span>Storage</span>
               </div>
-              <span className="text-[11px] text-purple-400 font-medium">12%</span>
+              <span className="text-[11px] font-medium" style={{ color: 'var(--accent-text, #c084fc)' }}>12%</span>
             </div>
-            <div className="text-[10px] text-gray-400">245 MB of 2 GB used</div>
-            <div className="w-full h-1.5 bg-[#252536] rounded-full overflow-hidden">
-              <div className="h-full bg-gradient-to-r from-purple-500 to-indigo-500 w-[12%] rounded-full" />
+            <div className={`text-[10px] ${isDark ? 'text-gray-400' : 'text-[#6B7280]'}`}>245 MB of 2 GB used</div>
+            <div className={`w-full h-1.5 rounded-full overflow-hidden ${
+              isDark ? 'bg-[#252536]' : 'bg-[#E5E1F0]'
+            }`}>
+              <div
+                className="h-full rounded-full transition-all"
+                style={{
+                  width: '12%',
+                  backgroundColor: 'var(--accent, #a855f7)'
+                }}
+              />
             </div>
           </div>
         )}
 
         {/* Action icons */}
-        <div className="flex items-center justify-between text-gray-400 pt-1">
+        <div className={`flex items-center justify-between pt-1 ${
+          isDark ? 'text-gray-400' : 'text-[#6B7280]'
+        }`}>
           <button
             onClick={() => {
               if (onOpenSettings) onOpenSettings();
@@ -738,31 +858,47 @@ export const EditorSidebar = ({
               onSelectFolder?.(null);
               onSelectTag?.(null);
             }}
+            style={
+              activeNav === 'settings'
+                ? {
+                    backgroundColor: 'var(--accent-bg, rgba(168, 85, 247, 0.15))',
+                    color: 'var(--accent-text, #c084fc)',
+                    borderColor: 'var(--accent-border, rgba(168, 85, 247, 0.4))'
+                  }
+                : undefined
+            }
             className={`p-1.5 px-2.5 rounded-lg flex items-center gap-2 transition-all ${
               activeNav === 'settings'
-                ? 'bg-purple-900/40 text-purple-200 border border-purple-500/40 font-medium shadow-sm shadow-purple-950/40'
-                : 'text-gray-400 hover:text-gray-200 hover:bg-[#1c1c28]'
+                ? 'font-medium shadow-sm border'
+                : isDark
+                  ? 'text-gray-400 hover:text-gray-200 hover:bg-[#1c1c28]'
+                  : 'text-[#6B7280] hover:text-[#181326] hover:bg-[#F4F2FA]'
             }`}
             title="Settings"
           >
-            <Settings className={`w-4 h-4 ${activeNav === 'settings' ? 'text-purple-400' : ''}`} />
+            <Settings
+              className="w-4 h-4"
+              style={activeNav === 'settings' ? { color: 'var(--accent, #a855f7)' } : undefined}
+            />
             {!isCollapsed && <span>Settings</span>}
           </button>
 
           <div className="flex items-center gap-1">
             <button
               onClick={handleLogout}
-              className="p-1.5 rounded-lg hover:text-red-400 hover:bg-red-950/30 flex items-center gap-1.5 transition-colors text-gray-400"
+              className="p-1.5 rounded-lg hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 flex items-center gap-1.5 transition-colors"
               title="Log Out"
             >
-              <LogOut className="w-4 h-4 text-red-400/80" />
-              {!isCollapsed && <span className="hover:text-red-300">Logout</span>}
+              <LogOut className="w-4 h-4 text-red-500" />
+              {!isCollapsed && <span className="hover:text-red-600">Logout</span>}
             </button>
 
             {!isCollapsed && (
               <button
                 onClick={() => alert('NoteNest Help & Shortcuts: Cmd+K for search, Cmd+S to save')}
-                className="p-1.5 rounded-lg hover:text-gray-200 hover:bg-[#1c1c28] flex items-center gap-1.5 transition-colors text-gray-400"
+                className={`p-1.5 rounded-lg flex items-center gap-1.5 transition-colors ${
+                  isDark ? 'hover:text-gray-200 hover:bg-[#1c1c28]' : 'hover:text-[#181326] hover:bg-[#F4F2FA]'
+                }`}
                 title="Help & Shortcuts"
               >
                 <HelpCircle className="w-4 h-4" />

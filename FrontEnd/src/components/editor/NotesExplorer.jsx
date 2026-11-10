@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { Search, Plus, Filter, ArrowUpDown, Trash2, RotateCcw } from 'lucide-react';
 import { NoteListItem } from './NoteListItem';
+import { useTheme } from '../../context/ThemeContext';
 
 export const NotesExplorer = ({
   notes = [],
@@ -23,6 +24,7 @@ export const NotesExplorer = ({
 }) => {
   const [subFilter, setSubFilter] = useState('all'); // 'all', 'recent', 'pinned'
   const [sortOrder, setSortOrder] = useState('updated'); // 'updated', 'title'
+  const { isDark } = useTheme();
 
   // Filter notes based on search, active navigation, folder, tag, and sub-filter (All/Recent/Pinned)
   const filteredNotes = useMemo(() => {
@@ -95,14 +97,16 @@ export const NotesExplorer = ({
   };
 
   return (
-    <div className="h-full bg-[#15151e] border-r border-[#222230] flex flex-col select-none text-xs w-72 min-w-[260px] max-w-[320px]">
+    <div className={`h-full border-r flex flex-col select-none text-xs w-72 min-w-[260px] max-w-[320px] transition-colors duration-150 ${
+      isDark ? 'bg-[#15151e] border-[#222230]' : 'bg-[#FAFAFD] border-[#EAE6F4]'
+    }`}>
       {/* Header */}
       <div className="p-3.5 pb-2 flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <h2 className="text-sm font-semibold text-gray-100 tracking-tight">
+          <h2 className={`text-sm font-semibold tracking-tight ${isDark ? 'text-gray-100' : 'text-[#181326]'}`}>
             {getHeaderTitle()}
           </h2>
-          <span className="text-[11px] text-gray-500 font-mono">
+          <span className={`text-[11px] font-mono ${isDark ? 'text-gray-500' : 'text-[#9CA3AF]'}`}>
             {filteredNotes.length}
           </span>
         </div>
@@ -132,15 +136,22 @@ export const NotesExplorer = ({
       {/* Search Input matching reference */}
       <div className="px-3 py-1.5">
         <div className="relative flex items-center">
-          <Search className="w-3.5 h-3.5 text-gray-400 absolute left-2.5 pointer-events-none" />
+          <Search className={`w-3.5 h-3.5 absolute left-2.5 pointer-events-none ${isDark ? 'text-gray-400' : 'text-[#9CA3AF]'}`} />
           <input
+            id="notes-search-input"
             type="text"
             value={searchQuery}
             onChange={(e) => onSearchChange(e.target.value)}
             placeholder="Search notes..."
-            className="w-full bg-[#1b1b26] border border-[#272738] focus:border-purple-500/60 rounded-[4px] pl-8 pr-12 py-1.5 text-xs text-gray-200 placeholder-gray-500 focus:outline-none transition-colors"
+            className={`w-full rounded-[4px] pl-8 pr-12 py-1.5 text-xs focus:outline-none transition-colors border ${
+              isDark
+                ? 'bg-[#1b1b26] border-[#272738] text-gray-200 placeholder-gray-500 focus:border-purple-500/60'
+                : 'bg-white border-[#E2DEEE] text-[#181326] placeholder-[#9CA3AF] focus:border-[#7C3AED]'
+            }`}
           />
-          <kbd className="absolute right-2 px-1.5 py-0.5 text-[9px] font-mono text-gray-400 bg-[#252536] rounded-[2px] border border-[#313144] pointer-events-none">
+          <kbd className={`absolute right-2 px-1.5 py-0.5 text-[9px] font-mono rounded-[2px] border pointer-events-none ${
+            isDark ? 'text-gray-400 bg-[#252536] border-[#313144]' : 'text-[#6B7280] bg-[#F3F0FA] border-[#E2DEEE]'
+          }`}>
             ⌘ K
           </kbd>
         </div>
@@ -148,12 +159,16 @@ export const NotesExplorer = ({
 
       {/* Sub-Filter Tabs: All, Recent, Pinned (or Trash Info Banner) */}
       {activeFilter === 'trash' ? (
-        <div className="px-3 py-1.5 border-b border-[#20202e] text-[10px] text-gray-500 flex items-center justify-between">
+        <div className={`px-3 py-1.5 border-b text-[10px] flex items-center justify-between ${
+          isDark ? 'border-[#20202e] text-gray-500' : 'border-[#EAE6F4] text-[#6B7280]'
+        }`}>
           <span>Deleted notes kept for 30 days</span>
           {filteredNotes.length > 0 && <span>{filteredNotes.length} in trash</span>}
         </div>
       ) : (
-        <div className="px-3 pt-2 pb-1.5 flex items-center gap-1 border-b border-[#20202e]">
+        <div className={`px-3 pt-2 pb-1.5 flex items-center gap-1 border-b ${
+          isDark ? 'border-[#20202e]' : 'border-[#EAE6F4]'
+        }`}>
           {[
             { id: 'all', label: 'All' },
             { id: 'recent', label: 'Recent' },
@@ -166,8 +181,12 @@ export const NotesExplorer = ({
                 onClick={() => setSubFilter(tab.id)}
                 className={`px-2.5 py-1 rounded-[3px] text-[11px] font-medium transition-colors ${
                   isActive
-                    ? 'bg-purple-900/30 text-purple-300 border border-purple-500/40'
-                    : 'text-gray-400 hover:text-gray-200 hover:bg-[#1c1c28]'
+                    ? isDark
+                      ? 'bg-purple-900/30 text-purple-300 border border-purple-500/40'
+                      : 'bg-[#EDE9FE] text-[#7C3AED] border border-[#DDD6FE] font-semibold'
+                    : isDark
+                      ? 'text-gray-400 hover:text-gray-200 hover:bg-[#1c1c28]'
+                      : 'text-[#6B7280] hover:text-[#181326] hover:bg-[#F3F0F9]'
                 }`}
               >
                 {tab.label}

@@ -44,6 +44,7 @@ Thumbs.db
 
 # Backups and temporary migration folders
 BackEnd_backup/
+BackEnd/uploads/
 *.backup
 *.bak
 

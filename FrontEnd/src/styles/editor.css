@@ -12,7 +12,7 @@
   display: inline-block;
   width: 2px;
   height: 1.25em;
-  background-color: #a855f7;
+  background-color: var(--accent, #a855f7);
   margin-left: 2px;
   vertical-align: text-bottom;
   animation: cursorBlink 1s infinite;
@@ -25,7 +25,7 @@
   color: #f3f4f6;
   font-family: inherit;
   line-height: 1.7;
-  font-size: 0.975rem;
+  font-size: var(--editor-font-size, 14px);
 }
 
 .obsidian-editor .ProseMirror p {
@@ -60,12 +60,12 @@
 
 /* Callout Block */
 .obsidian-editor .ProseMirror blockquote {
-  border-left: 3px solid #a855f7;
-  background: rgba(168, 85, 247, 0.08);
+  border-left: 3px solid var(--accent, #a855f7);
+  background: var(--accent-bg, rgba(168, 85, 247, 0.08));
   padding: 0.75rem 1rem;
   margin: 1rem 0;
   border-radius: 0 4px 4px 0;
-  color: #d8b4fe;
+  color: var(--accent-text, #d8b4fe);
   font-style: normal;
 }
 
@@ -240,4 +240,41 @@
 .obsidian-scrollbar::-webkit-scrollbar-thumb:hover {
   background: #3f3f58;
 }
+
+/* ==========================================================================
+   Line Numbers Gutter
+   ========================================================================== */
+.obsidian-editor.show-line-numbers .ProseMirror {
+  counter-reset: line-counter;
+  padding-left: 3.5rem;
+}
+
+.obsidian-editor.show-line-numbers .ProseMirror > * {
+  position: relative;
+}
+
+.obsidian-editor.show-line-numbers .ProseMirror > *::before {
+  counter-increment: line-counter;
+  content: counter(line-counter);
+  position: absolute;
+  left: -3.5rem;
+  width: 2.4rem;
+  text-align: right;
+  color: #64748b;
+  font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 0.75rem;
+  line-height: inherit;
+  user-select: none;
+  pointer-events: none;
+  opacity: 0.7;
+  top: 0;
+  border-right: 1px solid rgba(148, 163, 184, 0.25);
+  padding-right: 0.65rem;
+}
+
+.editor-workspace-light .obsidian-editor.show-line-numbers .ProseMirror > *::before {
+  color: #94a3b8;
+  border-right-color: rgba(203, 213, 225, 0.7);
+}
+
 

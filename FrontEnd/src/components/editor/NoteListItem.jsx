@@ -1,5 +1,6 @@
 import React from 'react';
 import { FileText, Pin, Star, MoreVertical, Trash2, Copy, RotateCcw } from 'lucide-react';
+import { useTheme } from '../../context/ThemeContext';
 
 export const NoteListItem = ({
   note,
@@ -13,6 +14,7 @@ export const NoteListItem = ({
   onRestore,
   onPermanentDelete
 }) => {
+  const { isDark } = useTheme();
   // Format relative time helper
   const formatTime = (dateStr) => {
     if (!dateStr) return 'Just now';
@@ -44,8 +46,12 @@ export const NoteListItem = ({
       onClick={() => onSelect(note)}
       className={`group relative p-3 rounded-[6px] cursor-pointer transition-all duration-150 select-none ${
         isSelected
-          ? 'bg-gradient-to-r from-purple-950/70 to-purple-900/35 border border-purple-500/50 shadow-sm shadow-purple-950/40'
-          : 'bg-transparent hover:bg-[#1a1a24] border border-transparent'
+          ? isDark
+            ? 'bg-gradient-to-r from-purple-950/70 to-purple-900/35 border border-purple-500/50 shadow-sm shadow-purple-950/40'
+            : 'bg-[#EDE9FE] border border-[#DDD6FE] shadow-sm shadow-purple-100'
+          : isDark
+            ? 'bg-transparent hover:bg-[#1a1a24] border border-transparent'
+            : 'bg-transparent hover:bg-[#F3F0FA] border border-transparent'
       }`}
     >
       <div className="flex items-start gap-3">
@@ -53,8 +59,8 @@ export const NoteListItem = ({
         <div
           className={`w-7 h-7 rounded-[4px] flex items-center justify-center shrink-0 transition-colors ${
             isSelected
-              ? 'bg-purple-600/30 text-purple-300'
-              : 'bg-[#1e1e2c] text-gray-400 group-hover:text-gray-300'
+              ? isDark ? 'bg-purple-600/30 text-purple-300' : 'bg-[#DDD6FE] text-[#7C3AED]'
+              : isDark ? 'bg-[#1e1e2c] text-gray-400 group-hover:text-gray-300' : 'bg-[#F0ECF8] text-[#6B7280]'
           }`}
         >
           <FileText className="w-4 h-4" />
@@ -65,7 +71,9 @@ export const NoteListItem = ({
           <div className="flex items-center justify-between gap-1">
             <h4
               className={`text-xs font-medium truncate ${
-                isSelected ? 'text-white' : 'text-gray-200 group-hover:text-white'
+                isSelected
+                  ? isDark ? 'text-white' : 'text-[#181326] font-semibold'
+                  : isDark ? 'text-gray-200 group-hover:text-white' : 'text-[#374151] group-hover:text-[#111827]'
               }`}
             >
               {note.title || 'Untitled Note'}
@@ -89,15 +97,19 @@ export const NoteListItem = ({
             </div>
           </div>
 
-          <p className="text-[11px] text-gray-400 truncate mt-0.5 leading-relaxed">
+          <p className={`text-[11px] truncate mt-0.5 leading-relaxed ${isDark ? 'text-gray-400' : 'text-[#6B7280]'}`}>
             {getExcerpt()}
           </p>
 
-          <div className="flex items-center justify-between mt-1 text-[10px] text-gray-500">
+          <div className={`flex items-center justify-between mt-1 text-[10px] ${isDark ? 'text-gray-500' : 'text-[#9CA3AF]'}`}>
             <span>{formatTime(note.updatedAt || note.createdAt)}</span>
 
             {note.tags && note.tags.length > 0 && (
-              <span className="text-[10px] text-purple-400/80 bg-purple-950/40 px-1.5 py-0.2 rounded-[2px] border border-purple-500/20">
+              <span className={`text-[10px] px-1.5 py-0.2 rounded-[2px] border ${
+                isDark
+                  ? 'text-purple-400/80 bg-purple-950/40 border-purple-500/20'
+                  : 'text-[#7C3AED] bg-[#EDE9FE] border-[#DDD6FE]'
+              }`}>
                 #{note.tags[0]}
               </span>
             )}
@@ -106,7 +118,9 @@ export const NoteListItem = ({
       </div>
 
       {/* Floating quick actions on hover */}
-      <div className="absolute top-2 right-2 hidden group-hover:flex items-center gap-1 bg-[#171723] backdrop-blur-md border border-[#2a2a3d] rounded-[4px] p-0.5 z-10 shadow-xl">
+      <div className={`absolute top-2 right-2 hidden group-hover:flex items-center gap-1 backdrop-blur-md border rounded-[4px] p-0.5 z-10 shadow-xl ${
+        isDark ? 'bg-[#171723] border-[#2a2a3d]' : 'bg-white border-[#E2DEEE] shadow-purple-200/50'
+      }`}>
         {(isTrashView || note.isDeleted) ? (
           <>
             <button

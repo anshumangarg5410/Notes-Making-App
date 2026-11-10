@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useTheme } from '../../context/ThemeContext';
 import {
   SlidersHorizontal,
   ListTree,
@@ -94,19 +95,29 @@ export const DocumentInspector = ({
     }
   };
 
+  const { isDark } = useTheme();
+
   if (!isOpen) return null;
 
   return (
-    <aside className="h-full bg-[#15151e] border-l border-[#222230] flex flex-col select-none text-xs w-72 min-w-[260px] max-w-[320px]">
+    <aside className={`h-full border-l flex flex-col select-none text-xs w-72 min-w-[260px] max-w-[320px] transition-colors duration-150 ${
+      isDark ? 'bg-[#15151e] border-[#222230]' : 'bg-[#FAFAFD] border-[#EAE6F4]'
+    }`}>
       {/* Top Inspector Tab Selector */}
-      <div className="h-10 border-b border-[#222230] px-3 flex items-center justify-between bg-[#13131b]">
+      <div className={`h-10 border-b px-3 flex items-center justify-between transition-colors duration-150 ${
+        isDark ? 'border-[#222230] bg-[#13131b]' : 'border-[#EAE6F4] bg-white'
+      }`}>
         <div className="flex items-center gap-1">
           <button
             onClick={() => setActiveTab('outline')}
             className={`flex items-center gap-1.5 px-2.5 py-1 rounded-[3px] font-medium transition-colors ${
               activeTab === 'outline'
-                ? 'bg-purple-900/35 text-purple-300 border border-purple-500/40'
-                : 'text-gray-400 hover:text-gray-200'
+                ? isDark
+                  ? 'bg-purple-900/35 text-purple-300 border border-purple-500/40'
+                  : 'bg-[#EDE9FE] text-[#7C3AED] border border-[#DDD6FE] font-semibold'
+                : isDark
+                  ? 'text-gray-400 hover:text-gray-200'
+                  : 'text-[#6B7280] hover:text-[#181326]'
             }`}
             title="Document Outline"
           >
@@ -118,8 +129,12 @@ export const DocumentInspector = ({
             onClick={() => setActiveTab('properties')}
             className={`flex items-center gap-1.5 px-2.5 py-1 rounded-[3px] font-medium transition-colors ${
               activeTab === 'properties'
-                ? 'bg-purple-900/35 text-purple-300 border border-purple-500/40'
-                : 'text-gray-400 hover:text-gray-200'
+                ? isDark
+                  ? 'bg-purple-900/35 text-purple-300 border border-purple-500/40'
+                  : 'bg-[#EDE9FE] text-[#7C3AED] border border-[#DDD6FE] font-semibold'
+                : isDark
+                  ? 'text-gray-400 hover:text-gray-200'
+                  : 'text-[#6B7280] hover:text-[#181326]'
             }`}
             title="Properties"
           >
@@ -131,8 +146,12 @@ export const DocumentInspector = ({
             onClick={() => setActiveTab('tags')}
             className={`flex items-center gap-1.5 px-2.5 py-1 rounded-[3px] font-medium transition-colors ${
               activeTab === 'tags'
-                ? 'bg-purple-900/35 text-purple-300 border border-purple-500/40'
-                : 'text-gray-400 hover:text-gray-200'
+                ? isDark
+                  ? 'bg-purple-900/35 text-purple-300 border border-purple-500/40'
+                  : 'bg-[#EDE9FE] text-[#7C3AED] border border-[#DDD6FE] font-semibold'
+                : isDark
+                  ? 'text-gray-400 hover:text-gray-200'
+                  : 'text-[#6B7280] hover:text-[#181326]'
             }`}
             title="Tags"
           >
@@ -144,7 +163,9 @@ export const DocumentInspector = ({
         {onClose && (
           <button
             onClick={onClose}
-            className="p-1 rounded text-gray-400 hover:text-gray-200 hover:bg-[#20202e]"
+            className={`p-1 rounded transition-colors ${
+              isDark ? 'text-gray-400 hover:text-gray-200 hover:bg-[#20202e]' : 'text-[#6B7280] hover:text-[#181326] hover:bg-[#EAE6F4]'
+            }`}
             title="Close Inspector"
           >
             <X className="w-3.5 h-3.5" />

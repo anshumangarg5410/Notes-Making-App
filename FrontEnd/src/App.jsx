@@ -4,9 +4,11 @@ import { AuthProvider } from './context/AuthContext';
 import { ThemeProvider } from './context/ThemeContext';
 import { ToastProvider } from './context/ToastContext';
 import { AuthModalProvider } from './context/AuthModalContext';
+import { EditorSettingsProvider } from './context/EditorSettingsContext';
 import { AuthModal } from './components/auth/AuthModal';
 import { ProtectedRoute } from './routes/ProtectedRoute';
 import { LandingPage } from './pages/LandingPage';
+import { ContactPage } from './pages/ContactPage';
 import { WorkspacePage } from './pages/WorkspacePage';
 import { NoteEditorPage } from './pages/NoteEditorPage';
 import { LoginPage } from './pages/LoginPage';
@@ -19,14 +21,16 @@ export function App() {
       <ToastProvider>
         <AuthProvider>
           <AuthModalProvider>
-            <ErrorBoundary>
+            <EditorSettingsProvider>
+              <ErrorBoundary>
               <BrowserRouter>
                 {/* Global Authentication Modal (Login / Sign-up / Logout / Forgot Password) */}
                 <AuthModal />
 
                 <Routes>
-                  {/* Public Landing Page */}
+                  {/* Public Landing & Contact Pages */}
                   <Route path="/" element={<LandingPage />} />
+                  <Route path="/contact" element={<ContactPage />} />
 
                   {/* Main Application Dashboard IS this Workspace (Exact Obsidian Workspace Experience) */}
                   <Route
@@ -107,7 +111,8 @@ export function App() {
                 </Routes>
               </BrowserRouter>
             </ErrorBoundary>
-          </AuthModalProvider>
+          </EditorSettingsProvider>
+        </AuthModalProvider>
         </AuthProvider>
       </ToastProvider>
     </ThemeProvider>

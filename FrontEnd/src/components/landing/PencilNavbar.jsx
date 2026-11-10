@@ -1,18 +1,26 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { Pencil, Menu, X, ArrowRight, LogOut, Moon, Sun } from 'lucide-react';
 import { useAuthModal } from '../../context/AuthModalContext';
 import { useAuth } from '../../context/AuthContext';
 import { useTheme } from '../../context/ThemeContext';
 
 export const PencilNavbar = () => {
-  const [activeSection, setActiveSection] = useState('home');
+  const location = useLocation();
+  const navigate = useNavigate();
+  const isContactPage = location.pathname === '/contact';
+  const [activeSection, setActiveSection] = useState(isContactPage ? 'contact' : 'home');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { openLogin, openSignup, openLogout } = useAuthModal();
   const { isAuthenticated } = useAuth();
-  const { isDark } = useTheme();
+  const { isDark, toggleTheme } = useTheme();
 
   useEffect(() => {
+    if (isContactPage) {
+      setActiveSection('contact');
+      return;
+    }
+
     const handleScroll = () => {
       const sections = ['home', 'features', 'about', 'contact'];
       const scrollPos = window.scrollY + 200;
@@ -32,14 +40,31 @@ export const PencilNavbar = () => {
 
     window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
+  }, [isContactPage]);
 
   const handleNavClick = (id) => {
-    setActiveSection(id);
     setMobileMenuOpen(false);
+    if (id === 'contact') {
+      setActiveSection('contact');
+      if (location.pathname !== '/contact') {
+        navigate('/contact');
+      } else {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+      return;
+    }
+
+    setActiveSection(id);
+    if (location.pathname !== '/') {
+      navigate(`/#${id}`);
+      return;
+    }
+
     const element = document.getElementById(id);
     if (element) {
       element.scrollIntoView({ behavior: 'smooth' });
+    } else if (id === 'home') {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   };
 
@@ -137,6 +162,21 @@ export const PencilNavbar = () => {
           </nav>
 
           <div className="col-start-2 row-start-1 flex items-center justify-end gap-2 sm:gap-3 xl:col-start-3">
+            {/* Theme Toggle Button */}
+            <button
+              type="button"
+              onClick={toggleTheme}
+              title={isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
+              aria-label="Toggle theme"
+              className={`rounded-lg border p-2 transition-colors cursor-pointer ${
+                isDark
+                  ? 'border-indigo-300/40 text-indigo-300 hover:text-white hover:bg-indigo-500/15 shadow-[0_0_10px_rgba(129,140,248,0.2)]'
+                  : 'border-indigo-200 text-indigo-700 hover:bg-indigo-50 shadow-sm'
+              }`}
+            >
+              {isDark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+            </button>
+
             {isAuthenticated ? (
               <>
                 <Link
@@ -213,6 +253,20 @@ export const PencilNavbar = () => {
                 {link.label}
               </button>
             ))}
+          </div>
+
+          <div className="mt-3 pt-3 border-t border-purple-500/20 flex items-center justify-between px-1">
+            <span className={`text-xs ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>Theme</span>
+            <button
+              type="button"
+              onClick={toggleTheme}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-xs font-medium transition-colors cursor-pointer ${
+                isDark ? 'border-indigo-400/30 text-indigo-200 bg-indigo-500/10' : 'border-indigo-200 text-indigo-800 bg-indigo-50'
+              }`}
+            >
+              {isDark ? <Sun className="h-3.5 w-3.5" /> : <Moon className="h-3.5 w-3.5" />}
+              <span>{isDark ? 'Light Mode' : 'Dark Mode'}</span>
+            </button>
           </div>
 
           <div className="mt-4 grid grid-cols-2 gap-2 border-t border-purple-500/20 pt-3 sm:hidden">

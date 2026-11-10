@@ -13,12 +13,12 @@ export const ProfileSettings = ({
   onChangeEmailRequest,
 }) => {
   const { success, error: toastError } = useToast();
-  const { theme, setTheme } = useTheme();
+  const { theme, setTheme, accentColor, setAccentColor } = useTheme();
 
   const [savingProfile, setSavingProfile] = useState(false);
   const [preferences, setPreferences] = useState({
     theme: user?.preferences?.theme || theme || 'dark',
-    accentColor: user?.preferences?.accentColor || 'purple',
+    accentColor: user?.preferences?.accentColor || accentColor || 'purple',
     offlineMode: user?.preferences?.offlineMode ?? true,
     autoSync: user?.preferences?.autoSync ?? true,
     showNoteCount: user?.preferences?.showNoteCount ?? true,
@@ -96,6 +96,7 @@ export const ProfileSettings = ({
   const handleAccentChange = async (color) => {
     const updated = { ...preferences, accentColor: color };
     setPreferences(updated);
+    setAccentColor(color);
     try {
       await settingsService.updatePreferences({ accentColor: color });
       success(`Accent color set to ${color}`);

@@ -15,6 +15,7 @@ const dashboardRoutes = require('./routes/dashboard.routes');
 const searchRoutes = require('./routes/search.routes');
 const exportRoutes = require('./routes/export.routes');
 const syncRoutes = require('./routes/sync.routes');
+const contactRoutes = require('./routes/contact.routes');
 const errorHandler = require('./middleware/errorHandler');
 
 const app = express();
@@ -74,6 +75,7 @@ app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/search', searchRoutes);
 app.use('/api/export', exportRoutes);
 app.use('/api/sync', syncRoutes);
+app.use('/api/contact', contactRoutes);
 
 // Fallback for 404 Not Found on undefined API routes
 app.use('/api/*', (req, res) => {

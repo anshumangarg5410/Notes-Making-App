@@ -12,47 +12,57 @@ export const LandingPage = () => {
   const { isDark } = useTheme();
 
   return (
-    <div
-      className="min-h-screen w-full relative flex flex-col overflow-x-hidden text-slate-100"
-      style={{
-        backgroundImage: `linear-gradient(rgba(9, 13, 22, 0.18), rgba(9, 13, 22, 0.3)), url(${landingBgDark})`,
-        backgroundColor: '#090D16',
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
-        backgroundRepeat: 'no-repeat',
-        backgroundAttachment: 'fixed'
-      }}
-    >
+    <div className="min-h-screen w-full relative flex flex-col overflow-x-hidden text-slate-100 bg-[#090D16]">
       {/* ============================================================== */}
-      {/* 1. FULL-SCREEN HERO VIEWPORT (Covers 100vh on Initial Load)    */}
+      {/* Persistent Fixed Hero Background Layer                         */}
+      {/* Stays fixed in the viewport while everything scrolls above it   */}
       {/* ============================================================== */}
-      <div className="min-h-screen w-full flex flex-col justify-between relative">
-        {/* Fixed navbar height offset */}
-        <div aria-hidden="true" className="h-[92px] shrink-0 xl:h-[102px]" />
+      <div
+        className="fixed inset-0 w-full h-full pointer-events-none z-0"
+        style={{
+          backgroundImage: `linear-gradient(rgba(9, 13, 22, 0.22), rgba(9, 13, 22, 0.38)), url(${landingBgDark})`,
+          backgroundColor: '#090D16',
+          backgroundSize: 'cover',
+          backgroundPosition: 'center top',
+          backgroundRepeat: 'no-repeat'
+        }}
+      />
 
-        {/* Floating Pencil Navbar */}
-        <PencilNavbar />
+      {/* ============================================================== */}
+      {/* Scrollable Content Container (All sections scroll above it)   */}
+      {/* ============================================================== */}
+      <div className="relative z-10 flex flex-col w-full">
+        {/* ============================================================== */}
+        {/* 1. FULL-SCREEN HERO VIEWPORT (Covers 100vh on Initial Load)    */}
+        {/* ============================================================== */}
+        <div className="min-h-screen w-full flex flex-col justify-between relative">
+          {/* Fixed navbar height offset */}
+          <div aria-hidden="true" className="h-[92px] shrink-0 xl:h-[102px]" />
 
-        {/* Hero Section (Left copy, CTA & Right Editor Preview) */}
-        <main className="flex-1 flex flex-col justify-center my-auto">
-          <HeroSection />
-        </main>
+          {/* Floating Pencil Navbar */}
+          <PencilNavbar />
 
-        {/* Five Square Feature Cards at the bottom of the Hero screen */}
-        <FeatureCards />
+          {/* Hero Section (Left copy, CTA & Right Editor Preview) */}
+          <main className="flex-1 flex flex-col justify-center my-auto">
+            <HeroSection />
+          </main>
+
+          {/* Five Square Feature Cards at the bottom of the Hero screen */}
+          <FeatureCards />
+        </div>
+
+        {/* ============================================================== */}
+        {/* 2. DOWNSTREAM PAGES / SECTIONS (Scroll down above background)   */}
+        {/* ============================================================== */}
+        {/* Features Overview Section (Interconnected Knowledge Universe) */}
+        <FeaturesOverview />
+
+        {/* Editor Showcase Section (Obsidian Rich-Text Editor Experience) */}
+        <EditorShowcase />
+
+        {/* Four-Column Footer */}
+        <Footer />
       </div>
-
-      {/* ============================================================== */}
-      {/* 2. DOWNSTREAM PAGES / SECTIONS (Scroll down to reveal)          */}
-      {/* ============================================================== */}
-      {/* Features Overview Section (Interconnected Knowledge Universe) */}
-      <FeaturesOverview />
-
-      {/* Editor Showcase Section (Obsidian Rich-Text Editor Experience) */}
-      <EditorShowcase />
-
-      {/* Four-Column Footer */}
-      <Footer />
     </div>
   );
 };

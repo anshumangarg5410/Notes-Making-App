@@ -172,9 +172,7 @@ export const EditorShowcase = () => {
   return (
     <section
       id="editor-showcase"
-      className={`relative w-full py-20 lg:py-28 px-4 sm:px-6 lg:px-8 select-none overflow-hidden transition-colors duration-300 ${
-        isDark ? 'bg-[#080414] text-white' : 'bg-[#faf8fd] text-slate-900'
-      }`}
+      className="relative w-full py-20 lg:py-28 px-4 sm:px-6 lg:px-8 select-none overflow-hidden transition-colors duration-300 bg-transparent text-white"
     >
       {/* Background Ambience & Lighting */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden">

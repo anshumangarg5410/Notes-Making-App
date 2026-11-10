@@ -25,9 +25,7 @@ export const FeaturesOverview = () => {
   return (
     <section
       id="features"
-      className={`relative w-full py-20 lg:py-28 px-4 sm:px-6 lg:px-8 select-none overflow-hidden transition-colors duration-300 ${
-        isDark ? 'bg-[#090514] text-white' : 'bg-[#faf8fd] text-slate-900'
-      }`}
+      className="relative w-full py-20 lg:py-28 px-4 sm:px-6 lg:px-8 select-none overflow-hidden transition-colors duration-300 bg-transparent text-white"
     >
       {/* Background Ambience & Lighting */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden">
@@ -45,9 +43,7 @@ export const FeaturesOverview = () => {
         />
         {/* Bottom landscape mist */}
         <div
-          className={`absolute bottom-0 inset-x-0 h-40 bg-gradient-to-t ${
-            isDark ? 'from-[#090514] to-transparent' : 'from-[#faf8fd] to-transparent'
-          }`}
+          className="absolute bottom-0 inset-x-0 h-40 bg-gradient-to-t from-transparent to-transparent pointer-events-none"
         />
       </div>
 

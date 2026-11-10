@@ -77,15 +77,9 @@ export const Footer = () => {
 
   return (
     <footer
-      className={`relative w-full pt-12 pb-6 overflow-hidden transition-colors duration-300 ${
-        isDark
-          ? 'bg-[#100b1d] text-[#f5f3f0]'
-          : 'bg-[#faf5ff] text-[#26153b]'
-      }`}
+      className="relative w-full pt-12 pb-6 overflow-hidden transition-colors duration-300 bg-[#090D16]/80 backdrop-blur-md text-[#f5f3f0]"
       style={{
-        borderTop: isDark
-          ? '1px solid rgba(168, 85, 247, 0.2)'
-          : '1px solid rgba(147, 51, 234, 0.15)'
+        borderTop: '1px solid rgba(168, 85, 247, 0.2)'
       }}
     >
       {/* Upper Torn-Paper Corner in Top-Left (from reference) */}

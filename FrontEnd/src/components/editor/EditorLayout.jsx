@@ -5,6 +5,7 @@ import { EditorTabBar } from './EditorTabBar';
 import { RichTextEditor } from './RichTextEditor';
 import { DocumentInspector } from './DocumentInspector';
 import { EditorStatusBar } from './EditorStatusBar';
+import { SettingsView } from './SettingsView';
 import { noteService } from '../../services/noteService';
 import { folderService } from '../../services/folderService';
 import { offlineService, db } from '../../services/db';
@@ -32,6 +33,12 @@ export const EditorLayout = ({
   const [isExplorerCollapsed, setIsExplorerCollapsed] = useState(false);
   const [isInspectorOpen, setIsInspectorOpen] = useState(false); // Collapsed by default as in screenshot, toggleable in tab bar
   const [isFocusMode, setIsFocusMode] = useState(false);
+
+  const handleOpenSettings = () => {
+    setActiveNav('settings');
+    setSelectedFolder(null);
+    setSelectedTag(null);
+  };
 
   // Navigation, Folder & Tag filter state
   const [activeNav, setActiveNav] = useState(initialNav); // 'all', 'favorites', 'trash'
@@ -714,111 +721,123 @@ export const EditorLayout = ({
           onDeleteFolder={handleDeleteFolder}
           notes={notes}
           stats={stats}
-          onOpenSettings={onOpenSettings}
+          onOpenSettings={onOpenSettings || handleOpenSettings}
           isCollapsed={isSidebarCollapsed}
           onToggleCollapse={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
         />
       )}
 
-      {/* PANE 2: Notes Explorer */}
-      {!isFocusMode && !isExplorerCollapsed && (
-        <NotesExplorer
+      {/* Main Workspace: Settings View OR Notes Explorer + Writing Area */}
+      {activeNav === 'settings' ? (
+        <SettingsView
+          onClose={() => setActiveNav('all')}
           notes={notes}
-          selectedNoteId={activeTabId}
-          onSelectNote={handleSelectNote}
-          onNewNote={handleNewNote}
-          searchQuery={searchQuery}
-          onSearchChange={setSearchQuery}
-          activeFilter={activeNav}
-          selectedFolder={selectedFolder}
-          selectedTag={selectedTag}
-          onTogglePin={handleTogglePin}
-          onToggleFavorite={handleToggleFavorite}
-          onDeleteNote={handleDeleteNote}
-          onDuplicateNote={handleDuplicateNote}
-          onRestoreNote={handleRestoreNote}
-          onPermanentDeleteNote={handlePermanentDeleteNote}
-          onEmptyTrash={handleEmptyTrash}
-          isLoading={isLoading}
+          folders={folders}
+          stats={stats}
         />
-      )}
+      ) : (
+        <>
+          {/* PANE 2: Notes Explorer */}
+          {!isFocusMode && !isExplorerCollapsed && (
+            <NotesExplorer
+              notes={notes}
+              selectedNoteId={activeTabId}
+              onSelectNote={handleSelectNote}
+              onNewNote={handleNewNote}
+              searchQuery={searchQuery}
+              onSearchChange={setSearchQuery}
+              activeFilter={activeNav}
+              selectedFolder={selectedFolder}
+              selectedTag={selectedTag}
+              onTogglePin={handleTogglePin}
+              onToggleFavorite={handleToggleFavorite}
+              onDeleteNote={handleDeleteNote}
+              onDuplicateNote={handleDuplicateNote}
+              onRestoreNote={handleRestoreNote}
+              onPermanentDeleteNote={handlePermanentDeleteNote}
+              onEmptyTrash={handleEmptyTrash}
+              isLoading={isLoading}
+            />
+          )}
 
-      {/* PANE 3: Main Writing Area */}
-      <main className="editor-main flex-1 flex flex-col h-full overflow-hidden min-w-0 bg-[#0e0e14]">
-        {/* Tab Bar at the top */}
-        <EditorTabBar
-          tabs={tabs}
-          activeTabId={activeTabId}
-          onSwitchTab={setActiveTabId}
-          onCloseTab={handleCloseTab}
-          onNewTab={handleNewNote}
-          saveStatus={saveStatus}
-          isInspectorOpen={isInspectorOpen}
-          onToggleInspector={() => setIsInspectorOpen(!isInspectorOpen)}
-          isFocusMode={isFocusMode}
-          onToggleFocusMode={() => setIsFocusMode(!isFocusMode)}
-        />
+          {/* PANE 3: Main Writing Area */}
+          <main className="editor-main flex-1 flex flex-col h-full overflow-hidden min-w-0 bg-[#0e0e14]">
+            {/* Tab Bar at the top */}
+            <EditorTabBar
+              tabs={tabs}
+              activeTabId={activeTabId}
+              onSwitchTab={setActiveTabId}
+              onCloseTab={handleCloseTab}
+              onNewTab={handleNewNote}
+              saveStatus={saveStatus}
+              isInspectorOpen={isInspectorOpen}
+              onToggleInspector={() => setIsInspectorOpen(!isInspectorOpen)}
+              isFocusMode={isFocusMode}
+              onToggleFocusMode={() => setIsFocusMode(!isFocusMode)}
+            />
 
-        {/* Trash Banner if Active Note is Deleted */}
-        {activeNote?.isDeleted && (
-          <div className="bg-red-950/60 border-b border-red-500/30 px-6 py-2 flex items-center justify-between text-xs text-red-200 shrink-0">
-            <div className="flex items-center gap-2">
-              <Trash2 className="w-4 h-4 text-red-400" />
-              <span>This note is in the Trash.</span>
+            {/* Trash Banner if Active Note is Deleted */}
+            {activeNote?.isDeleted && (
+              <div className="bg-red-950/60 border-b border-red-500/30 px-6 py-2 flex items-center justify-between text-xs text-red-200 shrink-0">
+                <div className="flex items-center gap-2">
+                  <Trash2 className="w-4 h-4 text-red-400" />
+                  <span>This note is in the Trash.</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => handleRestoreNote(activeNote._id || activeNote.id)}
+                    className="px-2.5 py-1 rounded-[3px] bg-emerald-600 hover:bg-emerald-500 text-white font-medium transition-colors flex items-center gap-1 cursor-pointer"
+                  >
+                    <RotateCcw className="w-3.5 h-3.5" />
+                    <span>Restore Note</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handlePermanentDeleteNote(activeNote._id || activeNote.id)}
+                    className="px-2.5 py-1 rounded-[3px] bg-red-600 hover:bg-red-500 text-white font-medium transition-colors flex items-center gap-1 cursor-pointer"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                    <span>Delete Permanently</span>
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* Tiptap Writing Workspace */}
+            <div className="flex-1 overflow-hidden relative flex flex-col">
+              <RichTextEditor
+                key={activeTabId || 'editor-default'}
+                note={activeNote}
+                onUpdateNote={handleUpdateNote}
+                onWordCountChange={setWordStats}
+              />
             </div>
-            <div className="flex items-center gap-2">
-              <button
-                type="button"
-                onClick={() => handleRestoreNote(activeNote._id || activeNote.id)}
-                className="px-2.5 py-1 rounded-[3px] bg-emerald-600 hover:bg-emerald-500 text-white font-medium transition-colors flex items-center gap-1 cursor-pointer"
-              >
-                <RotateCcw className="w-3.5 h-3.5" />
-                <span>Restore Note</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => handlePermanentDeleteNote(activeNote._id || activeNote.id)}
-                className="px-2.5 py-1 rounded-[3px] bg-red-600 hover:bg-red-500 text-white font-medium transition-colors flex items-center gap-1 cursor-pointer"
-              >
-                <Trash2 className="w-3.5 h-3.5" />
-                <span>Delete Permanently</span>
-              </button>
-            </div>
-          </div>
-        )}
 
-        {/* Tiptap Writing Workspace */}
-        <div className="flex-1 overflow-hidden relative flex flex-col">
-          <RichTextEditor
-            key={activeTabId || 'editor-default'}
-            note={activeNote}
-            onUpdateNote={handleUpdateNote}
-            onWordCountChange={setWordStats}
-          />
-        </div>
+            {/* Bottom Status Bar matching screenshot */}
+            <EditorStatusBar
+              wordCount={wordStats.words}
+              charCount={wordStats.chars}
+              readingTime={wordStats.readingTime}
+              lastSaved={lastSavedTime}
+              isOnline={isOnline}
+            />
+          </main>
 
-        {/* Bottom Status Bar matching screenshot */}
-        <EditorStatusBar
-          wordCount={wordStats.words}
-          charCount={wordStats.chars}
-          readingTime={wordStats.readingTime}
-          lastSaved={lastSavedTime}
-          isOnline={isOnline}
-        />
-      </main>
-
-      {/* PANE 4: Right Document Inspector (Properties & Outline) */}
-      {!isFocusMode && isInspectorOpen && (
-        <DocumentInspector
-          note={activeNote}
-          wordCount={wordStats.words}
-          charCount={wordStats.chars}
-          readingTime={wordStats.readingTime}
-          onAddTag={handleAddTag}
-          onRemoveTag={handleRemoveTag}
-          isOpen={isInspectorOpen}
-          onClose={() => setIsInspectorOpen(false)}
-        />
+          {/* PANE 4: Right Document Inspector (Properties & Outline) */}
+          {!isFocusMode && isInspectorOpen && (
+            <DocumentInspector
+              note={activeNote}
+              wordCount={wordStats.words}
+              charCount={wordStats.chars}
+              readingTime={wordStats.readingTime}
+              onAddTag={handleAddTag}
+              onRemoveTag={handleRemoveTag}
+              isOpen={isInspectorOpen}
+              onClose={() => setIsInspectorOpen(false)}
+            />
+          )}
+        </>
       )}
     </div>
   );

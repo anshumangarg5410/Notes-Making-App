@@ -16,7 +16,8 @@ import {
   Plus,
   PanelLeftClose,
   Check,
-  X
+  X,
+  LogOut
 } from 'lucide-react';
 
 export const EditorSidebar = ({
@@ -44,6 +45,7 @@ export const EditorSidebar = ({
   const [newFolderName, setNewFolderName] = useState('');
   const [confirmDeleteId, setConfirmDeleteId] = useState(null);
   const [tagsOpen, setTagsOpen] = useState(true);
+  const [userMenuOpen, setUserMenuOpen] = useState(false);
 
   const defaultFolders = [
     { id: 'projects', _id: 'projects', name: 'Projects', subfolders: [{ id: 'notenest', _id: 'notenest', name: 'NoteNest' }] },
@@ -92,7 +94,7 @@ export const EditorSidebar = ({
     }).length;
   };
 
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
   const displayName = user?.name || user?.username || 'User';
   const initials = displayName
     .split(' ')
@@ -101,6 +103,14 @@ export const EditorSidebar = ({
     .slice(0, 2)
     .join('')
     .toUpperCase() || 'U';
+
+  const handleLogout = async () => {
+    try {
+      if (logout) await logout();
+    } finally {
+      navigate('/');
+    }
+  };
 
   const popularTags = ['#go', '#system-design', '#dbms', '#ui-ux', '#projects'];
 
@@ -153,12 +163,9 @@ export const EditorSidebar = ({
       }`}
     >
       {/* Top Brand / User Header */}
-      <div className="p-3.5 border-b border-[#222230] flex items-center justify-between">
+      <div className="relative p-3.5 border-b border-[#222230] flex items-center justify-between">
         <div
-          onClick={() => {
-            if (onOpenSettings) onOpenSettings();
-            else onSelectNav('all');
-          }}
+          onClick={() => setUserMenuOpen(!userMenuOpen)}
           className="flex items-center gap-2.5 cursor-pointer hover:opacity-90 transition-opacity"
           title={`Logged in as ${displayName}`}
         >
@@ -176,10 +183,53 @@ export const EditorSidebar = ({
           {!isCollapsed && (
             <div className="flex items-center gap-1.5">
               <span className="font-semibold text-sm text-gray-100 tracking-tight">NoteNest</span>
-              <ChevronDown className="w-3.5 h-3.5 text-gray-400" />
+              <ChevronDown className={`w-3.5 h-3.5 text-gray-400 transition-transform duration-150 ${userMenuOpen ? 'rotate-180 text-purple-400' : ''}`} />
             </div>
           )}
         </div>
+
+        {/* User Account & Logout Dropdown Menu */}
+        {userMenuOpen && (
+          <>
+            <div
+              className="fixed inset-0 z-40"
+              onClick={() => setUserMenuOpen(false)}
+            />
+            <div className="absolute top-14 left-3 w-56 bg-[#161622] border border-[#2b2b3e] rounded-md shadow-2xl z-50 py-1 text-xs animate-in fade-in zoom-in-95 duration-100">
+              <div className="px-3 py-2 border-b border-[#242436]">
+                <div className="font-semibold text-gray-100 truncate">{displayName}</div>
+                <div className="text-[11px] text-gray-400 truncate">{user?.email || 'Logged in'}</div>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => {
+                  setUserMenuOpen(false);
+                  if (onOpenSettings) onOpenSettings();
+                  else onSelectNav?.('settings');
+                }}
+                className="w-full flex items-center gap-2.5 px-3 py-2 text-gray-300 hover:text-white hover:bg-[#202030] transition-colors text-left"
+              >
+                <Settings className="w-3.5 h-3.5 text-purple-400" />
+                <span>Account Settings</span>
+              </button>
+
+              <div className="h-[1px] bg-[#242436] my-1" />
+
+              <button
+                type="button"
+                onClick={() => {
+                  setUserMenuOpen(false);
+                  handleLogout();
+                }}
+                className="w-full flex items-center gap-2.5 px-3 py-2 text-red-400 hover:text-red-300 hover:bg-red-950/30 transition-colors text-left font-medium"
+              >
+                <LogOut className="w-3.5 h-3.5" />
+                <span>Log Out</span>
+              </button>
+            </div>
+          </>
+        )}
 
         {onToggleCollapse && !isCollapsed && (
           <button
@@ -682,24 +732,44 @@ export const EditorSidebar = ({
         {/* Action icons */}
         <div className="flex items-center justify-between text-gray-400 pt-1">
           <button
-            onClick={onOpenSettings}
-            className="p-1.5 rounded-[3px] hover:text-gray-200 hover:bg-[#1c1c28] flex items-center gap-2"
+            onClick={() => {
+              if (onOpenSettings) onOpenSettings();
+              onSelectNav?.('settings');
+              onSelectFolder?.(null);
+              onSelectTag?.(null);
+            }}
+            className={`p-1.5 px-2.5 rounded-lg flex items-center gap-2 transition-all ${
+              activeNav === 'settings'
+                ? 'bg-purple-900/40 text-purple-200 border border-purple-500/40 font-medium shadow-sm shadow-purple-950/40'
+                : 'text-gray-400 hover:text-gray-200 hover:bg-[#1c1c28]'
+            }`}
             title="Settings"
           >
-            <Settings className="w-4 h-4" />
+            <Settings className={`w-4 h-4 ${activeNav === 'settings' ? 'text-purple-400' : ''}`} />
             {!isCollapsed && <span>Settings</span>}
           </button>
 
-          {!isCollapsed && (
+          <div className="flex items-center gap-1">
             <button
-              onClick={() => alert('NoteNest Help & Shortcuts: Cmd+K for search, Cmd+S to save')}
-              className="p-1.5 rounded-[3px] hover:text-gray-200 hover:bg-[#1c1c28] flex items-center gap-2"
-              title="Help & Shortcuts"
+              onClick={handleLogout}
+              className="p-1.5 rounded-lg hover:text-red-400 hover:bg-red-950/30 flex items-center gap-1.5 transition-colors text-gray-400"
+              title="Log Out"
             >
-              <HelpCircle className="w-4 h-4" />
-              <span>Help</span>
+              <LogOut className="w-4 h-4 text-red-400/80" />
+              {!isCollapsed && <span className="hover:text-red-300">Logout</span>}
             </button>
-          )}
+
+            {!isCollapsed && (
+              <button
+                onClick={() => alert('NoteNest Help & Shortcuts: Cmd+K for search, Cmd+S to save')}
+                className="p-1.5 rounded-lg hover:text-gray-200 hover:bg-[#1c1c28] flex items-center gap-1.5 transition-colors text-gray-400"
+                title="Help & Shortcuts"
+              >
+                <HelpCircle className="w-4 h-4" />
+                <span>Help</span>
+              </button>
+            )}
+          </div>
         </div>
       </div>
     </aside>

@@ -12,6 +12,24 @@ export const settingsService = {
   },
 
   async updateAvatar(avatar) {
+    if (avatar instanceof FormData) {
+      const response = await api.post('/users/avatar', avatar, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
+      return response.data;
+    }
+    if (typeof avatar === 'string') {
+      const response = await api.post('/users/avatar', { avatar });
+      return response.data;
+    }
+    if (avatar instanceof File || avatar instanceof Blob) {
+      const formData = new FormData();
+      formData.append('avatar', avatar);
+      const response = await api.post('/users/avatar', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
+      return response.data;
+    }
     const response = await api.post('/users/avatar', { avatar });
     return response.data;
   },
@@ -22,6 +40,20 @@ export const settingsService = {
   },
 
   async updateCover(coverImage) {
+    if (coverImage instanceof FormData) {
+      const response = await api.post('/users/cover', coverImage, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
+      return response.data;
+    }
+    if (coverImage instanceof File || coverImage instanceof Blob) {
+      const formData = new FormData();
+      formData.append('cover', coverImage);
+      const response = await api.post('/users/cover', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
+      return response.data;
+    }
     const response = await api.post('/users/cover', { coverImage });
     return response.data;
   },

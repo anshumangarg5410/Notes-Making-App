@@ -95,7 +95,7 @@ class UserController {
               try { fs.unlinkSync(req.file.path); } catch (_) {}
             }
           } catch (cloudErr) {
-            console.warn('Cloudinary upload failed, using local storage:', cloudErr.message);
+            console.warn('Cloudinary upload failed, using local storage fallback:', cloudErr.message);
             avatarUrl = `/uploads/${req.file.filename}`;
           }
         } else {
@@ -109,6 +109,7 @@ class UserController {
             });
             avatarUrl = uploadResult?.secure_url || req.body.avatar;
           } catch (cloudErr) {
+            console.warn('Cloudinary upload failed for data URI:', cloudErr.message);
             avatarUrl = req.body.avatar;
           }
         } else {
@@ -116,17 +117,40 @@ class UserController {
         }
       }
 
+      if (!avatarUrl) {
+        return res.status(400).json({
+          success: false,
+          message: 'No avatar image was provided.'
+        });
+      }
+
       const user = await User.findById(req.user.id);
       if (!user) return res.status(404).json({ success: false, message: 'User not found' });
 
-      user.avatar = avatarUrl || user.avatar || '';
-      user.avatarUrl = avatarUrl || user.avatarUrl || '';
+      user.avatar = avatarUrl;
+      user.avatarUrl = avatarUrl;
       await user.save();
+
+      const userPayload = {
+        id: user._id.toString(),
+        name: user.name,
+        email: user.email,
+        username: user.username ? `@${user.username}` : `@${user.name.toLowerCase().replace(/\s+/g, '')}`,
+        bio: user.bio,
+        avatar: user.avatar,
+        coverImage: user.coverImage || '',
+        plan: user.plan || 'Pro Plan',
+        preferences: user.preferences
+      };
 
       res.status(200).json({
         success: true,
         message: 'Avatar updated successfully',
-        data: { avatar: user.avatar }
+        data: {
+          avatar: user.avatar,
+          user: userPayload
+        },
+        user: userPayload
       });
     } catch (error) {
       next(error);
@@ -142,9 +166,25 @@ class UserController {
       user.avatarUrl = '';
       await user.save();
 
+      const userPayload = {
+        id: user._id.toString(),
+        name: user.name,
+        email: user.email,
+        username: user.username ? `@${user.username}` : `@${user.name.toLowerCase().replace(/\s+/g, '')}`,
+        bio: user.bio,
+        avatar: '',
+        coverImage: user.coverImage || '',
+        preferences: user.preferences
+      };
+
       res.status(200).json({
         success: true,
-        message: 'Avatar removed successfully'
+        message: 'Avatar removed successfully',
+        data: {
+          avatar: '',
+          user: userPayload
+        },
+        user: userPayload
       });
     } catch (error) {
       next(error);
@@ -153,7 +193,33 @@ class UserController {
 
   async updateCover(req, res, next) {
     try {
-      const coverUrl = req.file ? `/uploads/${req.file.filename}` : req.body?.coverImage;
+      let coverUrl = '';
+
+      if (req.file) {
+        if (isCloudinaryConfigured()) {
+          try {
+            const uploadResult = await uploadToCloudinary(req.file.path, {
+              folder: 'notenest/covers',
+              transformation: [
+                { width: 1200, height: 400, crop: 'fill' },
+                { quality: 'auto', fetch_format: 'auto' }
+              ]
+            });
+            if (uploadResult?.secure_url) {
+              coverUrl = uploadResult.secure_url;
+              try { fs.unlinkSync(req.file.path); } catch (_) {}
+            }
+          } catch (cloudErr) {
+            console.warn('Cloudinary cover upload failed, using local storage fallback:', cloudErr.message);
+            coverUrl = `/uploads/${req.file.filename}`;
+          }
+        } else {
+          coverUrl = `/uploads/${req.file.filename}`;
+        }
+      } else if (req.body?.coverImage) {
+        coverUrl = req.body.coverImage;
+      }
+
       const user = await User.findById(req.user.id);
       if (!user) return res.status(404).json({ success: false, message: 'User not found' });
 
@@ -163,7 +229,9 @@ class UserController {
       res.status(200).json({
         success: true,
         message: 'Cover image updated successfully',
-        data: { coverImage: user.coverImage }
+        data: {
+          coverImage: user.coverImage
+        }
       });
     } catch (error) {
       next(error);

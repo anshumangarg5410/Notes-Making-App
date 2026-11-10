@@ -43,8 +43,9 @@ export const ProfileSettings = ({
   const handleAvatarChange = async (avatarUrl) => {
     try {
       const res = await settingsService.updateAvatar(avatarUrl);
-      if (res.user && onUserUpdate) {
-        onUserUpdate(res.user);
+      const updatedUser = res.user || res.data?.user || (res.data?.avatar ? { ...user, avatar: res.data.avatar } : null);
+      if (updatedUser && onUserUpdate) {
+        onUserUpdate(updatedUser);
       }
       success('Avatar updated successfully');
     } catch (err) {
@@ -55,8 +56,9 @@ export const ProfileSettings = ({
   const handleAvatarRemove = async () => {
     try {
       const res = await settingsService.removeAvatar();
-      if (res.user && onUserUpdate) {
-        onUserUpdate(res.user);
+      const updatedUser = res.user || res.data?.user || { ...user, avatar: '' };
+      if (updatedUser && onUserUpdate) {
+        onUserUpdate(updatedUser);
       }
       success('Avatar removed');
     } catch (err) {

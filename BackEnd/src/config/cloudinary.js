@@ -1,3 +1,5 @@
+const path = require('path');
+require('dotenv').config({ path: path.resolve(__dirname, '../../.env') });
 const cloudinary = require('cloudinary').v2;
 const fs = require('fs');
 
@@ -22,8 +24,9 @@ const isCloudinaryConfigured = () => {
   const name = process.env.CLOUDINARY_CLOUD_NAME;
   const key = process.env.CLOUDINARY_API_KEY;
   const secret = process.env.CLOUDINARY_API_SECRET;
+  const preset = process.env.CLOUDINARY_UPLOAD_PRESET;
 
-  return Boolean(
+  const hasSignedCreds = Boolean(
     name &&
     key &&
     secret &&
@@ -33,6 +36,15 @@ const isCloudinaryConfigured = () => {
     !key.includes('your_') &&
     !name.includes('your_')
   );
+
+  const hasUnsignedCreds = Boolean(
+    name &&
+    preset &&
+    name.trim() !== '' &&
+    preset.trim() !== ''
+  );
+
+  return hasSignedCreds || hasUnsignedCreds;
 };
 
 // Uploads a file (filepath, buffer, or base64 data URI) to Cloudinary
@@ -49,6 +61,16 @@ const uploadToCloudinary = async (fileSource, options = {}) => {
       { quality: 'auto', fetch_format: 'auto' }
     ]
   };
+
+  const key = process.env.CLOUDINARY_API_KEY;
+  const preset = options.upload_preset || process.env.CLOUDINARY_UPLOAD_PRESET;
+
+  if (!key && preset) {
+    return await cloudinary.uploader.unsigned_upload(fileSource, preset, {
+      ...defaultOptions,
+      ...options
+    });
+  }
 
   return await cloudinary.uploader.upload(fileSource, {
     ...defaultOptions,

@@ -1,555 +1,514 @@
-# Notely — Complete Architecture & Developer Guide
+# NoteNest — Modern Editorial Knowledge Workspace
 
-> **Write • Organize • Think**  
-> A full-stack, editorial note-taking and knowledge base application built with the **MERN** stack (MongoDB, Express, React, Node.js), styled with Tailwind CSS, and powered by TipTap for rich-text editing.
+> **Think • Write • Organize • Sync**  
+> A full-stack, offline-first editorial workspace built with the **MERN** stack (MongoDB, Express, React, Node.js), powered by **TipTap v2** for rich text, **Dexie.js (IndexedDB)** for offline-first synchronization, and styled in a sleek **Midnight Obsidian & Electric Indigo** design system.
 
 ---
 
 ## 📑 Table of Contents
-1. [Overview & Demo Credentials](#-overview--demo-credentials)
-2. [Tech Stack Breakdown & Why Each Was Chosen](#-tech-stack-breakdown)
-3. [End-to-End System Architecture](#-end-to-end-system-architecture)
-4. [How Everything Works (Flowcharts)](#-how-everything-works-flowcharts)
-   - [Authentication & Registration Flow](#1-authentication--registration-flow)
-   - [Note Creation & Debounced Autosave Flow](#2-note-creation--debounced-autosave-flow)
-   - [Filtering, Searching & Soft-Delete (Trash) Flow](#3-filtering-searching--soft-delete-trash-flow)
-5. [What Is Done Where (Directory Map)](#-what-is-done-where-directory-map)
-6. [Database Models & Schema Design](#-database-models--schema-design)
-7. [API Reference & Payload Validation](#-api-reference)
-8. [Beginner's Guide: How to Build This from Scratch](#-beginners-guide-how-to-build-this-from-scratch)
-9. [Installation & Setup](#-installation--setup)
-10. [Database Seeding & Reset](#-database-seeding--reset)
-11. [Automated Testing Suite](#-automated-testing-suite)
-12. [Authors & License](#-authors--license)
+1. [Overview & Feature Highlights](#-overview--feature-highlights)
+2. [Interactive Feature Matrix](#-interactive-feature-matrix)
+3. [Tech Stack Breakdown](#-tech-stack-breakdown)
+4. [System Architecture](#-system-architecture)
+5. [Core Workflows & Sequence Diagrams](#-core-workflows--sequence-diagrams)
+   - [1. Authentication & Session Flow](#1-authentication--session-flow)
+   - [2. Debounced Autosave & Offline Sync Engine](#2-debounced-autosave--offline-sync-engine)
+   - [3. Recursive Folder & Subfolder Tree](#3-recursive-folder--subfolder-tree)
+   - [4. Safe Trash & Recovery Lifecycle](#4-safe-trash--recovery-lifecycle)
+6. [Codebase Directory Map](#-codebase-directory-map)
+7. [Database Models & Schema Design](#-database-models--schema-design)
+8. [Comprehensive API Reference](#-comprehensive-api-reference)
+9. [Installation & Local Setup](#-installation--local-setup)
+10. [Environment Variables](#-environment-variables)
+11. [Database Seeding & Reset](#-database-seeding--reset)
+12. [Automated Testing Suite](#-automated-testing-suite)
+13. [Team & License](#-team--license)
 
 ---
 
-## 🎯 Overview & Demo Credentials
+## 🎯 Overview & Feature Highlights
 
-Notely combines the sleek aesthetic of modern developer workspaces (**Electric Indigo & Midnight Obsidian**, inspired by Linear and Raycast) with rock-solid full-stack web engineering:
-- **Instant Debounced Autosave**: Automatic background saving as you type (750ms debounce) with real-time status indicators (*Saved*, *Saving...*, *Unsaved changes*).
-- **Rich-Text Canvas**: Headings (H1–H3), bold, italic, underline, strike, blockquotes, bullet lists, ordered lists, task checkboxes, code blocks, tables, and links powered by TipTap.
-- **Organization & Filtering**: Pinned notes, favorites, categories/tags (`Study`, `Work`, `Personal`, `Ideas`), color-coded cards, and an archive/trash lifecycle.
-- **One-Click Note Duplication**: Rapid cloning of any note with title suffixes and preserved tags/canvas styling.
-- **Export to Markdown & Plain Text**: Download notes as `.md` or `.txt` directly from the editor.
-- **Live Document Metrics**: Live stats bar calculating word count, character count, and estimated reading time.
-- **Bulk Trash Cleanup**: Single-click Empty Trash endpoint with client-side confirmation dialog.
-- **Payload Validation**: Strict validation middleware on note creation and updates (title length, allowed colors, and tag counts).
-- **Strict User Privacy**: Every note query enforces user ownership at the database layer; User A can never inspect or mutate User B's notes.
-- **Complete Website & Landing Page**: Modern, Notion/Strut-inspired landing page with interactive category boards, quick AI brainstorming companion, hero CTAs, and unified navigation.
-- **Dedicated Notes Dashboard**: Full-screen workspace (`/notes`) supporting real-time CRUD, delete confirmation dialogs, quick add note triggers, and actionable empty states.
-- **Curated Clipart Pack**: Integrated sticker illustrations (`hero-student`, `notebook-mascot`, `cloud-sync`, `doc-card`, etc.) with transparent alpha channels and structured asset inventory.
-- **Fault Tolerance**: Wrapped in a top-level React `ErrorBoundary` for smooth error recovery without crashes.
+NoteNest brings the speed, fluidity, and aesthetics of modern developer workspaces (inspired by Linear, Raycast, and Obsidian) into a full-featured web app:
 
-### Ready-to-use Demo Account
-| Credential | Value |
-| :--- | :--- |
-| **Email** | `demo@notely.com` |
-| **Password** | `password123` |
-| **Sample Notes** | 7 pre-populated notes with tags, colors, checklists, and rich formatting |
+- **⚡ Offline-First Architecture**: Built on **Dexie.js (IndexedDB)**. Create, edit, and organize notes completely offline. As soon as you reconnect, your local pending queue automatically synchronizes with MongoDB Atlas.
+- **✍️ TipTap v2 Rich Text Suite**: Headless ProseMirror-based WYSIWYG canvas supporting headings (H1–H3), bold, italic, underline, strikethrough, inline code, code blocks, blockquotes, interactive tables, task checklists, bullet/numbered lists, links, and image uploads.
+- **🗂️ Recursive Hierarchical Folders**: Multi-level folder and subfolder hierarchy with expand/collapse states, hover `+` inline subfolder creation, and safe per-folder or per-subfolder `🗑` deletion (contained notes automatically move to root).
+- **📌 Live Note Lifecycle**: Real-time pin-to-top sorting, golden star favorites filter, custom category tags (`#projects`, `#system-design`, `#dbms`), and instant search with keyword matching.
+- **☁️ Cloudinary Media Integration**: Cloud-based storage for user avatars and embedded document assets with automatic smart cropping and CDN delivery.
+- **📑 Multi-Tab Workspace**: Open multiple notes side-by-side in top tabs, switch between active drafts effortlessly, and view live document analytics (word count, character count, reading time).
+- **🛡️ Rock-Solid Security**: JWT authentication delivered via HTTP-only cookies and bearer tokens, bcrypt password hashing, and endpoint rate limiting.
+- **🎨 Obsidian Dark & Light Themes**: Deep Obsidian palette (`#13131b`, `#0d0d14`) paired with vibrant Electric Indigo and purple accents (`#9333ea`, `#a855f7`).
+
+---
+
+## 📊 Interactive Feature Matrix
+
+| Category | Capability | Status | Description |
+| :--- | :--- | :---: | :--- |
+| **Editor Canvas** | Headings (H1, H2, H3, P) | ✅ | Block formatting dropdown with live selection feedback |
+| | Rich Text Formatting | ✅ | Bold, Italic, Underline, Strikethrough, Code |
+| | Tables & Grids | ✅ | 3x3 table insertion with column/row controls |
+| | Interactive Checklists | ✅ | Checkable task list items with strike-through completion |
+| | Media & Images | ✅ | File upload, image URL insertion, paste, and drag & drop |
+| | Hyperlinks | ✅ | Interactive URL modal with link edit & remove |
+| | Undo / Redo | ✅ | Full history stack management |
+| **Workspace UI** | Multi-Tab Interface | ✅ | Open, switch, and close active note tabs |
+| | Live Status Indicators | ✅ | 4-state badges: `Saved` (green), `Saving...` (amber), `Unsaved`, `Offline` (blue) |
+| | Document Inspector | ✅ | Word count, character count, and estimated reading time |
+| | Workspace Sidebar | ✅ | Collapsible left drawer, quick views, and user avatar initials |
+| **Folders & Tree** | Top-Level Folders | ✅ | Inline root folder creation directly from sidebar header |
+| | Subfolders | ✅ | Create nested subfolders on hover with inline name input |
+| | Expand / Collapse | ✅ | Chevron toggles for viewing deep folder branches |
+| | Safe Deletion | ✅ | Delete specific subfolder with confirmation; notes safely move to root |
+| | Dynamic Counts | ✅ | Real-time note counts computed per folder and subfolder |
+| **Organization** | Pinned Notes | ✅ | Priority floating of pinned notes to the top of list views |
+| | Favorites Filter | ✅ | Dedicated star-filtered view for critical notes |
+| | Multi-Tag Taxonomy | ✅ | Quick tag filtering (`#projects`, `#ui-ux`, `#go`, etc.) |
+| | Instant Search | ✅ | Instant client-side & server-side regex title and content search |
+| **Trash & Recovery**| Two-Stage Deletion | ✅ | Soft-delete to Trash bin; active notes protected |
+| | Restore Notes | ✅ | Single-click note restoration to original folder |
+| | Permanent Deletion | ✅ | Irreversible document removal from local & cloud database |
+| | Empty Trash | ✅ | One-click purge of all soft-deleted items |
+| **Cloud & Offline**| Offline-First Storage | ✅ | Full Dexie (IndexedDB) caching and transaction queue |
+| | Background Sync | ✅ | Automatic synchronization upon `online` network event |
+| | Cloudinary CDN | ✅ | User avatar upload, smart cropping, and cloud CDN hosting |
 
 ---
 
 ## 🛠 Tech Stack Breakdown
 
-### Frontend
-| Technology | Role | Why It Was Chosen |
-| :--- | :--- | :--- |
-| **React 18** | UI Framework | Component-based view architecture, hooks, and clean state synchronization. |
-| **Vite** | Bundler & Dev Server | Lightning-fast Hot Module Replacement (HMR) and optimized ES build outputs. |
-| **Tailwind CSS** | Styling System | Utility-first CSS allowing custom design tokens (`cream`, `charcoal`, `terracotta`) and effortless dark mode support. |
-| **TipTap v2** | Rich-Text Engine | Headless, ProseMirror-based rich-text editor that stores clean JSON AST documents instead of messy raw HTML strings. |
-| **React Router v7** | Routing | Client-side routing with `ProtectedRoute` guards for authenticated workspace access. |
-| **Axios** | HTTP Client | Request/response interceptors to automatically attach JWT headers and handle 401 session expirations. |
-| **Lucide React** | Icons | Consistent, featherweight iconography. |
-| **Context API** | State Management | Native React state management for `AuthContext`, `ThemeContext`, and `ToastContext` without excessive external libraries. |
-| **Error Boundary** | Fault Tolerance | Component-level error handling catching rendering errors with graceful reload options. |
+### Frontend Architecture
+- **React 18** — Component-driven declarative UI with hooks and state isolation.
+- **Vite 6** — Ultra-fast ES build pipeline and Hot Module Replacement (HMR).
+- **TipTap v2 (`@tiptap/react`, `@tiptap/pm`)** — ProseMirror-based modular rich text engine storing clean JSON AST documents.
+- **Dexie.js** — High-performance IndexedDB wrapper powering offline-first operations.
+- **Tailwind CSS** — Utility-first styling with Midnight Obsidian and Electric Indigo tokens.
+- **React Router v7** — Declarative SPA navigation and protected workspace routing.
+- **Axios** — HTTP client configured with request/response interceptors for JWT management.
+- **Lucide React** — Featherweight vector iconography.
 
-### Backend
-| Technology | Role | Why It Was Chosen |
-| :--- | :--- | :--- |
-| **Node.js** | Runtime Environment | High-performance asynchronous, event-driven JavaScript engine. |
-| **Express.js** | Web Framework | Minimalist routing, middleware chaining, and robust JSON API architecture. |
-| **MongoDB & Mongoose** | Database & ODM | Flexible document-oriented JSON schema ideal for storing rich-text trees (`Mixed`), arrays of tags, and nested content. |
-| **JSON Web Tokens (JWT)** | Authentication | Stateless authentication signed with a secret key; delivered via HTTP-only cookies and Authorization headers. |
-| **bcryptjs** | Password Hashing | Secure one-way hashing with 10 salt rounds to protect user passwords against rainbow-table attacks. |
-| **express-rate-limit** | Security | Protects authentication endpoints against automated brute-force attacks. |
-| **cookie-parser** | Middleware | Parses HTTP cookies for seamless cookie-based JWT sessions. |
-| **Jest & Supertest** | Automated Testing | Comprehensive unit and API integration testing suite validating auth, notes, validation, and error edge cases. |
+### Backend Architecture
+- **Node.js & Express.js** — Event-driven RESTful API server.
+- **MongoDB Atlas & Mongoose** — Flexible document store for notes, folders, and user accounts.
+- **Cloudinary SDK** — Media upload, transformation, and asset delivery pipeline.
+- **JSON Web Tokens (JWT)** — Stateless user sessions via cookies and bearer headers.
+- **bcryptjs** — Strong cryptographic password hashing with 10 salt rounds.
+- **express-rate-limit** — Rate limiting middleware preventing credential brute-forcing.
+- **Jest & Supertest** — Automated testing suite verifying auth, CRUD, and edge cases.
 
 ---
 
-## 🏗 End-to-End System Architecture
+## 🏗 System Architecture
 
 ```mermaid
 flowchart TB
-    subgraph Client ["Client Browser (React + Vite)"]
-        UI["UI Layer\n(Sidebar • NoteList • NoteEditor)"]
-        CTX["Context State\n(AuthContext • ThemeContext • ToastContext)"]
-        API_SVC["API Services (Axios)\n(authService.js • noteService.js)"]
-        LOCAL["Browser Storage\n(localStorage: theme, token backup)"]
-        
-        UI --> CTX
-        CTX --> API_SVC
-        API_SVC <--> LOCAL
+    subgraph Client ["Client Browser (React 18 + Vite)"]
+        UI["Editor Workspace UI\n(EditorSidebar • NotesExplorer • RichTextEditor • TabBar)"]
+        DEXIE[("Dexie.js (IndexedDB)\nLocal Notes • Folders • Sync Queue")]
+        STATE["Global State Layer\n(AuthContext • ThemeContext • ToastContext)"]
+        CLIENT_SVC["Services Layer\n(noteService • folderService • offlineService)"]
+
+        UI <--> DEXIE
+        UI <--> STATE
+        STATE <--> CLIENT_SVC
+        CLIENT_SVC <--> DEXIE
     end
 
-    subgraph Network ["HTTP / HTTPS"]
-        REQ["REST API Calls + Bearer Token / HTTP Cookie"]
+    subgraph Network ["HTTP REST & WebSocket / Online Events"]
+        HTTP_REQ["REST API Calls (Bearer Token / Cookies)"]
+        SYNC_EVT["Auto Background Sync Queue"]
     end
 
-    subgraph Server ["Backend (Node.js + Express)"]
-        MW["Middleware Pipeline\n(CORS, CookieParser, RateLimiter, Morgan)"]
-        AUTH_MW["authMiddleware.js\n(JWT Verification & User Extraction)"]
-        ROUTERS["Routers\n(/api/auth • /api/notes • /api/users • /api/health)"]
-        CTRL["Controllers\n(authController • noteController • userController)"]
-        MODELS["Mongoose Models\n(User.js • Note.js)"]
+    subgraph Server ["Backend API (Node.js + Express)"]
+        MW["Middleware\n(CORS • RateLimiter • CookieParser • AuthGuard)"]
+        ROUTERS["Routers\n(/api/auth • /api/notes • /api/folders • /api/users)"]
+        CTRL["Controllers\n(note.controller • folder.controller • user.controller)"]
+        SVC["Service Layer\n(note.service • folder.service • user.service)"]
+        CLOUD_CFG["Cloudinary Service\n(Profile Avatars & Media CDN)"]
 
-        MW --> ROUTERS
-        ROUTERS --> AUTH_MW
-        AUTH_MW --> CTRL
-        CTRL --> MODELS
+        MW --> ROUTERS --> CTRL --> SVC
+        CTRL --> CLOUD_CFG
     end
 
-    subgraph Database ["MongoDB Database (Atlas / Local)"]
-        USERS_COL[("users Collection\n{ name, email, passwordHash }")]
-        NOTES_COL[("notes Collection\n{ userId, title, content, tags, ... }")]
-        
-        MODELS --> USERS_COL
-        MODELS --> NOTES_COL
+    subgraph Storage ["Cloud Infrastructure"]
+        MONGO_DB[("MongoDB Atlas\n(users • notes • folders • activities)")]
+        CLOUDINARY_CDN[("Cloudinary Cloud\n(Profile Images & Media Assets)")]
     end
 
-    API_SVC <==> REQ <==> MW
+    CLIENT_SVC <==> HTTP_REQ <==> MW
+    CLIENT_SVC -. "Auto Sync" .-> SYNC_EVT -.-> MW
+    SVC <==> MONGO_DB
+    CLOUD_CFG <==> CLOUDINARY_CDN
 ```
 
 ---
 
-## 🔄 How Everything Works (Flowcharts)
+## 🔄 Core Workflows & Sequence Diagrams
 
-### 1. Authentication & Registration Flow
-
-How a user creates an account or logs in, receives a secure token, and gets redirected to the workspace:
+### 1. Authentication & Session Flow
 
 ```mermaid
 sequenceDiagram
     autonumber
     actor User as User Browser
-    participant FE as React Frontend (LoginPage / RegisterPage)
+    participant FE as React Frontend (AuthModal / LoginPage)
     participant AuthCtx as AuthContext
     participant BE as Express API (/api/auth)
     participant DB as MongoDB Atlas
 
-    User->>FE: Enter Name, Email, Password
-    FE->>BE: POST /api/auth/register (or /login)
-    
-    alt Registration Flow
-        BE->>DB: Check if email already exists
-        DB-->>BE: Email not found (proceed)
-        BE->>BE: Hash password with bcrypt (10 rounds)
-        BE->>DB: Create User document
-        BE->>DB: Seed 7 starter onboarding notes for user._id
-    else Login Flow
-        BE->>DB: Find User by email
-        DB-->>BE: Return user record
-        BE->>BE: Compare entered password with bcrypt hash
-    end
-
-    BE->>BE: Generate signed JWT token (expires in 7 days)
-    BE-->>FE: Return HTTP 200 { user, token } & Set-Cookie
-    FE->>AuthCtx: Store user in state & token in localStorage
-    FE->>User: Toast notification & Redirect to /workspace
+    User->>FE: Enter Email & Password
+    FE->>BE: POST /api/auth/login
+    BE->>DB: Find user by lowercase email
+    DB-->>BE: Return user record with passwordHash
+    BE->>BE: Verify bcrypt password hash
+    BE->>BE: Sign JWT token (7-day validity)
+    BE-->>FE: HTTP 200 { user, token } + Set-Cookie
+    FE->>AuthCtx: Store user state & token
+    FE->>User: Toast notification & access to /workspace
 ```
 
 ---
 
-### 2. Note Creation & Debounced Autosave Flow
-
-How typing in the rich-text editor automatically and safely saves to the cloud without hammering the server:
+### 2. Debounced Autosave & Offline Sync Engine
 
 ```mermaid
 sequenceDiagram
     autonumber
     actor User as User Typing
-    participant Editor as TipTap Canvas (NoteEditor.jsx)
-    participant Timer as Debounce Timer (750ms)
-    participant NoteSvc as noteService.js
-    participant API as Express API (/api/notes/:id)
-    participant DB as MongoDB Atlas
+    participant Canvas as RichTextEditor (TipTap)
+    participant LocalDB as Dexie (IndexedDB)
+    participant Timer as 750ms Debounce Timer
+    participant Backend as Express API (/api/notes/:id)
+    participant CloudDB as MongoDB Atlas
 
-    User->>Editor: Types characters or formats text
-    Editor->>Editor: Update local TipTap state
-    Editor->>Editor: Set status badge to "Unsaved changes"
-    
-    Editor->>Timer: Reset / Start 750ms debounce countdown
-    Note over Timer: If user types again within 750ms, timer restarts
-    
-    Timer->>Editor: Timer fires after 750ms of inactivity
-    Editor->>Editor: Set status badge to "Saving..."
-    Editor->>NoteSvc: updateNote(id, { title, content, plainText })
-    NoteSvc->>API: PUT /api/notes/:id (Bearer Token attached)
-    
-    API->>API: authMiddleware verifies JWT -> req.user._id
-    API->>DB: Note.findOneAndUpdate({ _id: id, userId: req.user._id }, updates)
-    DB-->>API: Updated note document confirmed
-    API-->>NoteSvc: 200 OK { success: true, data: note }
-    NoteSvc-->>Editor: Save resolved
-    Editor->>Editor: Set status badge to "Saved"
+    User->>Canvas: Types content / modifies formatting
+    Canvas->>Canvas: Set badge: "Unsaved changes"
+    Canvas->>LocalDB: Put note locally (instant offline save)
+    Canvas->>Timer: Reset & trigger 750ms countdown
+
+    alt User keeps typing within 750ms
+        Timer->>Timer: Reset timer countdown
+    else User pauses typing (> 750ms)
+        Timer->>Canvas: Countdown completes
+        Canvas->>Canvas: Set badge: "Saving..."
+        
+        alt Network Online
+            Canvas->>Backend: PUT /api/notes/:id
+            Backend->>CloudDB: Note.findOneAndUpdate()
+            CloudDB-->>Backend: Confirmed updated document
+            Backend-->>Canvas: HTTP 200 OK
+            Canvas->>Canvas: Set badge: "Saved"
+        else Network Offline
+            Canvas->>LocalDB: Add to syncQueue table (action: 'upsert')
+            Canvas->>Canvas: Set badge: "Offline (Saved locally)"
+            Note over Canvas,LocalDB: Syncs automatically upon reconnection
+        end
+    end
 ```
 
 ---
 
-### 3. Filtering, Searching & Soft-Delete (Trash) Flow
-
-How notes are organized, archived, searched, and recovered:
+### 3. Recursive Folder & Subfolder Tree
 
 ```mermaid
-flowchart LR
-    A["Active Note\n(isDeleted: false, isArchived: false)"] 
+flowchart TD
+    RootSection["FOLDERS Sidebar Header [+]"]
     
-    A -- "Click Pin" --> B["Pinned Note (Top of list)"]
-    A -- "Click Favorite" --> C["Favorites View"]
-    A -- "Assign Tag" --> D["Category View\n(Study, Work, Personal, Ideas)"]
+    RootSection -- "Click '+'" --> NewRoot["Create Root Folder\n(parentId: null)"]
     
-    A -- "Click Archive" --> E["Archived Notes\n(isArchived: true)"]
-    E -- "Click Unarchive" --> A
+    NewRoot --> F1["📁 Projects (Root Folder)"]
+    NewRoot --> F2["📁 College (Root Folder)"]
+    NewRoot --> F3["📁 Personal (Root Folder)"]
     
-    A -- "Click Delete" --> F["Trash / Bin\n(isDeleted: true)"]
-    F -- "Click Restore" --> A
-    F -- "Click Delete Permanently" --> G[("Permanently Erased from DB\nNote.deleteOne")]
+    F1 -- "Hover '+'" --> NewSub["Create Subfolder\n(parentId: Projects._id)"]
+    NewSub --> SF1["↳ 📁 NoteNest (Subfolder)"]
+    NewSub --> SF2["↳ 📁 API Gateway (Subfolder)"]
+    
+    SF1 -- "Click 🗑" --> DelSub["Delete Subfolder Only\n(Notes safely moved to root)"]
+    F1 -- "Click 🗑" --> DelRoot["Delete Folder\n(Subfolders promoted, notes preserved)"]
 ```
 
 ---
 
-## 📂 What Is Done Where (Directory Map)
+### 4. Safe Trash & Recovery Lifecycle
 
-Here is where every feature lives across the codebase:
+```mermaid
+stateDiagram-v2
+    [*] --> Active: Create Note
+    Active --> Pinned: Pin to Top
+    Pinned --> Active: Unpin
+    Active --> Favorite: Star Note
+    Favorite --> Active: Unstar
+    Active --> Trash: Delete Note (Soft-Delete)
+    Pinned --> Trash: Delete Note
+    Favorite --> Trash: Delete Note
+    
+    Trash --> Active: Restore Note
+    Trash --> [*]: Delete Permanently (Hard-Delete)
+    Trash --> [*]: Empty Trash (Purge All)
+```
+
+---
+
+## 📂 Codebase Directory Map
 
 ```text
 NotesMaking/
 ├── BackEnd/
-│   ├── config/
-│   │   └── db.js                 # Database connection logic (reads MONGO_URI)
-│   ├── controllers/
-│   │   ├── authController.js     # Register, Login, Logout, getMe handlers
-│   │   ├── noteController.js     # CRUD, search, tags, pin, archive, trash, duplicate operations
-│   │   └── userController.js     # User profile updates and preferences
-│   ├── middleware/
-│   │   ├── auth.js               # Verifies JWT token and attaches req.user
-│   │   ├── errorHandler.js       # Centralized JSON error response handler
-│   │   ├── noteValidator.js      # Validates note title length, allowed colors, and tag limits
-│   │   └── rateLimiter.js        # Prevents brute-force requests on auth endpoints
-│   ├── models/
-│   │   ├── Note.js               # Note schema (title, TipTap content, tags, flags)
-│   │   └── User.js               # User schema (name, email, passwordHash)
-│   ├── routes/
-│   │   ├── authRoutes.js         # /api/auth routes
-│   │   ├── healthRoutes.js       # /api/health endpoint for uptime monitoring
-│   │   ├── noteRoutes.js         # /api/notes routes (all protected by auth)
-│   │   └── userRoutes.js         # /api/users routes
-│   ├── scripts/
-│   │   └── resetAndSeed.js       # Wipes database and seeds demo user & notes
-│   ├── tests/
-│   │   ├── auth.test.js          # Integration tests for registration, login, profile
-│   │   └── notes.test.js         # Integration tests for CRUD, duplicate, empty trash, validation
-│   ├── utils/
-│   │   ├── generateToken.js      # Creates signed JWT and sets HTTP-only cookies
-│   │   └── seedNotes.js          # Onboarding notes template builder
-│   ├── .env                      # Secret configuration (MONGO_URI, JWT_SECRET, PORT)
-│   ├── .env.example              # Template configuration for developers
-│   ├── package.json              # Backend dependencies & npm scripts (start, dev, seed, test)
-│   └── server.js                 # Express app initialization, middleware, and route mounting
+│   ├── src/
+│   │   ├── config/
+│   │   │   ├── cloudinary.js       # Cloudinary SDK init & auto-upload helper
+│   │   │   ├── db.js               # MongoDB Mongoose connection
+│   │   │   └── seed.js             # Demo database seeding logic
+│   │   ├── controllers/
+│   │   │   ├── auth.controller.js   # User register, login, session handlers
+│   │   │   ├── folder.controller.js # Folder CRUD, subfolders, move handlers
+│   │   │   ├── note.controller.js   # Note CRUD, duplicate, search, trash
+│   │   │   └── user.controller.js   # Profile update & avatar upload handlers
+│   │   ├── middleware/
+│   │   │   ├── authenticate.js     # JWT extraction & user auth verification
+│   │   │   ├── errorHandler.js     # Global HTTP error handling
+│   │   │   ├── noteValidator.js    # Payload validation rules
+│   │   │   ├── rateLimiter.js      # Brute-force endpoint protection
+│   │   │   └── uploadMiddleware.js # Multer file upload handler
+│   │   ├── models/
+│   │   │   ├── Activity.js         # User action audit logger
+│   │   │   ├── Folder.js           # Recursive folder schema with parentId
+│   │   │   ├── Note.js             # Note schema (TipTap JSON, tags, flags)
+│   │   │   └── User.js             # User account schema with passwordHash
+│   │   ├── routes/
+│   │   │   ├── auth.routes.js      # /api/auth endpoints
+│   │   │   ├── folder.routes.js    # /api/folders endpoints
+│   │   │   ├── health.routes.js    # /api/health uptime check
+│   │   │   ├── note.routes.js      # /api/notes endpoints
+│   │   │   └── user.routes.js      # /api/users profile & avatar endpoints
+│   │   ├── services/
+│   │   │   ├── auth.service.js     # Authentication business logic
+│   │   │   ├── folder.service.js   # Folder hierarchy & subfolder operations
+│   │   │   └── note.service.js     # Note persistence & query builder
+│   │   │   └── user.service.js     # User profile management
+│   │   └── server.js               # Express application initialization
+│   ├── .env.example                # Backend environment template
+│   ├── package.json                # Backend scripts & dependencies
+│   └── tests/                      # Jest & Supertest integration suite
 │
 ├── FrontEnd/
 │   ├── src/
 │   │   ├── components/
-│   │   │   ├── common/
-│   │   │   │   ├── ErrorBoundary.jsx         # Global error fallback component catching runtime errors
-│   │   │   │   ├── Header.jsx                # Top bar with search, dark mode toggle, profile
-│   │   │   │   └── LandscapeIllustration.jsx # Cosmic Obsidian Nebula vector illustration in sidebar
 │   │   │   ├── editor/
-│   │   │   │   ├── EditorToolbar.jsx         # Buttons for Bold, Italic, H1-H3, Lists, Tables
-│   │   │   │   └── NoteEditor.jsx            # TipTap editor with autosave, export, and live stats bar
-│   │   │   ├── modals/
-│   │   │   │   ├── ConfirmDialog.jsx         # Modal for permanent deletion confirmation
-│   │   │   │   ├── FilterModal.jsx           # Tag, category, and color filter picker
-│   │   │   │   └── SettingsModal.jsx         # User account preferences
-│   │   │   ├── notes/
-│   │   │   │   ├── NoteCard.jsx              # Individual note card in list with color, tags, options
-│   │   │   │   └── NoteList.jsx              # Searchable, grouped list of notes with empty trash bar
-│   │   │   └── sidebar/
-│   │   │       └── Sidebar.jsx               # Navigation folders (All, Favorites, Tags, Trash)
+│   │   │   │   ├── DocumentInspector.jsx # Document analytics & reading metrics
+│   │   │   │   ├── EditorLayout.jsx      # Primary 3-panel workspace container
+│   │   │   │   ├── EditorSidebar.jsx     # Navigation & recursive folder tree
+│   │   │   │   ├── EditorStatusBar.jsx   # Bottom metadata & online status bar
+│   │   │   │   ├── EditorTabBar.jsx      # Multi-note tab bar
+│   │   │   │   ├── EditorToolbar.jsx     # Full TipTap rich text formatting tools
+│   │   │   │   ├── NoteListItem.jsx      # Note preview card with pin/fav badges
+│   │   │   │   ├── NotesExplorer.jsx     # Searchable middle list panel
+│   │   │   │   └── RichTextEditor.jsx    # Core TipTap WYSIWYG editor canvas
+│   │   │   ├── landing/
+│   │   │   │   ├── AboutSection.jsx      # Landing feature highlights
+│   │   │   │   ├── HeroSection.jsx       # Interactive hero with CTAs
+│   │   │   │   ├── LandingFooter.jsx     # Application footer
+│   │   │   │   └── PencilNavbar.jsx      # Responsive navigation header
+│   │   │   └── modals/
+│   │   │       ├── AuthModal.jsx         # Login & Register modal dialog
+│   │   │       ├── ConfirmDialog.jsx     # Safe deletion confirmation modal
+│   │   │       └── SettingsModal.jsx     # Account & avatar upload modal
 │   │   ├── context/
-│   │   │   ├── AuthContext.jsx               # Global user authentication state
-│   │   │   ├── ThemeContext.jsx              # Light / Dark mode state & localStorage sync
-│   │   │   └── ToastContext.jsx              # Toast banner notifications (success, error)
-│   │   ├── pages/
-│   │   │   ├── LoginPage.jsx                 # User sign-in page
-│   │   │   ├── RegisterPage.jsx              # User registration page
-│   │   │   └── WorkspacePage.jsx             # Main 3-panel note-taking desktop interface
-│   │   ├── routes/
-│   │   │   └── ProtectedRoute.jsx            # Route wrapper preventing unauthenticated access
+│   │   │   ├── AuthContext.jsx           # Global user authentication state
+│   │   │   ├── ThemeContext.jsx          # Dark / Light theme provider
+│   │   │   └── ToastContext.jsx          # Interactive toast notification banners
 │   │   ├── services/
-│   │   │   ├── api.js                        # Axios base instance with token interceptors
-│   │   │   ├── authService.js                # API call wrappers for register, login, logout
-│   │   │   └── noteService.js                # API call wrappers for all note operations
-│   │   ├── App.jsx                           # Application routing, ErrorBoundary, & context providers
-│   │   ├── index.css                         # Tailwind CSS directives & Electric Indigo design tokens
-│   │   └── main.jsx                          # React DOM mount point
-│   ├── .env.example                          # Template for frontend environment
-│   ├── index.html                            # HTML entry point with Google Fonts
-│   ├── tailwind.config.js                    # Electric Indigo & Midnight Obsidian tokens & palette
-│   └── vite.config.js                        # Vite bundler configuration
+│   │   │   ├── api.js                    # Axios client with JWT interceptors
+│   │   │   ├── authService.js            # Auth API call wrappers
+│   │   │   ├── db.js                     # Dexie.js IndexedDB offline engine
+│   │   │   ├── folderService.js          # Folder & subfolder API client
+│   │   │   └── noteService.js            # Note CRUD & sync client
+│   │   ├── App.jsx                       # Routing & context tree
+│   │   └── main.jsx                      # React entry point
+│   ├── tailwind.config.js                # Midnight Obsidian theme tokens
+│   ├── vite.config.js                    # Vite configuration
+│   └── package.json                      # Frontend dependencies
 │
-├── .gitignore                                # Excludes node_modules, .env, and build artifacts
-├── package.json                              # Root package.json to run frontend & backend together
-└── README.md                                 # Complete documentation
+└── README.md                             # Complete project documentation
 ```
 
 ---
 
 ## 🗄 Database Models & Schema Design
 
-### 1. User Model (`BackEnd/models/User.js`)
+### 1. User Model (`BackEnd/src/models/User.js`)
 ```javascript
 {
   name: { type: String, required: true, trim: true },
   email: { type: String, required: true, unique: true, lowercase: true },
   passwordHash: { type: String, required: true },
-  avatarUrl: { type: String, default: '' },
+  avatar: { type: String, default: '' },       // Cloudinary CDN URL or local path
+  cloudinaryId: { type: String, default: '' }, // Cloudinary asset public ID
   createdAt: ISODate,
   updatedAt: ISODate
 }
 ```
-- **Security**: The `toJSON` transform automatically strips `passwordHash` and `__v` before sending responses to the client.
-- **Methods**: `matchPassword(enteredPassword)` compares passwords using `bcrypt.compare`.
 
-### 2. Note Model (`BackEnd/models/Note.js`)
+### 2. Folder Model (`BackEnd/src/models/Folder.js`)
 ```javascript
 {
   userId: { type: ObjectId, ref: 'User', required: true, index: true },
-  title: { type: String, default: 'Untitled Note', trim: true },
-  content: { type: mongoose.Schema.Types.Mixed, default: '' },   // TipTap JSON AST
-  plainText: { type: String, default: '', trim: true },         // Extracted for search
-  tags: [{ type: String }],                                     // e.g. ['Study', 'Work']
-  color: { 
-    type: String, 
-    default: 'default',
-    enum: ['default', 'cream', 'amber', 'rose', 'emerald', 'sky', 'purple'] 
-  },
-  icon: { type: String, default: 'document' },
+  name: { type: String, required: true, trim: true },
+  parentId: { type: ObjectId, ref: 'Folder', default: null }, // Null = root folder
+  color: { type: String, default: 'purple' },
+  icon: { type: String, default: 'folder' },
   isPinned: { type: Boolean, default: false },
-  isFavorite: { type: Boolean, default: false },
-  isArchived: { type: Boolean, default: false },
-  isDeleted: { type: Boolean, default: false },                 // Soft-delete (Trash)
   createdAt: ISODate,
   updatedAt: ISODate
 }
 ```
-- **Performance Indexes**:
-  - `{ userId: 1, isDeleted: 1, isArchived: 1, isPinned: -1, updatedAt: -1 }` (Rapid filtering of active notes)
-  - `{ title: 'text', plainText: 'text', tags: 'text' }` (Full-text search)
+
+### 3. Note Model (`BackEnd/src/models/Note.js`)
+```javascript
+{
+  userId: { type: ObjectId, ref: 'User', required: true, index: true },
+  folderId: { type: ObjectId, ref: 'Folder', default: null },
+  folder: { type: String, default: '' },
+  title: { type: String, default: 'Untitled Note', trim: true },
+  content: { type: mongoose.Schema.Types.Mixed, default: '' }, // TipTap JSON AST
+  plainText: { type: String, default: '', trim: true },       // Extracted for full-text search
+  tags: [{ type: String }],
+  isPinned: { type: Boolean, default: false },
+  isFavorite: { type: Boolean, default: false },
+  isDeleted: { type: Boolean, default: false },               // Soft-delete flag
+  createdAt: ISODate,
+  updatedAt: ISODate
+}
+```
 
 ---
 
-## 🔌 API Reference
+## 🔌 Comprehensive API Reference
 
-All protected endpoints require either an **HTTP-only cookie** (`token`) or an **`Authorization: Bearer <JWT>`** header.
+All protected routes require an HTTP-only cookie (`token`) or an `Authorization: Bearer <JWT>` header.
 
 ### Authentication Endpoints
 | Method | Endpoint | Access | Description |
 | :--- | :--- | :--- | :--- |
-| `POST` | `/api/auth/register` | Public | Create new account & seed starter notes |
-| `POST` | `/api/auth/login` | Public | Authenticate user & issue JWT token |
-| `POST` | `/api/auth/logout` | Public | Clears authentication cookie |
-| `GET` | `/api/auth/me` | Protected | Returns current authenticated user profile |
+| `POST` | `/api/auth/register` | Public | Register new user account & seed starter workspace |
+| `POST` | `/api/auth/login` | Public | Authenticate user & issue signed JWT |
+| `POST` | `/api/auth/logout` | Public | Clear authentication cookie |
+| `GET` | `/api/auth/me` | Protected | Fetch authenticated user profile |
 
 ### Notes Endpoints
 | Method | Endpoint | Access | Description |
 | :--- | :--- | :--- | :--- |
-| `GET` | `/api/notes` | Protected | Get all active notes (supports `?search=`, `?tag=`, `?folder=`) |
-| `GET` | `/api/notes/:id` | Protected | Fetch a single note by ID (user-isolated) |
-| `POST` | `/api/notes` | Protected | Create a new note |
-| `POST` | `/api/notes/:id/duplicate` | Protected | Duplicate note with '(Copy)' suffix & preserve tags/color |
-| `PUT` | `/api/notes/:id` | Protected | Update note title, content, color, or tags (autosave) |
-| `PATCH` | `/api/notes/:id/pin` | Protected | Toggle note pinned status |
-| `PATCH` | `/api/notes/:id/favorite` | Protected | Toggle note favorite status |
-| `PATCH` | `/api/notes/:id/archive` | Protected | Toggle note archive status |
+| `GET` | `/api/notes` | Protected | List all active notes (supports `?search=`, `?filter=`, `?folder=`) |
+| `GET` | `/api/notes/stats` | Protected | Fetch note metrics (`all`, `favorites`, `trash`) |
+| `GET` | `/api/notes/:id` | Protected | Fetch a single note document |
+| `POST` | `/api/notes` | Protected | Create a new note document |
+| `PUT` | `/api/notes/:id` | Protected | Update note title, content, or metadata (autosave) |
+| `PATCH` | `/api/notes/:id/pin` | Protected | Toggle pin-to-top status |
+| `PATCH` | `/api/notes/:id/favorite` | Protected | Toggle favorite status |
 | `PATCH` | `/api/notes/:id/trash` | Protected | Soft-delete note to trash (or restore) |
 | `DELETE` | `/api/notes/:id` | Protected | Permanently erase note from database |
-| `DELETE` | `/api/notes/trash/empty` | Protected | Empty all notes currently in trash |
+| `DELETE` | `/api/notes/trash/empty` | Protected | Empty all soft-deleted trash notes |
 
-### Note Payload Validation Rules (`noteValidator.js`)
-All incoming `POST /api/notes` and `PUT /api/notes/:id` payloads are checked before hitting controller logic:
-- **`title`**: String, trimmed, maximum length of 200 characters.
-- **`color`**: Optional string, must be one of: `['default', 'cream', 'amber', 'rose', 'emerald', 'sky', 'purple']`.
-- **`tags`**: Optional array of strings, maximum 20 tags per note, maximum 30 characters per tag.
-
-### System Endpoints
+### Folders & Subfolders Endpoints
 | Method | Endpoint | Access | Description |
 | :--- | :--- | :--- | :--- |
-| `GET` | `/api/health` | Public | Healthcheck returns server status & DB connection state |
+| `GET` | `/api/folders` | Protected | List all user folders & subfolder relationships |
+| `POST` | `/api/folders` | Protected | Create root folder or subfolder (`{ name, parentId }`) |
+| `GET` | `/api/folders/:id` | Protected | Fetch single folder by ID |
+| `PATCH` | `/api/folders/:id` | Protected | Rename folder or update color/icon |
+| `PATCH` | `/api/folders/:id/move` | Protected | Move folder under another parent (`{ parentId }`) |
+| `DELETE` | `/api/folders/:id` | Protected | Delete folder safely; contained notes move to root |
+
+### User Profile & Cloudinary Media Endpoints
+| Method | Endpoint | Access | Description |
+| :--- | :--- | :--- | :--- |
+| `PATCH` | `/api/users/profile` | Protected | Update name, username, or bio |
+| `POST` | `/api/users/profile/avatar` | Protected | Upload user avatar to Cloudinary CDN (multipart/form-data) |
+| `PUT` | `/api/users/password` | Protected | Update account password |
 
 ---
 
-## 🎓 Beginner's Guide: How to Build This from Scratch
-
-If you want to understand how this entire project was built and build it yourself from an empty folder, follow these 8 foundational stages:
-
-```mermaid
-flowchart TD
-    S1["Phase 1: Backend Foundation\nInitialize Node.js, Express, and CORS"] --> S2["Phase 2: Database Layer\nConnect MongoDB via Mongoose & define User and Note schemas"]
-    S2 --> S3["Phase 3: Secure Authentication\nImplement bcrypt hashing, JWT issuance, and auth middleware"]
-    S3 --> S4["Phase 4: Notes API Endpoints\nWrite user-scoped CRUD controllers and full-text search"]
-    S4 --> S5["Phase 5: Frontend Foundation\nSetup React with Vite, Tailwind CSS, and custom editorial palette"]
-    S5 --> S6["Phase 6: Global React Contexts\nBuild AuthContext, ThemeContext, and Axios interceptors"]
-    S6 --> S7["Phase 7: TipTap Rich-Text Editor\nIntegrate TipTap AST, custom toolbars, and 750ms debounced autosave"]
-    S7 --> S8["Phase 8: Polish & Three-Panel Workspace\nConnect Sidebar, NoteList, Card Filters, and Responsive Layout"]
-```
-
-### Phase 1: Initialize the Backend Server
-1. Create a `BackEnd` directory, run `npm init -y`, and install dependencies:
-   ```bash
-   npm install express mongoose dotenv cors cookie-parser jsonwebtoken bcryptjs morgan express-rate-limit
-   ```
-2. Create `server.js` to initialize Express, enable JSON parsing (`express.json()`), CORS, and mount your routes.
-
-### Phase 2: Connect MongoDB & Define Schemas
-1. Create `config/db.js` using `mongoose.connect(process.env.MONGO_URI)`.
-2. Define `models/User.js` with fields `name`, `email`, and `passwordHash`.
-3. Define `models/Note.js` referencing `userId` with fields `title`, `content` (`mongoose.Schema.Types.Mixed`), `tags`, `color`, and status booleans.
-
-### Phase 3: Build the Authentication System
-1. In `controllers/authController.js`, implement `register`:
-   - Validate email format and check for duplicates.
-   - Hash password with `bcrypt.hash(password, 10)`.
-   - Create user and issue a JWT signed with `JWT_SECRET`.
-2. In `middleware/auth.js`, create a function that reads the token from `req.cookies.token` or `req.headers.authorization`. Verify it with `jwt.verify` and attach `req.user = user`.
-
-### Phase 4: Build RESTful CRUD Endpoints
-1. Create `controllers/noteController.js`.
-2. **Crucial rule for security**: Always query with `{ _id: req.params.id, userId: req.user._id }`. This prevents users from accessing or modifying another user's notes.
-3. Add filtering logic for `isPinned`, `isFavorite`, `isArchived`, `isDeleted`, and full-text regex search.
-
-### Phase 5: Initialize the Frontend with Vite
-1. In the root, create the React app:
-   ```bash
-   npm create vite@latest FrontEnd -- --template react
-   ```
-2. Install styling & icons:
-   ```bash
-   npm install tailwindcss postcss autoprefixer lucide-react axios react-router-dom
-   ```
-3. Install TipTap editor extensions:
-   ```bash
-   npm install @tiptap/react @tiptap/pm @tiptap/starter-kit @tiptap/extension-placeholder @tiptap/extension-underline @tiptap/extension-link @tiptap/extension-task-list @tiptap/extension-task-item @tiptap/extension-table @tiptap/extension-table-row @tiptap/extension-table-header @tiptap/extension-table-cell
-   ```
-
-### Phase 6: Global State & API Services
-1. Configure `services/api.js` with Axios. Add a request interceptor that extracts `localStorage.getItem('notely_token')` and attaches `Authorization: Bearer <token>`.
-2. Create `context/AuthContext.jsx` to store current user state across the application.
-3. Wrap authenticated routes with `ProtectedRoute.jsx` so unauthenticated visitors are redirected to `/login`.
-
-### Phase 7: Build the Rich-Text Editor & Autosave
-1. In `components/editor/NoteEditor.jsx`, initialize TipTap using `useEditor()`.
-2. When the user modifies text, trigger an `onUpdate` event.
-3. Implement debounced saving:
-   - Create a timer ref (`useRef()`).
-   - Clear existing timeout and set a new 750ms timeout.
-   - When the timer completes, call `noteService.updateNote(id, data)` and toggle your status indicator from "Saving..." to "Saved".
-
-### Phase 8: Assemble the 3-Panel Workspace
-1. Build `Sidebar.jsx` on the left: Category tabs (*All, Favorites, Study, Work, Archive, Trash*) and note counters.
-2. Build `NoteList.jsx` in the middle: Search bar, sorting dropdown, and clickable `NoteCard.jsx` items.
-3. Place `NoteEditor.jsx` on the right: Main writing area that renders the active note.
-
----
-
-## ⚡️ Installation & Setup
+## ⚡️ Installation & Local Setup
 
 ### Prerequisites
 - **Node.js** v18+ (tested on Node v20 & v22)
-- **MongoDB** (local MongoDB instance or free cloud cluster on [MongoDB Atlas](https://www.mongodb.com/cloud/atlas))
+- **MongoDB** (Cloud cluster via [MongoDB Atlas](https://www.mongodb.com/cloud/atlas) or local instance)
+- *(Optional)* **Cloudinary Account** for user avatar cloud hosting
 
 ### 1. Clone & Install Dependencies
-From the repository root:
 ```bash
+git clone https://github.com/AnshumanGarg5410/NotesMaking.git
+cd NotesMaking
 npm run install:all
 ```
-*(Or install manually inside both `BackEnd/` and `FrontEnd/` with `npm install`)*
+
+### 2. Configure Environment Variables
+- Set up `BackEnd/.env` (see below)
+- Set up `FrontEnd/.env` (see below)
+
+### 3. Run Development Servers
+```bash
+# Concurrently starts Backend on :5001 and Frontend on :5173
+npm run dev
+```
+
+- **Frontend Application**: [http://localhost:5173](http://localhost:5173)
+- **Backend API Server**: [http://localhost:5001](http://localhost:5001)
+- **API Health Check**: [http://localhost:5001/api/health](http://localhost:5001/api/health)
 
 ---
 
-### 2. Environment Configuration
+## 🔐 Environment Variables
 
-#### Backend Configuration (`BackEnd/.env`)
-Create a `.env` file in the `BackEnd/` folder:
+### Backend (`BackEnd/.env`)
 ```env
 PORT=5001
 NODE_ENV=development
 
-# MongoDB Connection (Atlas Cloud or Local MongoDB)
+# MongoDB Connection String
 MONGO_URI=mongodb+srv://<username>:<password>@cluster.mongodb.net/notesMaking?retryWrites=true&w=majority
-# Or for local: MONGO_URI=mongodb://127.0.0.1:27017/notely_db
 
-JWT_SECRET=your_super_secret_jwt_key_here_at_least_32_characters
+# JWT Authentication
+JWT_SECRET=your_super_secret_jwt_key_at_least_32_chars_long
 JWT_EXPIRY=7d
 CLIENT_URL=http://localhost:5173
+
+# Cloudinary Integration (User Avatar & Media CDN)
+CLOUDINARY_CLOUD_NAME=your_cloudinary_cloud_name
+CLOUDINARY_API_KEY=your_cloudinary_api_key
+CLOUDINARY_API_SECRET=your_cloudinary_api_secret
 ```
 
-#### Frontend Configuration (`FrontEnd/.env`)
-Create a `.env` file in the `FrontEnd/` folder:
+### Frontend (`FrontEnd/.env`)
 ```env
 VITE_API_URL=http://localhost:5001/api
 ```
 
 ---
 
-### 3. Running the App Locally
-
-#### Run Both Frontend and Backend Concurrently (Recommended):
-From the root project folder:
-```bash
-npm run dev
-```
-- **Frontend App**: `http://localhost:5173`
-- **Backend API**: `http://localhost:5001`
-
-#### Or Run Independently in Separate Terminals:
-- **Terminal 1 (Backend)**:
-  ```bash
-  cd BackEnd
-  npm run dev
-  ```
-- **Terminal 2 (Frontend)**:
-  ```bash
-  cd FrontEnd
-  npm run dev
-  ```
-
----
-
 ## 🧪 Database Seeding & Reset
 
-Whenever you want to clear out test accounts and start completely fresh with the demo user and pre-populated sample notes, run:
+To reset your test database with demo users and pre-formatted starter notes:
 
 ```bash
 cd BackEnd
 npm run seed
 ```
 
-This will:
-1. Connect to your active MongoDB database (`notesMaking`).
-2. Clear all documents in `users` and `notes`.
-3. Create the demo account: `demo@notely.com` / `password123`.
-4. Seed 7 diverse, rich-text starter notes with tags, colors, and formatting.
+### Pre-Configured Demo Account
+| Credential | Value |
+| :--- | :--- |
+| **Email** | `demo@notely.com` |
+| **Password** | `password123` |
+| **Sample Workspace** | 7 pre-populated notes with tags, checklists, code blocks, and folders |
 
 ---
 
 ## 🚦 Automated Testing Suite
 
-The backend includes a comprehensive automated test suite powered by **Jest** and **Supertest** covering authentication, CRUD operations, duplicate endpoints, soft-delete & empty trash flows, and validation rules.
+The backend includes a comprehensive automated test suite powered by **Jest** and **Supertest**:
 
-Run all tests:
 ```bash
 cd BackEnd
 npm test
@@ -568,11 +527,11 @@ Time:        ~10s
 
 ---
 
-## 👥 Authors & License
+## 👥 Team & License
 
-**Core Team:**
-- **Anshuman Garg** — `anshumangarg5410@gmail.com`
-- **Parth Sohal** — `sohalparth72@gmail.com`
-- **Samarjeet Singh** — `samarjeetd09@gmail.com`
+### Core Engineering Team
+- **Anshuman Garg** (`anshumangarg5410@gmail.com`) — Frontend Architecture, Landing System, Workspace Dashboard & Layout
+- **Parth-Sohal** (`sohalparth72@gmail.com`) — Rich Text Editor Engine, Media Pipeline & Cloudinary, Folder Tree UI
+- **Samarjeet-001** (`samarjeetd09@gmail.com`) — Backend Architecture, Authentication & Security, Offline Dexie Sync Engine
 
-Released under the **MIT License**. Feel free to use, modify, and build upon this project!
+Released under the **MIT License**. Free for personal and commercial development.

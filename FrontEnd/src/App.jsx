@@ -8,6 +8,7 @@ import { EditorSettingsProvider } from './context/EditorSettingsContext';
 import { AuthModal } from './components/auth/AuthModal';
 import { ProtectedRoute } from './routes/ProtectedRoute';
 import { LandingPage } from './pages/LandingPage';
+import { AboutPage } from './pages/AboutPage';
 import { ContactPage } from './pages/ContactPage';
 import { WorkspacePage } from './pages/WorkspacePage';
 import { NoteEditorPage } from './pages/NoteEditorPage';
@@ -28,8 +29,9 @@ export function App() {
                 <AuthModal />
 
                 <Routes>
-                  {/* Public Landing & Contact Pages */}
+                  {/* Public Landing, About & Contact Pages */}
                   <Route path="/" element={<LandingPage />} />
+                  <Route path="/about" element={<AboutPage />} />
                   <Route path="/contact" element={<ContactPage />} />
 
                   {/* Main Application Dashboard IS this Workspace (Exact Obsidian Workspace Experience) */}

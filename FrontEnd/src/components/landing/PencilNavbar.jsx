@@ -9,8 +9,11 @@ export const PencilNavbar = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const isContactPage = location.pathname === '/contact';
+  const isAboutPage = location.pathname === '/about';
   const isLandingPage = location.pathname === '/' || !location.pathname;
-  const [activeSection, setActiveSection] = useState(isContactPage ? 'contact' : 'home');
+  const [activeSection, setActiveSection] = useState(
+    isContactPage ? 'contact' : isAboutPage ? 'about' : 'home'
+  );
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { openLogin, openSignup, openLogout } = useAuthModal();
   const { isAuthenticated } = useAuth();
@@ -19,6 +22,10 @@ export const PencilNavbar = () => {
   useEffect(() => {
     if (isContactPage) {
       setActiveSection('contact');
+      return;
+    }
+    if (isAboutPage) {
+      setActiveSection('about');
       return;
     }
 
@@ -41,7 +48,7 @@ export const PencilNavbar = () => {
 
     window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
-  }, [isContactPage]);
+  }, [isContactPage, isAboutPage]);
 
   const handleNavClick = (id) => {
     setMobileMenuOpen(false);
@@ -49,6 +56,16 @@ export const PencilNavbar = () => {
       setActiveSection('contact');
       if (location.pathname !== '/contact') {
         navigate('/contact');
+      } else {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+      return;
+    }
+
+    if (id === 'about') {
+      setActiveSection('about');
+      if (location.pathname !== '/about') {
+        navigate('/about');
       } else {
         window.scrollTo({ top: 0, behavior: 'smooth' });
       }

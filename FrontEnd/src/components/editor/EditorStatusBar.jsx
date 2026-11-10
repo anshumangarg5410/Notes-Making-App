@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useTheme } from '../../context/ThemeContext';
 import { ChevronDown, CheckCircle, Wifi, WifiOff } from 'lucide-react';
 
@@ -13,25 +13,10 @@ export const EditorStatusBar = ({
 }) => {
   const { isDark } = useTheme();
   const [showModeMenu, setShowModeMenu] = useState(false);
-  const modeMenuRef = useRef(null);
-
-  // Close dropdown on click outside
-  useEffect(() => {
-    const handleClickOutside = (e) => {
-      if (modeMenuRef.current && !modeMenuRef.current.contains(e.target)) {
-        setShowModeMenu(false);
-      }
-    };
-    if (showModeMenu) {
-      document.addEventListener('mousedown', handleClickOutside);
-    }
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [showModeMenu]);
 
   return (
-    <div className={`h-7 border-t px-4 flex items-center justify-between text-[11px] select-none transition-colors duration-150 ${
-      isDark ? 'bg-[#101017] border-[#20202e] text-gray-400' : 'bg-[#FAFAFD] border-[#EAE6F4] text-[#6B7280]'
-    }`}>
+    <div className={`h-7 border-t px-4 flex items-center justify-between text-[11px] select-none transition-colors duration-150 ${isDark ? 'bg-[#101017] border-[#20202e] text-gray-400' : 'bg-[#FAFAFD] border-[#EAE6F4] text-[#6B7280]'
+      }`}>
       {/* Left statistics */}
       <div className="flex items-center gap-4">
         <div className="flex items-center gap-1 font-mono">
@@ -65,19 +50,17 @@ export const EditorStatusBar = ({
         </div>
 
         {/* Mode Dropdown (Markdown / Rich Text / Plain Text) */}
-        <div className="relative" ref={modeMenuRef}>
+        <div className="relative">
           <button
             type="button"
             onClick={() => setShowModeMenu(!showModeMenu)}
-            aria-label={`Current format: ${mode}. Click to change editor mode.`}
-            className={`flex items-center gap-1.5 px-2 py-0.5 rounded-[4px] border transition-colors cursor-pointer select-none ${
-              isDark
-                ? 'bg-[#181622] border-[#2b2b3d] text-gray-200 hover:text-white hover:border-purple-400/50'
-                : 'bg-white border-[#E2DEEE] text-[#374151] hover:text-[#111827] hover:border-purple-300'
-            }`}
+            className={`flex items-center gap-1 px-1.5 py-0.5 rounded-[2px] border transition-colors ${isDark
+              ? 'bg-[#1a1a24] border-[#2b2b3d] text-gray-300 hover:text-white hover:border-gray-600'
+              : 'bg-white border-[#E2DEEE] text-[#374151] hover:text-[#111827] hover:border-[#DDD6FE]'
+              }`}
           >
             <span
-              className="font-mono text-[10px] px-1 py-0.5 rounded-[2px] font-bold"
+              className="font-mono text-[10px] px-1 rounded-[2px]"
               style={{
                 backgroundColor: 'var(--accent-bg, rgba(168, 85, 247, 0.15))',
                 color: 'var(--accent-text, #c084fc)'
@@ -85,43 +68,55 @@ export const EditorStatusBar = ({
             >
               {mode === 'Plain Text' ? 'TXT' : mode === 'Rich Text' ? 'RTF' : 'MD'}
             </span>
-            <span className="font-medium text-xs">{mode}</span>
-            <ChevronDown className={`w-3 h-3 transition-transform duration-150 ${showModeMenu ? 'rotate-180' : ''} ${isDark ? 'text-gray-400' : 'text-[#6B7280]'}`} />
+            <span>{mode}</span>
+            <ChevronDown className={`w-3 h-3 ${isDark ? 'text-gray-400' : 'text-[#6B7280]'}`} />
           </button>
 
           {showModeMenu && (
-            <div
-              className={`absolute bottom-full right-0 mb-2 w-36 rounded-lg shadow-2xl py-1.5 px-1 z-50 text-xs border backdrop-blur-md animate-in fade-in duration-100 ${
-                isDark
-                  ? 'bg-[#181624] border-[#2c2c40] shadow-[0_10px_30px_rgba(0,0,0,0.8)]'
-                  : 'bg-white border-[#E2DEEE] shadow-[0_10px_25px_rgba(147,51,234,0.12)]'
-              }`}
-            >
-              {['Markdown', 'Rich Text', 'Plain Text'].map((item) => {
-                const isSelected = mode === item;
-                return (
-                  <button
-                    key={item}
-                    type="button"
-                    onClick={() => {
-                      onSelectMode?.(item);
-                      setShowModeMenu(false);
-                    }}
-                    className={`w-full text-left px-3 py-2 rounded-md font-medium text-xs transition-colors flex items-center justify-between cursor-pointer ${
-                      isSelected
-                        ? isDark
-                          ? 'bg-purple-950/40 text-[#c084fc] font-semibold'
-                          : 'bg-purple-50 text-[#7c3aed] font-semibold'
-                        : isDark
-                          ? 'text-gray-200 hover:bg-white/5 hover:text-white'
-                          : 'text-slate-700 hover:bg-purple-50/70 hover:text-slate-900'
-                    }`}
-                    style={isSelected ? { color: 'var(--accent-text, #c084fc)' } : undefined}
-                  >
-                    <span>{item}</span>
-                  </button>
-                );
-              })}
+            <div className={`absolute bottom-full right-0 mb-1 w-32 rounded-[4px] shadow-2xl py-1 z-50 text-xs border ${isDark ? 'bg-[#1c1c28] border-[#2c2c3e]' : 'bg-white border-[#E2DEEE] shadow-purple-100'
+              }`}>
+              <button
+                type="button"
+                onClick={() => {
+                  onSelectMode?.('Markdown');
+                  setShowModeMenu(false);
+                }}
+                className={`w-full text-left px-3 py-1 ${mode === 'Markdown'
+                  ? 'font-semibold text-purple-600'
+                  : isDark ? 'text-gray-300 hover:bg-[#272738]' : 'text-[#374151] hover:bg-[#F3F0F9]'
+                  }`}
+                style={mode === 'Markdown' ? { color: 'var(--accent-text, #c084fc)' } : undefined}
+              >
+                Markdown
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  onSelectMode?.('Rich Text');
+                  setShowModeMenu(false);
+                }}
+                className={`w-full text-left px-3 py-1 ${mode === 'Rich Text'
+                  ? 'font-semibold text-purple-600'
+                  : isDark ? 'text-gray-300 hover:bg-[#272738]' : 'text-[#374151] hover:bg-[#F3F0F9]'
+                  }`}
+                style={mode === 'Rich Text' ? { color: 'var(--accent-text, #c084fc)' } : undefined}
+              >
+                Rich Text
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  onSelectMode?.('Plain Text');
+                  setShowModeMenu(false);
+                }}
+                className={`w-full text-left px-3 py-1 ${mode === 'Plain Text'
+                  ? 'font-semibold text-purple-600'
+                  : isDark ? 'text-gray-300 hover:bg-[#272738]' : 'text-[#374151] hover:bg-[#F3F0F9]'
+                  }`}
+                style={mode === 'Plain Text' ? { color: 'var(--accent-text, #c084fc)' } : undefined}
+              >
+                Plain Text
+              </button>
             </div>
           )}
         </div>

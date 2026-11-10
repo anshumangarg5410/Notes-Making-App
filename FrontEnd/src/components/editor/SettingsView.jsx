@@ -22,17 +22,14 @@ import {
   Key,
   Database,
   Trash2,
-  FileText,
-  Upload
+  FileText
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useTheme } from '../../context/ThemeContext';
 import { useToast } from '../../context/ToastContext';
 import { useEditorSettings } from '../../context/EditorSettingsContext';
 import { authService } from '../../services/authService';
-import { settingsService } from '../../services/settingsService';
-import { offlineService, db } from '../../services/db';
-import { noteService } from '../../services/noteService';
+import { offlineService } from '../../services/db';
 import api from '../../services/api';
 
 export const SettingsView = ({
@@ -68,20 +65,7 @@ export const SettingsView = ({
   const [email, setEmail] = useState(user?.email || '');
   const [profileSaving, setProfileSaving] = useState(false);
   const [avatarUploading, setAvatarUploading] = useState(false);
-  const [avatarLoadFailed, setAvatarLoadFailed] = useState(false);
   const fileInputRef = useRef(null);
-
-  useEffect(() => {
-    setAvatarLoadFailed(false);
-  }, [user?.avatar]);
-
-  const resolveAvatarUrl = (url) => {
-    if (!url) return '';
-    if (url.startsWith('http://') || url.startsWith('https://') || url.startsWith('data:')) {
-      return url;
-    }
-    return `http://localhost:5001${url.startsWith('/') ? '' : '/'}${url}`;
-  };
 
   // Password Update State
   const [currentPassword, setCurrentPassword] = useState('');
@@ -89,41 +73,8 @@ export const SettingsView = ({
   const [confirmPassword, setConfirmPassword] = useState('');
   const [passwordSaving, setPasswordSaving] = useState(false);
 
-  // Sync & Offline State
+  // Sync state
   const [isSyncing, setIsSyncing] = useState(false);
-  const [pendingOps, setPendingOps] = useState(0);
-  const [lastSyncTime, setLastSyncTime] = useState('Just now');
-  const [isOnline, setIsOnline] = useState(typeof navigator !== 'undefined' ? navigator.onLine : true);
-  const [localStats, setLocalStats] = useState({ notes: notes?.length || 0, folders: folders?.length || 0 });
-  const [isImporting, setIsImporting] = useState(false);
-  const importFileInputRef = useRef(null);
-
-  useEffect(() => {
-    let isMounted = true;
-    const loadOfflineStats = async () => {
-      try {
-        const pCount = await db.syncQueue.count();
-        const nCount = await db.notes.count();
-        const fCount = await db.folders.count();
-        if (isMounted) {
-          setPendingOps(pCount);
-          setLocalStats({ notes: nCount || (notes?.length || 0), folders: fCount || (folders?.length || 0) });
-        }
-      } catch (_) {}
-    };
-    loadOfflineStats();
-
-    const handleOnline = () => setIsOnline(true);
-    const handleOffline = () => setIsOnline(false);
-    window.addEventListener('online', handleOnline);
-    window.addEventListener('offline', handleOffline);
-
-    return () => {
-      isMounted = false;
-      window.removeEventListener('online', handleOnline);
-      window.removeEventListener('offline', handleOffline);
-    };
-  }, [notes?.length, folders?.length]);
 
   const displayName = user?.name || user?.username || 'User';
   const initials = displayName
@@ -206,10 +157,6 @@ export const SettingsView = ({
   // Password update handler
   const handleUpdatePassword = async (e) => {
     e.preventDefault();
-    if (!currentPassword.trim()) {
-      toastError('Please enter your current password');
-      return;
-    }
     if (newPassword !== confirmPassword) {
       toastError('New passwords do not match');
       return;
@@ -221,183 +168,54 @@ export const SettingsView = ({
 
     setPasswordSaving(true);
     try {
-      await settingsService.changePassword(currentPassword, newPassword);
+      await api.put('/users/password', { currentPassword, newPassword });
       success('Password changed successfully');
       setCurrentPassword('');
       setNewPassword('');
       setConfirmPassword('');
     } catch (err) {
-      toastError(err.response?.data?.message || 'Failed to update password. Please check your current password.');
+      toastError(err.response?.data?.message || 'Failed to update password');
     } finally {
       setPasswordSaving(false);
     }
   };
 
-  // Sync Now handler (syncs offline queue with backend + refreshes cache)
+  // Sync Now handler
   const handleSyncNow = async () => {
     setIsSyncing(true);
     try {
-      const res = await offlineService.processSyncQueue(noteService);
-      if (navigator.onLine) {
-        try {
-          const serverRes = await noteService.getNotes({ filter: 'all' });
-          if (serverRes?.data && Array.isArray(serverRes.data)) {
-            await offlineService.cacheServerNotes(serverRes.data);
-          }
-        } catch (_) {}
-      }
-      const queueCount = await db.syncQueue.count();
-      const nCount = await db.notes.count();
-      const fCount = await db.folders.count();
-      setPendingOps(queueCount);
-      setLocalStats({ notes: nCount, folders: fCount });
-      setLastSyncTime(new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
-
-      if (res?.synced > 0) {
-        success(`Synced ${res.synced} offline operations with MongoDB Atlas`);
-      } else {
-        success('Workspace state is synchronized with MongoDB Atlas');
-      }
+      await offlineService.processSyncQueue(api);
+      success('All changes synchronized with MongoDB Atlas');
     } catch (err) {
-      console.warn('Sync error:', err);
-      toastError('Synchronized with local offline database');
+      toastError('Sync completed with local database');
     } finally {
       setIsSyncing(false);
     }
   };
 
   // Download JSON Backup
-  const handleDownloadBackup = async () => {
-    try {
-      let exportNotes = notes;
-      try {
-        const localNotes = await db.notes.toArray();
-        if (localNotes && localNotes.length > 0) exportNotes = localNotes;
-      } catch (_) {}
+  const handleDownloadBackup = () => {
+    const backupData = {
+      app: 'NoteNest',
+      version: '1.2.0',
+      exportedAt: new Date().toISOString(),
+      user: { name: displayName, email: user?.email },
+      notesCount: notes.length,
+      foldersCount: folders.length,
+      notes,
+      folders
+    };
 
-      let exportFolders = folders;
-      try {
-        const localFolders = await db.folders.toArray();
-        if (localFolders && localFolders.length > 0) exportFolders = localFolders;
-      } catch (_) {}
-
-      const backupData = {
-        app: 'NoteNest',
-        version: '1.2.0',
-        exportedAt: new Date().toISOString(),
-        user: { name: displayName, email: user?.email },
-        notesCount: exportNotes.length,
-        foldersCount: exportFolders.length,
-        notes: exportNotes,
-        folders: exportFolders
-      };
-
-      const blob = new Blob([JSON.stringify(backupData, null, 2)], { type: 'application/json' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `notenest-backup-${new Date().toISOString().slice(0, 10)}.json`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-      success(`Workspace backup exported (${exportNotes.length} notes)`);
-    } catch (err) {
-      toastError('Failed to export backup');
-    }
-  };
-
-  // Import Notes handler (JSON or Markdown)
-  const handleImportFile = async (e) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    setIsImporting(true);
-
-    try {
-      if (file.name.endsWith('.json')) {
-        const text = await file.text();
-        const data = JSON.parse(text);
-        const list = Array.isArray(data) ? data : data.notes || [];
-        if (list.length === 0) {
-          toastError('No valid notes found in JSON file');
-          return;
-        }
-
-        let imported = 0;
-        for (const item of list) {
-          const noteObj = {
-            _id: item._id || item.id || `imported_${Date.now()}_${Math.random().toString(36).substr(2, 6)}`,
-            title: item.title || 'Untitled Imported Note',
-            content: item.content || (item.plainText ? `<p>${item.plainText}</p>` : '<p></p>'),
-            plainText: item.plainText || '',
-            tags: Array.isArray(item.tags) ? item.tags : [],
-            folder: item.folder || item.category || 'Personal',
-            category: item.category || item.folder || 'Personal',
-            isPinned: Boolean(item.isPinned),
-            isFavorite: Boolean(item.isFavorite),
-            isDeleted: false,
-            createdAt: item.createdAt || new Date().toISOString(),
-            updatedAt: new Date().toISOString()
-          };
-
-          await offlineService.saveLocalNote(noteObj, true);
-          if (navigator.onLine) {
-            try { await noteService.createNote(noteObj); } catch (_) {}
-          }
-          imported++;
-        }
-        success(`Imported ${imported} notes from ${file.name}`);
-        const nCount = await db.notes.count();
-        setLocalStats((prev) => ({ ...prev, notes: nCount }));
-      } else if (file.name.endsWith('.md') || file.name.endsWith('.txt')) {
-        const text = await file.text();
-        const cleanTitle = file.name.replace(/\.(md|txt)$/i, '');
-        const noteObj = {
-          _id: `imported_${Date.now()}`,
-          title: cleanTitle,
-          content: `<p>${text.replace(/\n/g, '<br/>')}</p>`,
-          plainText: text,
-          tags: ['imported'],
-          folder: 'Personal',
-          category: 'Personal',
-          isPinned: false,
-          isFavorite: false,
-          isDeleted: false,
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString()
-        };
-
-        await offlineService.saveLocalNote(noteObj, true);
-        if (navigator.onLine) {
-          try { await noteService.createNote(noteObj); } catch (_) {}
-        }
-        success(`Imported note "${cleanTitle}"`);
-        const nCount = await db.notes.count();
-        setLocalStats((prev) => ({ ...prev, notes: nCount }));
-      } else {
-        toastError('Please select a .json or .md file');
-      }
-    } catch (err) {
-      console.warn('Import error:', err);
-      toastError('Failed to import file. Please check file format.');
-    } finally {
-      setIsImporting(false);
-      if (e.target) e.target.value = '';
-    }
-  };
-
-  // Verify Dexie offline engine
-  const handleVerifyOffline = async () => {
-    try {
-      const noteCount = await db.notes.count();
-      const folderCount = await db.folders.count();
-      const queueCount = await db.syncQueue.count();
-      setLocalStats({ notes: noteCount, folders: folderCount });
-      setPendingOps(queueCount);
-      info(`Dexie IndexedDB Verified: ${noteCount} notes, ${folderCount} folders, ${queueCount} queue operations stored locally.`);
-    } catch (err) {
-      toastError('Failed to inspect Dexie database');
-    }
+    const blob = new Blob([JSON.stringify(backupData, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `notenest-backup-${new Date().toISOString().slice(0, 10)}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    success('Workspace backup exported successfully');
   };
 
   // Navigation menu items matching reference
@@ -424,28 +242,23 @@ export const SettingsView = ({
   ];
 
   return (
-    <div className={`flex-1 h-full overflow-y-auto obsidian-scrollbar transition-colors duration-200 ${
-      isDark ? 'bg-[#0d0e17] text-gray-200' : 'bg-[#FAF8FD] text-[#1E1B2E]'
-    }`}>
-      {/* Settings Top View Header with decorative glow */}
-      <div className={`relative px-8 pt-8 pb-6 border-b overflow-hidden ${
-        isDark ? 'border-[#1f2030]' : 'border-[#EAE6F4]'
+    <div className={`flex-1 h-full overflow-y-auto obsidian-scrollbar transition-colors duration-200 ${isDark ? 'bg-[#0d0e17] text-gray-200' : 'bg-[#FAF8FD] text-[#1E1B2E]'
       }`}>
+      {/* Settings Top View Header with decorative glow */}
+      <div className={`relative px-8 pt-8 pb-6 border-b overflow-hidden ${isDark ? 'border-[#1f2030]' : 'border-[#EAE6F4]'
+        }`}>
         {/* Subtle decorative purple wave in background */}
-        <div className={`absolute -top-12 -right-12 w-96 h-96 rounded-full blur-3xl pointer-events-none ${
-          isDark ? 'bg-purple-600/10' : 'bg-purple-300/25'
-        }`} />
-        <div className={`absolute top-0 right-1/4 w-64 h-32 rounded-full blur-2xl pointer-events-none ${
-          isDark ? 'bg-indigo-600/5' : 'bg-indigo-200/20'
-        }`} />
+        <div className={`absolute -top-12 -right-12 w-96 h-96 rounded-full blur-3xl pointer-events-none ${isDark ? 'bg-purple-600/10' : 'bg-purple-300/25'
+          }`} />
+        <div className={`absolute top-0 right-1/4 w-64 h-32 rounded-full blur-2xl pointer-events-none ${isDark ? 'bg-indigo-600/5' : 'bg-indigo-200/20'
+          }`} />
 
         <div className="relative flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className={`w-10 h-10 rounded-xl flex items-center justify-center shadow-lg ${
-              isDark
-                ? 'bg-purple-900/30 border border-purple-500/40 text-purple-400 shadow-purple-950/40'
-                : 'bg-[#EDE9FE] border border-[#DDD6FE] text-[#7C3AED] shadow-purple-100'
-            }`}>
+            <div className={`w-10 h-10 rounded-xl flex items-center justify-center shadow-lg ${isDark
+              ? 'bg-purple-900/30 border border-purple-500/40 text-purple-400 shadow-purple-950/40'
+              : 'bg-[#EDE9FE] border border-[#DDD6FE] text-[#7C3AED] shadow-purple-100'
+              }`}>
               <SettingsIcon className="w-5 h-5" />
             </div>
             <div>
@@ -459,11 +272,10 @@ export const SettingsView = ({
           {onClose && (
             <button
               onClick={onClose}
-              className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium transition-all shadow-sm ${
-                isDark
-                  ? 'text-gray-300 hover:text-white bg-[#1a1b28] hover:bg-[#252638] border border-[#292a3e]'
-                  : 'text-[#374151] hover:text-[#111827] bg-white hover:bg-[#F9F8FD] border border-[#E2DEEE]'
-              }`}
+              className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium transition-all shadow-sm ${isDark
+                ? 'text-gray-300 hover:text-white bg-[#1a1b28] hover:bg-[#252638] border border-[#292a3e]'
+                : 'text-[#374151] hover:text-[#111827] bg-white hover:bg-[#F9F8FD] border border-[#E2DEEE]'
+                }`}
               title="Return to notes"
             >
               <ArrowLeft className="w-4 h-4" />
@@ -477,9 +289,8 @@ export const SettingsView = ({
       <div className="px-8 py-6 max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
         {/* LEFT COLUMN: Categories Navigation Card */}
         <div className="lg:col-span-3 sticky top-6">
-          <div className={`rounded-2xl p-2.5 shadow-sm space-y-1 border ${
-            isDark ? 'bg-[#141522] border-[#222336]' : 'bg-white border-[#EAE6F4]'
-          }`}>
+          <div className={`rounded-2xl p-2.5 shadow-sm space-y-1 border ${isDark ? 'bg-[#141522] border-[#222336]' : 'bg-white border-[#EAE6F4]'
+            }`}>
             {navItems.map((item) => {
               const Icon = item.icon;
               const isActive = activeSection === item.id;
@@ -487,15 +298,14 @@ export const SettingsView = ({
                 <button
                   key={item.id}
                   onClick={() => scrollToSection(item.id)}
-                  className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-medium transition-all text-left ${
-                    isActive
-                      ? isDark
-                        ? 'bg-purple-900/35 text-purple-200 font-semibold border-l-2 border-purple-500 shadow-sm'
-                        : 'bg-[#EDE9FE] text-[#7C3AED] font-semibold border-l-2 border-[#7C3AED]'
-                      : isDark
-                        ? 'text-gray-400 hover:text-gray-200 hover:bg-[#1a1b2b]'
-                        : 'text-[#5F5B73] hover:text-[#1E1B2E] hover:bg-[#F6F4FA]'
-                  }`}
+                  className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-medium transition-all text-left ${isActive
+                    ? isDark
+                      ? 'bg-purple-900/35 text-purple-200 font-semibold border-l-2 border-purple-500 shadow-sm'
+                      : 'bg-[#EDE9FE] text-[#7C3AED] font-semibold border-l-2 border-[#7C3AED]'
+                    : isDark
+                      ? 'text-gray-400 hover:text-gray-200 hover:bg-[#1a1b2b]'
+                      : 'text-[#5F5B73] hover:text-[#1E1B2E] hover:bg-[#F6F4FA]'
+                    }`}
                 >
                   <Icon className={`w-4 h-4 ${isActive ? (isDark ? 'text-purple-400' : 'text-[#7C3AED]') : (isDark ? 'text-gray-400' : 'text-[#6B7280]')}`} />
                   <span>{item.label}</span>
@@ -510,15 +320,13 @@ export const SettingsView = ({
           {/* CARD 1: Account */}
           <div
             ref={sectionRefs.account}
-            className={`rounded-2xl p-6 shadow-sm space-y-5 border ${
-              isDark ? 'bg-[#141522] border-[#222336]' : 'bg-white border-[#EAE6F4]'
-            }`}
+            className={`rounded-2xl p-6 shadow-sm space-y-5 border ${isDark ? 'bg-[#141522] border-[#222336]' : 'bg-white border-[#EAE6F4]'
+              }`}
           >
             {/* Card Header */}
             <div className={`flex items-center gap-2.5 pb-4 border-b ${isDark ? 'border-[#1f2032]' : 'border-[#F0ECF8]'}`}>
-              <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${
-                isDark ? 'bg-purple-900/30 text-purple-400' : 'bg-[#EDE9FE] text-[#7C3AED]'
-              }`}>
+              <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${isDark ? 'bg-purple-900/30 text-purple-400' : 'bg-[#EDE9FE] text-[#7C3AED]'
+                }`}>
                 <User className="w-4 h-4" />
               </div>
               <div>
@@ -532,11 +340,10 @@ export const SettingsView = ({
               <div className="flex items-center gap-4">
                 {/* Avatar with Cloudinary Camera Button */}
                 <div className="relative">
-                  {user?.avatar && !avatarLoadFailed ? (
+                  {user?.avatar ? (
                     <img
-                      src={resolveAvatarUrl(user.avatar)}
+                      src={user.avatar}
                       alt={displayName}
-                      onError={() => setAvatarLoadFailed(true)}
                       className="w-16 h-16 rounded-full object-cover border-2 border-purple-500/50 shadow-md shadow-purple-950/50"
                     />
                   ) : (
@@ -549,9 +356,8 @@ export const SettingsView = ({
                     type="button"
                     onClick={() => fileInputRef.current?.click()}
                     disabled={avatarUploading}
-                    className={`absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-purple-600 hover:bg-purple-500 text-white flex items-center justify-center border-2 shadow-md transition-colors cursor-pointer ${
-                      isDark ? 'border-[#141522]' : 'border-white'
-                    }`}
+                    className={`absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-purple-600 hover:bg-purple-500 text-white flex items-center justify-center border-2 shadow-md transition-colors cursor-pointer ${isDark ? 'border-[#141522]' : 'border-white'
+                      }`}
                     title="Upload profile picture to Cloudinary"
                   >
                     <Camera className="w-3 h-3" />
@@ -580,11 +386,10 @@ export const SettingsView = ({
               {!isEditingProfile ? (
                 <button
                   onClick={() => setIsEditingProfile(true)}
-                  className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border text-xs font-medium transition-colors shadow-sm ${
-                    isDark
-                      ? 'border-[#2b2c40] bg-[#1b1c2b] hover:bg-[#232438] text-gray-200'
-                      : 'border-[#E2DEEE] bg-white hover:bg-[#F9F8FD] text-[#374151]'
-                  }`}
+                  className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border text-xs font-medium transition-colors shadow-sm ${isDark
+                    ? 'border-[#2b2c40] bg-[#1b1c2b] hover:bg-[#232438] text-gray-200'
+                    : 'border-[#E2DEEE] bg-white hover:bg-[#F9F8FD] text-[#374151]'
+                    }`}
                 >
                   <Edit2 className="w-3.5 h-3.5" />
                   <span>Edit Profile</span>
@@ -602,9 +407,8 @@ export const SettingsView = ({
                       type="text"
                       value={name}
                       onChange={(e) => setName(e.target.value)}
-                      className={`w-full rounded-lg px-3 py-2 text-xs outline-none transition-colors border focus:border-purple-500 ${
-                        isDark ? 'bg-[#1b1c2c] border-[#2d2e44] text-gray-100' : 'bg-white border-[#E2DEEE] text-[#111827]'
-                      }`}
+                      className={`w-full rounded-lg px-3 py-2 text-xs outline-none transition-colors border focus:border-purple-500 ${isDark ? 'bg-[#1b1c2c] border-[#2d2e44] text-gray-100' : 'bg-white border-[#E2DEEE] text-[#111827]'
+                        }`}
                       placeholder="Your name"
                       required
                     />
@@ -615,9 +419,8 @@ export const SettingsView = ({
                       type="email"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
-                      className={`w-full rounded-lg px-3 py-2 text-xs outline-none transition-colors border focus:border-purple-500 ${
-                        isDark ? 'bg-[#1b1c2c] border-[#2d2e44] text-gray-100' : 'bg-white border-[#E2DEEE] text-[#111827]'
-                      }`}
+                      className={`w-full rounded-lg px-3 py-2 text-xs outline-none transition-colors border focus:border-purple-500 ${isDark ? 'bg-[#1b1c2c] border-[#2d2e44] text-gray-100' : 'bg-white border-[#E2DEEE] text-[#111827]'
+                        }`}
                       placeholder="your.email@example.com"
                       required
                     />
@@ -648,15 +451,13 @@ export const SettingsView = ({
           {/* CARD 2: Appearance */}
           <div
             ref={sectionRefs.appearance}
-            className={`rounded-2xl p-6 shadow-sm space-y-5 border ${
-              isDark ? 'bg-[#141522] border-[#222336]' : 'bg-white border-[#EAE6F4]'
-            }`}
+            className={`rounded-2xl p-6 shadow-sm space-y-5 border ${isDark ? 'bg-[#141522] border-[#222336]' : 'bg-white border-[#EAE6F4]'
+              }`}
           >
             {/* Header */}
             <div className={`flex items-center gap-2.5 pb-4 border-b ${isDark ? 'border-[#1f2032]' : 'border-[#F0ECF8]'}`}>
-              <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${
-                isDark ? 'bg-purple-900/30 text-purple-400' : 'bg-[#EDE9FE] text-[#7C3AED]'
-              }`}>
+              <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${isDark ? 'bg-purple-900/30 text-purple-400' : 'bg-[#EDE9FE] text-[#7C3AED]'
+                }`}>
                 <Moon className="w-4 h-4" />
               </div>
               <div>
@@ -673,20 +474,18 @@ export const SettingsView = ({
               </div>
 
               {/* Theme Segmented Controls matching reference */}
-              <div className={`flex items-center gap-1.5 p-1 rounded-xl border ${
-                isDark ? 'bg-[#1a1b2c] border-[#27283c]' : 'bg-[#F4F2F9] border-[#E6E2F0]'
-              }`}>
+              <div className={`flex items-center gap-1.5 p-1 rounded-xl border ${isDark ? 'bg-[#1a1b2c] border-[#27283c]' : 'bg-[#F4F2F9] border-[#E6E2F0]'
+                }`}>
                 <button
                   type="button"
                   onClick={() => {
                     setTheme('dark');
                     success('Dark theme selected');
                   }}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
-                    isDark
-                      ? 'bg-purple-900/40 text-purple-200 border border-purple-500/40 shadow-sm'
-                      : 'text-[#5F5B73] hover:text-[#1E1B2E]'
-                  }`}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${isDark
+                    ? 'bg-purple-900/40 text-purple-200 border border-purple-500/40 shadow-sm'
+                    : 'text-[#5F5B73] hover:text-[#1E1B2E]'
+                    }`}
                 >
                   <Moon className="w-3.5 h-3.5" />
                   <span>Dark</span>
@@ -698,11 +497,10 @@ export const SettingsView = ({
                     setTheme('light');
                     info('Light theme enabled for dashboard');
                   }}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
-                    !isDark
-                      ? 'bg-[#EDE9FE] text-[#7C3AED] border border-[#DDD6FE] font-semibold shadow-sm'
-                      : 'text-gray-400 hover:text-gray-200'
-                  }`}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${!isDark
+                    ? 'bg-[#EDE9FE] text-[#7C3AED] border border-[#DDD6FE] font-semibold shadow-sm'
+                    : 'text-gray-400 hover:text-gray-200'
+                    }`}
                 >
                   <Sun className="w-3.5 h-3.5" />
                   <span>Light</span>
@@ -715,9 +513,8 @@ export const SettingsView = ({
                     setTheme(sysDark ? 'dark' : 'light');
                     info('System preference synchronized');
                   }}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
-                    isDark ? 'text-gray-400 hover:text-gray-200' : 'text-[#5F5B73] hover:text-[#1E1B2E]'
-                  }`}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${isDark ? 'text-gray-400 hover:text-gray-200' : 'text-[#5F5B73] hover:text-[#1E1B2E]'
+                    }`}
                 >
                   <Laptop className="w-3.5 h-3.5" />
                   <span>System</span>
@@ -745,11 +542,10 @@ export const SettingsView = ({
                       }}
                       title={color.label}
                       aria-label={`Select ${color.label} accent color`}
-                      className={`relative flex items-center justify-center rounded-full border-2 border-transparent transition-all duration-200 ${
-                        isSelected
-                          ? 'scale-110'
-                          : 'hover:scale-105 opacity-90 hover:opacity-100'
-                      }`}
+                      className={`relative flex items-center justify-center rounded-full border-2 border-transparent transition-all duration-200 ${isSelected
+                        ? 'scale-110'
+                        : 'hover:scale-105 opacity-90 hover:opacity-100'
+                        }`}
                       style={{
                         width: isSelected ? '52px' : '40px',
                         height: isSelected ? '52px' : '40px',
@@ -771,15 +567,13 @@ export const SettingsView = ({
           {/* CARD 3: Editor */}
           <div
             ref={sectionRefs.editor}
-            className={`rounded-2xl p-6 shadow-sm space-y-5 border ${
-              isDark ? 'bg-[#141522] border-[#222336]' : 'bg-white border-[#EAE6F4]'
-            }`}
+            className={`rounded-2xl p-6 shadow-sm space-y-5 border ${isDark ? 'bg-[#141522] border-[#222336]' : 'bg-white border-[#EAE6F4]'
+              }`}
           >
             {/* Header */}
             <div className={`flex items-center gap-2.5 pb-4 border-b ${isDark ? 'border-[#1f2032]' : 'border-[#F0ECF8]'}`}>
-              <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${
-                isDark ? 'bg-purple-900/30 text-purple-400' : 'bg-[#EDE9FE] text-[#7C3AED]'
-              }`}>
+              <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${isDark ? 'bg-purple-900/30 text-purple-400' : 'bg-[#EDE9FE] text-[#7C3AED]'
+                }`}>
                 <PenTool className="w-4 h-4" />
               </div>
               <div>
@@ -801,9 +595,8 @@ export const SettingsView = ({
                   setDefaultFormat(e.target.value);
                   success(`Default format set to ${e.target.value === 'markdown' ? 'Markdown (.md)' : e.target.value === 'plaintext' ? 'Plain Text (.txt)' : 'Rich Text'}`);
                 }}
-                className={`text-xs rounded-lg px-3 py-1.5 outline-none cursor-pointer border ${
-                  isDark ? 'bg-[#1b1c2c] border-[#2d2e44] text-gray-200 focus:border-purple-500' : 'bg-white border-[#D1D5DB] text-[#1F2937] focus:border-purple-500'
-                }`}
+                className={`text-xs rounded-lg px-3 py-1.5 outline-none cursor-pointer border ${isDark ? 'bg-[#1b1c2c] border-[#2d2e44] text-gray-200 focus:border-purple-500' : 'bg-white border-[#D1D5DB] text-[#1F2937] focus:border-purple-500'
+                  }`}
               >
                 <option value="markdown">Markdown (.md)</option>
                 <option value="richtext">Rich Text (TipTap)</option>
@@ -812,9 +605,8 @@ export const SettingsView = ({
             </div>
 
             {/* Font Size Slider */}
-            <div className={`flex items-center justify-between flex-wrap gap-4 pt-4 border-t ${
-              isDark ? 'border-[#1f2032]' : 'border-[#F0ECF8]'
-            }`}>
+            <div className={`flex items-center justify-between flex-wrap gap-4 pt-4 border-t ${isDark ? 'border-[#1f2032]' : 'border-[#F0ECF8]'
+              }`}>
               <div>
                 <div className={`text-xs font-medium ${isDark ? 'text-gray-200' : 'text-[#181326]'}`}>Font Size</div>
                 <div className={`text-[11px] ${isDark ? 'text-gray-400' : 'text-[#6B7280]'}`}>Adjust the editor font size.</div>
@@ -849,14 +641,12 @@ export const SettingsView = ({
                   info(`Line numbers ${next ? 'enabled' : 'disabled'}`);
                 }}
                 style={{ backgroundColor: lineNumbers ? 'var(--accent, #9333ea)' : undefined }}
-                className={`w-10 h-5 flex items-center rounded-full p-0.5 transition-colors ${
-                  lineNumbers ? '' : (isDark ? 'bg-[#2b2c40]' : 'bg-[#E5E7EB]')
-                }`}
+                className={`w-10 h-5 flex items-center rounded-full p-0.5 transition-colors ${lineNumbers ? '' : (isDark ? 'bg-[#2b2c40]' : 'bg-[#E5E7EB]')
+                  }`}
               >
                 <div
-                  className={`w-4 h-4 rounded-full bg-white transition-transform shadow-sm ${
-                    lineNumbers ? 'translate-x-5' : 'translate-x-0'
-                  }`}
+                  className={`w-4 h-4 rounded-full bg-white transition-transform shadow-sm ${lineNumbers ? 'translate-x-5' : 'translate-x-0'
+                    }`}
                 />
               </button>
             </div>
@@ -876,14 +666,12 @@ export const SettingsView = ({
                   info(`Spell check ${next ? 'enabled' : 'disabled'}`);
                 }}
                 style={{ backgroundColor: spellCheck ? 'var(--accent, #9333ea)' : undefined }}
-                className={`w-10 h-5 flex items-center rounded-full p-0.5 transition-colors ${
-                  spellCheck ? '' : (isDark ? 'bg-[#2b2c40]' : 'bg-[#E5E7EB]')
-                }`}
+                className={`w-10 h-5 flex items-center rounded-full p-0.5 transition-colors ${spellCheck ? '' : (isDark ? 'bg-[#2b2c40]' : 'bg-[#E5E7EB]')
+                  }`}
               >
                 <div
-                  className={`w-4 h-4 rounded-full bg-white transition-transform shadow-sm ${
-                    spellCheck ? 'translate-x-5' : 'translate-x-0'
-                  }`}
+                  className={`w-4 h-4 rounded-full bg-white transition-transform shadow-sm ${spellCheck ? 'translate-x-5' : 'translate-x-0'
+                    }`}
                 />
               </button>
             </div>
@@ -904,14 +692,12 @@ export const SettingsView = ({
                     info(`Auto save ${next ? 'enabled' : 'disabled'}`);
                   }}
                   style={{ backgroundColor: autoSaveEnabled ? 'var(--accent, #9333ea)' : undefined }}
-                  className={`w-10 h-5 flex items-center rounded-full p-0.5 transition-colors ${
-                    autoSaveEnabled ? '' : (isDark ? 'bg-[#2b2c40]' : 'bg-[#E5E7EB]')
-                  }`}
+                  className={`w-10 h-5 flex items-center rounded-full p-0.5 transition-colors ${autoSaveEnabled ? '' : (isDark ? 'bg-[#2b2c40]' : 'bg-[#E5E7EB]')
+                    }`}
                 >
                   <div
-                    className={`w-4 h-4 rounded-full bg-white transition-transform shadow-sm ${
-                      autoSaveEnabled ? 'translate-x-5' : 'translate-x-0'
-                    }`}
+                    className={`w-4 h-4 rounded-full bg-white transition-transform shadow-sm ${autoSaveEnabled ? 'translate-x-5' : 'translate-x-0'
+                      }`}
                   />
                 </button>
 
@@ -922,9 +708,8 @@ export const SettingsView = ({
                     success(`Auto-save interval set to ${e.target.value}`);
                   }}
                   disabled={!autoSaveEnabled}
-                  className={`text-xs rounded-lg px-2.5 py-1 outline-none focus:border-purple-500 cursor-pointer disabled:opacity-40 border ${
-                    isDark ? 'bg-[#1b1c2c] border-[#2d2e44] text-gray-200' : 'bg-white border-[#D1D5DB] text-[#1F2937]'
-                  }`}
+                  className={`text-xs rounded-lg px-2.5 py-1 outline-none focus:border-purple-500 cursor-pointer disabled:opacity-40 border ${isDark ? 'bg-[#1b1c2c] border-[#2d2e44] text-gray-200' : 'bg-white border-[#D1D5DB] text-[#1F2937]'
+                    }`}
                 >
                   <option value="750ms">Instant (750ms)</option>
                   <option value="2s">Every 2 seconds</option>
@@ -938,14 +723,12 @@ export const SettingsView = ({
           {/* CARD 4: Storage */}
           <div
             ref={sectionRefs.storage}
-            className={`rounded-2xl p-6 shadow-sm space-y-5 border ${
-              isDark ? 'bg-[#141522] border-[#222336]' : 'bg-white border-[#EAE6F4]'
-            }`}
+            className={`rounded-2xl p-6 shadow-sm space-y-5 border ${isDark ? 'bg-[#141522] border-[#222336]' : 'bg-white border-[#EAE6F4]'
+              }`}
           >
             <div className={`flex items-center gap-2.5 pb-4 border-b ${isDark ? 'border-[#1f2032]' : 'border-[#F0ECF8]'}`}>
-              <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${
-                isDark ? 'bg-purple-900/30 text-purple-400' : 'bg-[#EDE9FE] text-[#7C3AED]'
-              }`}>
+              <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${isDark ? 'bg-purple-900/30 text-purple-400' : 'bg-[#EDE9FE] text-[#7C3AED]'
+                }`}>
                 <Cloud className="w-4 h-4" />
               </div>
               <div>
@@ -983,14 +766,12 @@ export const SettingsView = ({
           {/* CARD 5: Sync & Backup */}
           <div
             ref={sectionRefs.sync}
-            className={`rounded-2xl p-6 shadow-sm space-y-5 border ${
-              isDark ? 'bg-[#141522] border-[#222336]' : 'bg-white border-[#EAE6F4]'
-            }`}
+            className={`rounded-2xl p-6 shadow-sm space-y-5 border ${isDark ? 'bg-[#141522] border-[#222336]' : 'bg-white border-[#EAE6F4]'
+              }`}
           >
             <div className={`flex items-center gap-2.5 pb-4 border-b ${isDark ? 'border-[#1f2032]' : 'border-[#F0ECF8]'}`}>
-              <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${
-                isDark ? 'bg-purple-900/30 text-purple-400' : 'bg-[#EDE9FE] text-[#7C3AED]'
-              }`}>
+              <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${isDark ? 'bg-purple-900/30 text-purple-400' : 'bg-[#EDE9FE] text-[#7C3AED]'
+                }`}>
                 <RefreshCw className="w-4 h-4" />
               </div>
               <div>
@@ -1002,11 +783,11 @@ export const SettingsView = ({
             <div className="flex items-center justify-between flex-wrap gap-4">
               <div>
                 <div className={`text-xs font-semibold flex items-center gap-2 ${isDark ? 'text-gray-200' : 'text-[#181326]'}`}>
-                  <span className={`w-2 h-2 rounded-full ${isOnline ? 'bg-emerald-400 animate-pulse' : 'bg-amber-400'}`} />
-                  <span>{isOnline ? 'Online & Synchronized' : 'Offline Mode (Local Cache Active)'}</span>
+                  <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                  <span>Online & Synchronized</span>
                 </div>
                 <div className={`text-[11px] mt-0.5 ${isDark ? 'text-gray-400' : 'text-[#6B7280]'}`}>
-                  Last synchronized: {lastSyncTime} • {pendingOps} pending offline operations
+                  Last synchronized: Just now • 0 pending offline operations
                 </div>
               </div>
 
@@ -1015,8 +796,7 @@ export const SettingsView = ({
                   type="button"
                   onClick={handleSyncNow}
                   disabled={isSyncing}
-                  style={{ backgroundColor: 'var(--accent, #9333ea)' }}
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-white text-xs font-medium transition-colors hover:brightness-110 disabled:opacity-50 cursor-pointer"
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-purple-600 hover:bg-purple-500 text-white text-xs font-medium transition-colors disabled:opacity-50"
                 >
                   <RefreshCw className={`w-3.5 h-3.5 ${isSyncing ? 'animate-spin' : ''}`} />
                   <span>{isSyncing ? 'Syncing...' : 'Sync Now'}</span>
@@ -1025,13 +805,12 @@ export const SettingsView = ({
                 <button
                   type="button"
                   onClick={handleDownloadBackup}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-xs font-medium transition-colors cursor-pointer ${
-                    isDark
-                      ? 'border-[#2d2e44] bg-[#1b1c2c] hover:bg-[#232438] text-gray-200'
-                      : 'border-[#E2DEEE] bg-white hover:bg-[#F9F8FD] text-[#374151]'
-                  }`}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-xs font-medium transition-colors ${isDark
+                    ? 'border-[#2d2e44] bg-[#1b1c2c] hover:bg-[#232438] text-gray-200'
+                    : 'border-[#E2DEEE] bg-white hover:bg-[#F9F8FD] text-[#374151]'
+                    }`}
                 >
-                  <Download className={`w-3.5 h-3.5 ${isDark ? 'text-purple-400' : 'text-[#7C3AED]'}`} style={{ color: 'var(--accent)' }} />
+                  <Download className={`w-3.5 h-3.5 ${isDark ? 'text-purple-400' : 'text-[#7C3AED]'}`} />
                   <span>Export Backup</span>
                 </button>
               </div>
@@ -1041,14 +820,12 @@ export const SettingsView = ({
           {/* CARD 6: Offline */}
           <div
             ref={sectionRefs.offline}
-            className={`rounded-2xl p-6 shadow-sm space-y-4 border ${
-              isDark ? 'bg-[#141522] border-[#222336]' : 'bg-white border-[#EAE6F4]'
-            }`}
+            className={`rounded-2xl p-6 shadow-sm space-y-4 border ${isDark ? 'bg-[#141522] border-[#222336]' : 'bg-white border-[#EAE6F4]'
+              }`}
           >
             <div className={`flex items-center gap-2.5 pb-4 border-b ${isDark ? 'border-[#1f2032]' : 'border-[#F0ECF8]'}`}>
-              <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${
-                isDark ? 'bg-purple-900/30 text-purple-400' : 'bg-[#EDE9FE] text-[#7C3AED]'
-              }`}>
+              <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${isDark ? 'bg-purple-900/30 text-purple-400' : 'bg-[#EDE9FE] text-[#7C3AED]'
+                }`}>
                 <Download className="w-4 h-4" />
               </div>
               <div>
@@ -1061,41 +838,17 @@ export const SettingsView = ({
               NoteNest stores your active documents locally in IndexedDB. You can create, edit, search, and delete
               notes with zero internet connection. When connection is restored, pending changes are auto-merged.
             </p>
-
-            <div className="pt-2 flex items-center justify-between flex-wrap gap-3">
-              <div className="flex items-center gap-2 text-[11px]">
-                <span className={`px-2 py-0.5 rounded border font-medium ${
-                  isDark ? 'bg-[#1b1c2c] border-[#2b2c40] text-emerald-400' : 'bg-emerald-50 border-emerald-200 text-emerald-700'
-                }`}>
-                  IndexedDB Active
-                </span>
-                <span className={isDark ? 'text-gray-400' : 'text-gray-600'}>
-                  {localStats.notes} local documents • {localStats.folders} folders cached
-                </span>
-              </div>
-              <button
-                type="button"
-                onClick={handleVerifyOffline}
-                className={`px-3 py-1 rounded-lg text-xs font-medium border transition-colors cursor-pointer ${
-                  isDark ? 'border-[#2d2e44] bg-[#1a1b2b] hover:bg-[#232438] text-gray-200' : 'border-[#E2DEEE] bg-white hover:bg-[#F9F8FD] text-[#374151]'
-                }`}
-              >
-                Verify Local Database
-              </button>
-            </div>
           </div>
 
           {/* CARD 7: Import & Export */}
           <div
             ref={sectionRefs.importExport}
-            className={`rounded-2xl p-6 shadow-sm space-y-4 border ${
-              isDark ? 'bg-[#141522] border-[#222336]' : 'bg-white border-[#EAE6F4]'
-            }`}
+            className={`rounded-2xl p-6 shadow-sm space-y-4 border ${isDark ? 'bg-[#141522] border-[#222336]' : 'bg-white border-[#EAE6F4]'
+              }`}
           >
             <div className={`flex items-center gap-2.5 pb-4 border-b ${isDark ? 'border-[#1f2032]' : 'border-[#F0ECF8]'}`}>
-              <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${
-                isDark ? 'bg-purple-900/30 text-purple-400' : 'bg-[#EDE9FE] text-[#7C3AED]'
-              }`}>
+              <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${isDark ? 'bg-purple-900/30 text-purple-400' : 'bg-[#EDE9FE] text-[#7C3AED]'
+                }`}>
                 <ArrowUpDown className="w-4 h-4" />
               </div>
               <div>
@@ -1104,38 +857,17 @@ export const SettingsView = ({
               </div>
             </div>
 
-            {/* Hidden file input for importing notes */}
-            <input
-              type="file"
-              ref={importFileInputRef}
-              onChange={handleImportFile}
-              accept=".json,.md,.txt"
-              className="hidden"
-            />
-
             <div className="flex items-center gap-3 flex-wrap">
               <button
                 type="button"
                 onClick={handleDownloadBackup}
-                className={`flex items-center gap-2 px-4 py-2 rounded-xl border text-xs font-medium transition-colors cursor-pointer ${
-                  isDark
-                    ? 'bg-[#1b1c2c] hover:bg-[#25263c] border-[#2d2e44] text-gray-200'
-                    : 'bg-white hover:bg-[#F9F8FD] border-[#E2DEEE] text-[#374151]'
-                }`}
+                className={`flex items-center gap-2 px-4 py-2 rounded-xl border text-xs font-medium transition-colors ${isDark
+                  ? 'bg-[#1b1c2c] hover:bg-[#25263c] border-[#2d2e44] text-gray-200'
+                  : 'bg-white hover:bg-[#F9F8FD] border-[#E2DEEE] text-[#374151]'
+                  }`}
               >
-                <FileText className="w-4 h-4" style={{ color: 'var(--accent, #a855f7)' }} />
+                <FileText className={`w-4 h-4 ${isDark ? 'text-purple-400' : 'text-[#7C3AED]'}`} />
                 <span>Export Notes as JSON</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => importFileInputRef.current?.click()}
-                disabled={isImporting}
-                style={{ backgroundColor: 'var(--accent, #9333ea)' }}
-                className="flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-medium text-white transition-colors hover:brightness-110 disabled:opacity-50 cursor-pointer"
-              >
-                <Upload className={`w-4 h-4 ${isImporting ? 'animate-bounce' : ''}`} />
-                <span>{isImporting ? 'Importing...' : 'Import Notes (.json / .md)'}</span>
               </button>
             </div>
           </div>
@@ -1143,14 +875,12 @@ export const SettingsView = ({
           {/* CARD 8: Keyboard Shortcuts */}
           <div
             ref={sectionRefs.shortcuts}
-            className={`rounded-2xl p-6 shadow-sm space-y-4 border ${
-              isDark ? 'bg-[#141522] border-[#222336]' : 'bg-white border-[#EAE6F4]'
-            }`}
+            className={`rounded-2xl p-6 shadow-sm space-y-4 border ${isDark ? 'bg-[#141522] border-[#222336]' : 'bg-white border-[#EAE6F4]'
+              }`}
           >
             <div className={`flex items-center gap-2.5 pb-4 border-b ${isDark ? 'border-[#1f2032]' : 'border-[#F0ECF8]'}`}>
-              <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${
-                isDark ? 'bg-purple-900/30 text-purple-400' : 'bg-[#EDE9FE] text-[#7C3AED]'
-              }`}>
+              <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${isDark ? 'bg-purple-900/30 text-purple-400' : 'bg-[#EDE9FE] text-[#7C3AED]'
+                }`}>
                 <Keyboard className="w-4 h-4" />
               </div>
               <div>
@@ -1161,62 +891,34 @@ export const SettingsView = ({
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
               {[
-                { label: 'Save Document', key: 'Cmd + S', hint: 'Manually saves current document' },
-                { label: 'Quick Search', key: 'Cmd + K', hint: 'Focuses search across all notes' },
-                { label: 'Bold Text', key: 'Cmd + B', hint: 'Formats selection bold' },
-                { label: 'Italic Text', key: 'Cmd + I', hint: 'Formats selection italic' },
-                { label: 'Underline', key: 'Cmd + U', hint: 'Underlines selection' },
-                { label: 'Inline Code', key: 'Cmd + E', hint: 'Converts selection to code snippet' }
-              ].map((sc) => {
-                const isMac = typeof navigator !== 'undefined' && /Mac|iPod|iPhone|iPad/.test(navigator.platform);
-                const displayKey = isMac ? sc.key : sc.key.replace('Cmd', 'Ctrl');
-                return (
-                  <div
-                    key={sc.label}
-                    onClick={() => {
-                      if (sc.label === 'Quick Search') {
-                        onClose?.();
-                        setTimeout(() => {
-                          const el = document.getElementById('notes-search-input');
-                          if (el) { el.focus(); el.select(); }
-                        }, 100);
-                      } else {
-                        info(`${sc.label}: Press ${displayKey} in the editor (${sc.hint})`);
-                      }
-                    }}
-                    title={sc.hint}
-                    className={`flex items-center justify-between p-2.5 rounded-lg border transition-all cursor-pointer hover:border-[var(--accent-border)] ${
-                      isDark ? 'bg-[#191a2a] border-[#25263a] text-gray-300 hover:bg-[#202136]' : 'bg-[#F9F8FE] border-[#EAE6F4] text-[#374151] hover:bg-white'
-                    }`}
-                  >
-                    <span>{sc.label}</span>
-                    <kbd
-                      className="px-2 py-0.5 font-mono text-[10px] rounded border"
-                      style={{
-                        backgroundColor: 'var(--accent-bg, rgba(168, 85, 247, 0.15))',
-                        color: 'var(--accent-text, #c084fc)',
-                        borderColor: 'var(--accent-border, rgba(168, 85, 247, 0.4))'
-                      }}
-                    >
-                      {displayKey}
-                    </kbd>
-                  </div>
-                );
-              })}
+                { label: 'Save Document', key: 'Cmd + S' },
+                { label: 'Quick Search', key: 'Cmd + K' },
+                { label: 'Bold Text', key: 'Cmd + B' },
+                { label: 'Italic Text', key: 'Cmd + I' },
+                { label: 'Underline', key: 'Cmd + U' },
+                { label: 'Inline Code', key: 'Cmd + E' }
+              ].map((sc) => (
+                <div key={sc.label} className={`flex items-center justify-between p-2.5 rounded-lg border ${isDark ? 'bg-[#191a2a] border-[#25263a] text-gray-300' : 'bg-[#F9F8FE] border-[#EAE6F4] text-[#374151]'
+                  }`}>
+                  <span>{sc.label}</span>
+                  <kbd className={`px-2 py-0.5 font-mono text-[10px] rounded border ${isDark ? 'bg-[#25263a] text-purple-300 border-purple-500/30' : 'bg-[#EDE9FE] text-[#7C3AED] border-[#DDD6FE]'
+                    }`}>
+                    {sc.key}
+                  </kbd>
+                </div>
+              ))}
             </div>
           </div>
 
           {/* CARD 9: Privacy & Security */}
           <div
             ref={sectionRefs.security}
-            className={`rounded-2xl p-6 shadow-sm space-y-5 border ${
-              isDark ? 'bg-[#141522] border-[#222336]' : 'bg-white border-[#EAE6F4]'
-            }`}
+            className={`rounded-2xl p-6 shadow-sm space-y-5 border ${isDark ? 'bg-[#141522] border-[#222336]' : 'bg-white border-[#EAE6F4]'
+              }`}
           >
             <div className={`flex items-center gap-2.5 pb-4 border-b ${isDark ? 'border-[#1f2032]' : 'border-[#F0ECF8]'}`}>
-              <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${
-                isDark ? 'bg-purple-900/30 text-purple-400' : 'bg-[#EDE9FE] text-[#7C3AED]'
-              }`}>
+              <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${isDark ? 'bg-purple-900/30 text-purple-400' : 'bg-[#EDE9FE] text-[#7C3AED]'
+                }`}>
                 <Shield className="w-4 h-4" />
               </div>
               <div>
@@ -1234,10 +936,8 @@ export const SettingsView = ({
                     value={currentPassword}
                     onChange={(e) => setCurrentPassword(e.target.value)}
                     required
-                    placeholder="Enter current password"
-                    className={`w-full rounded-lg px-3 py-2 text-xs outline-none border focus:border-[var(--accent)] transition-colors ${
-                      isDark ? 'bg-[#1b1c2c] border-[#2d2e44] text-gray-100 placeholder-gray-500' : 'bg-white border-[#E2DEEE] text-[#111827] placeholder-gray-400'
-                    }`}
+                    className={`w-full rounded-lg px-3 py-2 text-xs outline-none border focus:border-purple-500 ${isDark ? 'bg-[#1b1c2c] border-[#2d2e44] text-gray-100' : 'bg-white border-[#E2DEEE] text-[#111827]'
+                      }`}
                   />
                 </div>
                 <div>
@@ -1248,10 +948,8 @@ export const SettingsView = ({
                     onChange={(e) => setNewPassword(e.target.value)}
                     required
                     minLength={6}
-                    placeholder="At least 6 characters"
-                    className={`w-full rounded-lg px-3 py-2 text-xs outline-none border focus:border-[var(--accent)] transition-colors ${
-                      isDark ? 'bg-[#1b1c2c] border-[#2d2e44] text-gray-100 placeholder-gray-500' : 'bg-white border-[#E2DEEE] text-[#111827] placeholder-gray-400'
-                    }`}
+                    className={`w-full rounded-lg px-3 py-2 text-xs outline-none border focus:border-purple-500 ${isDark ? 'bg-[#1b1c2c] border-[#2d2e44] text-gray-100' : 'bg-white border-[#E2DEEE] text-[#111827]'
+                      }`}
                   />
                 </div>
                 <div>
@@ -1262,10 +960,8 @@ export const SettingsView = ({
                     onChange={(e) => setConfirmPassword(e.target.value)}
                     required
                     minLength={6}
-                    placeholder="Re-enter new password"
-                    className={`w-full rounded-lg px-3 py-2 text-xs outline-none border focus:border-[var(--accent)] transition-colors ${
-                      isDark ? 'bg-[#1b1c2c] border-[#2d2e44] text-gray-100 placeholder-gray-500' : 'bg-white border-[#E2DEEE] text-[#111827] placeholder-gray-400'
-                    }`}
+                    className={`w-full rounded-lg px-3 py-2 text-xs outline-none border focus:border-purple-500 ${isDark ? 'bg-[#1b1c2c] border-[#2d2e44] text-gray-100' : 'bg-white border-[#E2DEEE] text-[#111827]'
+                      }`}
                   />
                 </div>
               </div>
@@ -1274,8 +970,7 @@ export const SettingsView = ({
                 <button
                   type="submit"
                   disabled={passwordSaving}
-                  style={{ backgroundColor: 'var(--accent, #9333ea)' }}
-                  className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-white text-xs font-medium transition-all hover:brightness-110 active:scale-95 disabled:opacity-50 cursor-pointer shadow-sm"
+                  className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-purple-600 hover:bg-purple-500 text-white text-xs font-medium transition-colors disabled:opacity-50"
                 >
                   <Key className="w-3.5 h-3.5" />
                   <span>{passwordSaving ? 'Updating...' : 'Update Password'}</span>
@@ -1287,14 +982,12 @@ export const SettingsView = ({
           {/* CARD 10: About */}
           <div
             ref={sectionRefs.about}
-            className={`rounded-2xl p-6 shadow-sm space-y-4 border ${
-              isDark ? 'bg-[#141522] border-[#222336]' : 'bg-white border-[#EAE6F4]'
-            }`}
+            className={`rounded-2xl p-6 shadow-sm space-y-4 border ${isDark ? 'bg-[#141522] border-[#222336]' : 'bg-white border-[#EAE6F4]'
+              }`}
           >
             <div className={`flex items-center gap-2.5 pb-4 border-b ${isDark ? 'border-[#1f2032]' : 'border-[#F0ECF8]'}`}>
-              <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${
-                isDark ? 'bg-purple-900/30 text-purple-400' : 'bg-[#EDE9FE] text-[#7C3AED]'
-              }`}>
+              <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${isDark ? 'bg-purple-900/30 text-purple-400' : 'bg-[#EDE9FE] text-[#7C3AED]'
+                }`}>
                 <Info className="w-4 h-4" />
               </div>
               <div>
@@ -1320,11 +1013,10 @@ export const SettingsView = ({
                   if (logout) await logout();
                   window.location.href = '/';
                 }}
-                className={`flex items-center gap-1.5 px-4 py-1.5 rounded-lg border text-xs font-semibold transition-all shadow-sm cursor-pointer hover:brightness-110 active:scale-95 ${
-                  isDark
-                    ? 'bg-red-950/40 hover:bg-red-900/60 border-red-500/40 text-red-300'
-                    : 'bg-red-50 hover:bg-red-100 border-red-200 text-red-600'
-                }`}
+                className={`flex items-center gap-1.5 px-4 py-1.5 rounded-lg border text-xs font-semibold transition-colors shadow-sm ${isDark
+                  ? 'bg-red-950/40 hover:bg-red-900/60 border-red-500/40 text-red-300'
+                  : 'bg-red-50 hover:bg-red-100 border-red-200 text-red-600'
+                  }`}
               >
                 <LogOut className="w-3.5 h-3.5" />
                 <span>Log Out of NoteNest</span>

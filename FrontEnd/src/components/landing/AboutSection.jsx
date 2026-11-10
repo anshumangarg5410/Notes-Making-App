@@ -1,5 +1,6 @@
 import React from 'react';
-import { BookOpen, ShieldCheck, Feather, Sparkles, Layers, Cpu } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { BookOpen, ShieldCheck, Feather, Sparkles, Layers, Cpu, ArrowRight } from 'lucide-react';
 import { useTheme } from '../../context/ThemeContext';
 import cardAboutDark from '../../assets/landing/card-about-dark.png';
 import cardAboutLight from '../../assets/landing/card-about-light.png';
@@ -156,6 +157,16 @@ export const AboutSection = () => {
                   </div>
                 );
               })}
+            </div>
+
+            <div className="pt-3">
+              <Link
+                to="/about"
+                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-[6px] bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white text-xs sm:text-sm font-semibold shadow-[0_0_20px_rgba(168,85,247,0.35)] transition-all hover:scale-105"
+              >
+                <span>Read the Full NoteNest Story</span>
+                <ArrowRight className="w-4 h-4" />
+              </Link>
             </div>
 
           </div>

@@ -39,7 +39,7 @@ export const FooterLinks = () => {
   ];
 
   const companyLinks = [
-    { label: 'About', icon: Info, href: '#about' },
+    { label: 'About', icon: Info, href: '/about' },
     { label: 'Contact', icon: Mail, href: '/contact' },
     { label: 'Documentation', icon: BookOpen, href: '#features' },
     { label: 'Privacy Policy', icon: ShieldCheck, href: '#features' },

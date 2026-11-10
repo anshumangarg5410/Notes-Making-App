@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { EditorLayout } from '../components/Editor/EditorLayout';
+import { EditorLayout } from '../components/editor/EditorLayout';
 import { SettingsModal } from '../components/modals/SettingsModal';
 import { useTheme } from '../context/ThemeContext';
 

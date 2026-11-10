@@ -1,6 +1,6 @@
 import React from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
-import { EditorLayout } from '../components/Editor/EditorLayout';
+import { EditorLayout } from '../components/editor/EditorLayout';
 
 export const NoteEditorPage = () => {
   const [searchParams] = useSearchParams();

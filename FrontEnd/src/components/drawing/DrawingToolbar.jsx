@@ -600,3 +600,4 @@ export const DrawingToolbar = ({
 };
 
 export default DrawingToolbar;
+

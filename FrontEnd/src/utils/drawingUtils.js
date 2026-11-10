@@ -389,3 +389,4 @@ export const downloadDrawingSVG = (drawingData, isDark = true, filename = 'drawi
   document.body.removeChild(a);
   URL.revokeObjectURL(url);
 };
+

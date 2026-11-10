@@ -63,7 +63,12 @@ export const PencilNavbar = () => {
 
     const element = document.getElementById(id);
     if (element) {
-      element.scrollIntoView({ behavior: 'smooth' });
+      const navOffset = 90;
+      const elementPosition = element.getBoundingClientRect().top + window.pageYOffset;
+      window.scrollTo({
+        top: Math.max(0, elementPosition - navOffset),
+        behavior: 'smooth'
+      });
     } else if (id === 'home') {
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }

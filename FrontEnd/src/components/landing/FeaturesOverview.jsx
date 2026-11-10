@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useMemo } from 'react';
 import {
   Sparkles,
   PenLine,
@@ -14,17 +14,241 @@ import {
   FileText,
   BookOpen,
   ChevronDown,
-  X
+  ChevronRight,
+  X,
+  RotateCw,
+  Download,
+  CheckCircle2,
+  Copy,
+  FolderPlus
 } from 'lucide-react';
 import { useTheme } from '../../context/ThemeContext';
+import centralHologramImg from '../../assets/landing/central-book-hologram-glow.png';
 
 export const FeaturesOverview = () => {
   const { isDark } = useTheme();
 
+  // =========================================================================
+  // CARD 1: Rich Text Editor Interactive State
+  // =========================================================================
+  const [editorFormatting, setEditorFormatting] = useState({
+    bold: true,
+    italic: false,
+    underline: false,
+    heading: 'H2',
+    code: true
+  });
+  const [checklist, setChecklist] = useState([
+    { id: 1, text: 'Design the architecture', done: true },
+    { id: 2, text: 'Implement the API', done: false },
+    { id: 3, text: 'Enable Offline Dexie sync', done: true }
+  ]);
+  const [copiedCode, setCopiedCode] = useState(false);
+
+  const toggleFormatting = (type) => {
+    if (type === 'H1' || type === 'H2') {
+      setEditorFormatting((prev) => ({
+        ...prev,
+        heading: prev.heading === type ? 'body' : type
+      }));
+    } else {
+      setEditorFormatting((prev) => ({
+        ...prev,
+        [type]: !prev[type]
+      }));
+    }
+  };
+
+  const toggleChecklistItem = (id) => {
+    setChecklist((prev) =>
+      prev.map((item) => (item.id === id ? { ...item, done: !item.done } : item))
+    );
+  };
+
+  const handleCopySnippet = () => {
+    const snippet = `const note = {\n  title: 'NoteNest',\n  offline: true\n};`;
+    navigator.clipboard?.writeText(snippet);
+    setCopiedCode(true);
+    setTimeout(() => setCopiedCode(false), 1800);
+  };
+
+  // =========================================================================
+  // CARD 2: Tags & Favorites Interactive State
+  // =========================================================================
+  const initialTags = ['DSA', 'React', 'System Design', 'Notes', 'Architecture', 'TypeScript'];
+  const [selectedTags, setSelectedTags] = useState(['DSA', 'React']);
+  const [isFavoriteActive, setIsFavoriteActive] = useState(true);
+
+  const toggleTag = (tag) => {
+    setSelectedTags((prev) =>
+      prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag]
+    );
+  };
+
+  // =========================================================================
+  // CARD 3: Offline-First & Sync Interactive State
+  // =========================================================================
+  const [syncStatus, setSyncStatus] = useState('synced'); // 'synced' | 'syncing' | 'offline'
+  const [lastSyncTime, setLastSyncTime] = useState('Just now');
+
+  const triggerSync = () => {
+    if (syncStatus === 'offline') {
+      setSyncStatus('syncing');
+      setTimeout(() => {
+        setSyncStatus('synced');
+        setLastSyncTime('Just now');
+      }, 1200);
+    } else if (syncStatus === 'synced') {
+      setSyncStatus('offline');
+    }
+  };
+
+  const handleSyncButton = (e) => {
+    e.stopPropagation();
+    setSyncStatus('syncing');
+    setTimeout(() => {
+      setSyncStatus('synced');
+      setLastSyncTime('Just now');
+    }, 1100);
+  };
+
+  // =========================================================================
+  // CARD 4: Folders & Nested Folders Interactive State
+  // =========================================================================
+  const [isProjectsOpen, setIsProjectsOpen] = useState(true);
+  const [isCollegeOpen, setIsCollegeOpen] = useState(false);
+  const [selectedFolderItem, setSelectedFolderItem] = useState('NoteNest');
+
+  // =========================================================================
+  // CARD 5: Powerful Search Interactive State
+  // =========================================================================
+  const [searchQuery, setSearchQuery] = useState('database');
+  const allSearchNotes = useMemo(
+    () => [
+      {
+        id: 1,
+        title: 'DBMS Notes',
+        snippet: '... database normalization, BCNF, ACID transactions ...',
+        tags: ['database', 'dbms']
+      },
+      {
+        id: 2,
+        title: 'SQL Queries',
+        snippet: '... joins, indexes, database query optimization ...',
+        tags: ['database', 'sql']
+      },
+      {
+        id: 3,
+        title: 'System Design',
+        snippet: '... database scaling strategies, sharding, caching ...',
+        tags: ['database', 'system-design']
+      },
+      {
+        id: 4,
+        title: 'NoteNest Architecture',
+        snippet: '... offline-first client architecture with Dexie IndexedDB ...',
+        tags: ['architecture', 'notenest']
+      },
+      {
+        id: 5,
+        title: 'API Gateway Specs',
+        snippet: '... reverse proxy, rate limiting, token authentication ...',
+        tags: ['api', 'backend']
+      }
+    ],
+    []
+  );
+
+  const filteredNotes = useMemo(() => {
+    const q = searchQuery.trim().toLowerCase();
+    if (!q) return allSearchNotes;
+    return allSearchNotes.filter(
+      (note) =>
+        note.title.toLowerCase().includes(q) ||
+        note.snippet.toLowerCase().includes(q) ||
+        note.tags.some((t) => t.toLowerCase().includes(q))
+    );
+  }, [searchQuery, allSearchNotes]);
+
+  // Helper to highlight matching text in search results
+  const renderHighlightedText = (text, query) => {
+    if (!query) return text;
+    const parts = text.split(new RegExp(`(${query})`, 'gi'));
+    return parts.map((part, i) =>
+      part.toLowerCase() === query.toLowerCase() ? (
+        <span key={i} className="text-purple-400 font-bold bg-purple-500/20 px-0.5 rounded">
+          {part}
+        </span>
+      ) : (
+        part
+      )
+    );
+  };
+
+  // =========================================================================
+  // CARD 6: Import & Export Interactive State
+  // =========================================================================
+  const [exportNotice, setExportNotice] = useState(null);
+
+  const handleExportMarkdown = () => {
+    const mdContent = `# NoteNest - Project Planning
+Created with NoteNest
+
+## Overview
+A powerful, distraction-free knowledge workspace built for modern thinking.
+
+## Key Features
+- [x] Advanced Rich Text Editor
+- [x] Folders & Nested Folders
+- [x] Tags & Favorites
+- [x] Offline-First with Dexie
+- [x] Powerful Search
+- [x] Import & Export (Markdown & PDF)
+
+\`\`\`javascript
+const note = {
+  title: 'NoteNest',
+  offline: true,
+  storage: 'Dexie + MongoDB'
+};
+\`\`\`
+`;
+    const blob = new Blob([mdContent], { type: 'text/markdown;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', 'NoteNest-Project-Planning.md');
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+
+    setExportNotice('NoteNest-Project-Planning.md downloaded!');
+    setTimeout(() => setExportNotice(null), 3000);
+  };
+
+  const handleExportPDF = () => {
+    setExportNotice('Preparing PDF document export...');
+    setTimeout(() => {
+      setExportNotice('PDF document ready for export!');
+      setTimeout(() => setExportNotice(null), 3000);
+    }, 1000);
+  };
+
+  // =========================================================================
+  // Central Hologram Hub Interactive Wave State
+  // =========================================================================
+  const [isHubPulsing, setIsHubPulsing] = useState(false);
+
+  const triggerHubWave = () => {
+    setIsHubPulsing(true);
+    setTimeout(() => setIsHubPulsing(false), 1600);
+  };
+
   return (
     <section
       id="features"
-      className="relative w-full py-20 lg:py-28 px-4 sm:px-6 lg:px-8 select-none overflow-hidden transition-colors duration-300 bg-transparent text-white"
+      className="relative w-full pt-28 pb-20 lg:pt-36 lg:pb-28 px-4 sm:px-6 lg:px-8 select-none overflow-hidden transition-colors duration-300 bg-transparent text-white scroll-mt-24 sm:scroll-mt-28 lg:scroll-mt-32"
     >
       {/* Background Ambience & Lighting */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden">
@@ -41,9 +265,7 @@ export const FeaturesOverview = () => {
           }`}
         />
         {/* Bottom landscape mist */}
-        <div
-          className="absolute bottom-0 inset-x-0 h-40 bg-gradient-to-t from-transparent to-transparent pointer-events-none"
-        />
+        <div className="absolute bottom-0 inset-x-0 h-40 bg-gradient-to-t from-transparent to-transparent pointer-events-none" />
       </div>
 
       <div className="max-w-[1440px] mx-auto relative z-10">
@@ -58,7 +280,7 @@ export const FeaturesOverview = () => {
             }`}
           >
             <Sparkles className="w-3.5 h-3.5 text-purple-400 animate-pulse" />
-            <span>Features</span>
+            <span>Interactive Features</span>
           </div>
 
           {/* Main Title */}
@@ -75,18 +297,98 @@ export const FeaturesOverview = () => {
               isDark ? 'text-gray-300/80' : 'text-slate-600'
             }`}
           >
-            Write, organize, search and access your notes anywhere — online or offline.
+            Write, organize, search and access your notes anywhere — online or offline. Try the interactive preview cards below!
           </p>
         </div>
 
         {/* ============================================================== */}
-        {/* FEATURE CARDS GRID                                           */}
+        {/* INTERCONNECTED KNOWLEDGE UNIVERSE COMPOSITION */}
         {/* ============================================================== */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8 items-start">
+        <div className="relative grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-center">
+          {/* SVG Connection Network Beams (Visible on Desktop) */}
+          <svg
+            className="absolute inset-0 w-full h-full pointer-events-none hidden lg:block z-0"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <defs>
+              <linearGradient id="beamGlowLeft" x1="100%" y1="50%" x2="0%" y2="50%">
+                <stop offset="0%" stopColor="#c084fc" stopOpacity={isHubPulsing ? '1' : '0.9'} />
+                <stop offset="50%" stopColor="#a855f7" stopOpacity={isHubPulsing ? '0.85' : '0.5'} />
+                <stop offset="100%" stopColor="#7e22ce" stopOpacity="0.15" />
+              </linearGradient>
+              <linearGradient id="beamGlowRight" x1="0%" y1="50%" x2="100%" y2="50%">
+                <stop offset="0%" stopColor="#c084fc" stopOpacity={isHubPulsing ? '1' : '0.9'} />
+                <stop offset="50%" stopColor="#a855f7" stopOpacity={isHubPulsing ? '0.85' : '0.5'} />
+                <stop offset="100%" stopColor="#7e22ce" stopOpacity="0.15" />
+              </linearGradient>
+              <filter id="purpleBloom" x="-20%" y="-20%" width="140%" height="140%">
+                <feGaussianBlur stdDeviation={isHubPulsing ? '6' : '4'} result="blur" />
+                <feMerge>
+                  <feMergeNode in="blur" />
+                  <feMergeNode in="SourceGraphic" />
+                </feMerge>
+              </filter>
+            </defs>
+
+            {/* Left 3 Connecting Beams */}
+            <path
+              d="M 480 390 C 430 390, 420 160, 395 155"
+              fill="none"
+              stroke="url(#beamGlowLeft)"
+              strokeWidth={isHubPulsing ? '3' : '2'}
+              strokeDasharray="4 4"
+              filter="url(#purpleBloom)"
+              className="animate-pulse"
+            />
+            <path
+              d="M 470 420 C 420 420, 410 405, 395 400"
+              fill="none"
+              stroke="url(#beamGlowLeft)"
+              strokeWidth={isHubPulsing ? '3.5' : '2.2'}
+              filter="url(#purpleBloom)"
+            />
+            <path
+              d="M 480 450 C 430 450, 420 650, 395 650"
+              fill="none"
+              stroke="url(#beamGlowLeft)"
+              strokeWidth={isHubPulsing ? '3' : '2'}
+              strokeDasharray="4 4"
+              filter="url(#purpleBloom)"
+              className="animate-pulse"
+            />
+
+            {/* Right 3 Connecting Beams */}
+            <path
+              d="M 550 390 C 600 390, 610 160, 635 155"
+              fill="none"
+              stroke="url(#beamGlowRight)"
+              strokeWidth={isHubPulsing ? '3' : '2'}
+              strokeDasharray="4 4"
+              filter="url(#purpleBloom)"
+              className="animate-pulse"
+            />
+            <path
+              d="M 560 420 C 610 420, 620 405, 635 400"
+              fill="none"
+              stroke="url(#beamGlowRight)"
+              strokeWidth={isHubPulsing ? '3.5' : '2.2'}
+              filter="url(#purpleBloom)"
+            />
+            <path
+              d="M 550 450 C 600 450, 610 650, 635 650"
+              fill="none"
+              stroke="url(#beamGlowRight)"
+              strokeWidth={isHubPulsing ? '3' : '2'}
+              strokeDasharray="4 4"
+              filter="url(#purpleBloom)"
+              className="animate-pulse"
+            />
+          </svg>
+
           {/* ======================================================= */}
-          {/* LEFT COLUMN: 3 Feature Panels                          */}
+          {/* LEFT COLUMN: 3 Feature Panels (lg:col-span-5)           */}
           {/* ======================================================= */}
-          <div className="space-y-6 lg:space-y-7 relative z-10">
+          <div className="lg:col-span-5 space-y-6 lg:space-y-7 relative z-10">
             {/* PANEL 1: Advanced Rich Text Editor */}
             <div
               className={`group relative rounded-[8px] p-5 sm:p-6 transition-all duration-300 border backdrop-blur-md ${
@@ -95,6 +397,14 @@ export const FeaturesOverview = () => {
                   : 'border-purple-200 bg-white/95 hover:border-purple-400 hover:shadow-[0_8px_30px_rgba(147,51,234,0.1)]'
               }`}
             >
+              {/* Center-facing connector node dot */}
+              <div
+                className={`hidden lg:block absolute -right-1.5 top-1/2 -translate-y-1/2 w-3 h-3 rounded-full border-2 transition-transform duration-300 group-hover:scale-125 ${
+                  isDark
+                    ? 'bg-purple-400 border-[#090514] shadow-[0_0_10px_rgba(192,132,252,0.9)]'
+                    : 'bg-purple-600 border-white shadow-[0_0_8px_rgba(147,51,234,0.6)]'
+                }`}
+              />
 
               <div className="grid grid-cols-1 sm:grid-cols-12 gap-5 items-center">
                 {/* Left Description Area */}
@@ -149,7 +459,7 @@ export const FeaturesOverview = () => {
                   >
                     {/* Window Title Bar */}
                     <div className="flex items-center justify-between pb-2 mb-2 border-b border-purple-500/15 text-[10px]">
-                      <span className="font-semibold text-purple-400">NoteNest</span>
+                      <span className="font-semibold text-purple-400">NoteNest Editor</span>
                       <div className="flex items-center gap-1.5">
                         <span className="w-2 h-2 rounded-full bg-red-500/80" />
                         <span className="w-2 h-2 rounded-full bg-amber-500/80" />
@@ -157,43 +467,166 @@ export const FeaturesOverview = () => {
                       </div>
                     </div>
 
-                    {/* Toolbar */}
-                    <div className="flex items-center gap-1.5 text-[10px] pb-2 mb-2 border-b border-purple-500/15 text-gray-400">
-                      <span className="font-bold text-gray-200 px-1 py-0.5 rounded bg-purple-950/50">B</span>
-                      <span className="italic px-1">I</span>
-                      <span className="underline px-1">U</span>
-                      <span className="px-1">H1</span>
-                      <span className="px-1">H2</span>
-                      <span className="text-purple-400 px-1">&lt;/&gt;</span>
+                    {/* Interactive Toolbar */}
+                    <div className="flex items-center gap-1 text-[10px] pb-2 mb-2 border-b border-purple-500/15 text-gray-400">
+                      <button
+                        type="button"
+                        onClick={() => toggleFormatting('bold')}
+                        title="Toggle Bold"
+                        className={`px-1.5 py-0.5 rounded transition-colors font-bold ${
+                          editorFormatting.bold
+                            ? 'bg-purple-600 text-white shadow-xs'
+                            : 'text-gray-300 hover:bg-purple-950/50'
+                        }`}
+                      >
+                        B
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => toggleFormatting('italic')}
+                        title="Toggle Italic"
+                        className={`px-1.5 py-0.5 rounded transition-colors italic ${
+                          editorFormatting.italic
+                            ? 'bg-purple-600 text-white shadow-xs'
+                            : 'text-gray-300 hover:bg-purple-950/50'
+                        }`}
+                      >
+                        I
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => toggleFormatting('underline')}
+                        title="Toggle Underline"
+                        className={`px-1.5 py-0.5 rounded transition-colors underline ${
+                          editorFormatting.underline
+                            ? 'bg-purple-600 text-white shadow-xs'
+                            : 'text-gray-300 hover:bg-purple-950/50'
+                        }`}
+                      >
+                        U
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => toggleFormatting('H1')}
+                        title="Heading 1"
+                        className={`px-1.5 py-0.5 rounded transition-colors font-semibold ${
+                          editorFormatting.heading === 'H1'
+                            ? 'bg-purple-600 text-white shadow-xs'
+                            : 'text-gray-300 hover:bg-purple-950/50'
+                        }`}
+                      >
+                        H1
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => toggleFormatting('H2')}
+                        title="Heading 2"
+                        className={`px-1.5 py-0.5 rounded transition-colors font-semibold ${
+                          editorFormatting.heading === 'H2'
+                            ? 'bg-purple-600 text-white shadow-xs'
+                            : 'text-gray-300 hover:bg-purple-950/50'
+                        }`}
+                      >
+                        H2
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => toggleFormatting('code')}
+                        title="Toggle Code View"
+                        className={`px-1.5 py-0.5 rounded transition-colors ${
+                          editorFormatting.code
+                            ? 'bg-purple-600 text-white shadow-xs'
+                            : 'text-purple-400 hover:bg-purple-950/50'
+                        }`}
+                      >
+                        &lt;/&gt;
+                      </button>
                     </div>
 
                     {/* Content Preview */}
                     <div className="space-y-1.5 text-[11px]">
-                      <p className={`font-bold ${isDark ? 'text-white' : 'text-slate-900'}`}>
-                        Project Planning
-                      </p>
-                      <div className={`flex items-center gap-1.5 text-[10.5px] ${isDark ? 'text-gray-300' : 'text-slate-700'}`}>
-                        <CheckSquare className="w-3 h-3 text-purple-400 shrink-0" />
-                        <span>Design the architecture</span>
-                      </div>
-                      <div className={`flex items-center gap-1.5 text-[10.5px] ${isDark ? 'text-gray-400' : 'text-slate-500'}`}>
-                        <Square className="w-3 h-3 text-gray-500 shrink-0" />
-                        <span>Implement the API</span>
-                      </div>
-
-                      {/* Code Block Snippet */}
-                      <div
-                        className={`mt-2 p-2 rounded border font-mono text-[9.5px] leading-snug ${
-                          isDark
-                            ? 'bg-[#0e071c] border-purple-500/20 text-purple-300'
-                            : 'bg-white border-purple-200 text-purple-800'
+                      <p
+                        className={`transition-all ${
+                          editorFormatting.heading === 'H1'
+                            ? 'text-sm font-extrabold text-purple-300'
+                            : editorFormatting.heading === 'H2'
+                            ? 'text-xs font-bold'
+                            : 'text-[11px] font-medium'
+                        } ${editorFormatting.bold ? 'font-bold' : 'font-normal'} ${
+                          editorFormatting.italic ? 'italic' : ''
+                        } ${editorFormatting.underline ? 'underline decoration-purple-400' : ''} ${
+                          isDark ? 'text-white' : 'text-slate-900'
                         }`}
                       >
-                        <p><span className="text-purple-500 font-semibold">const</span> note = &#123;</p>
-                        <p className="pl-3.5">title: <span className="text-amber-500">'NoteNest'</span>,</p>
-                        <p className="pl-3.5">offline: <span className="text-emerald-500 font-semibold">true</span></p>
-                        <p>&#125;;</p>
+                        Project Planning
+                      </p>
+
+                      {/* Interactive Checkboxes */}
+                      <div className="space-y-1">
+                        {checklist.map((item) => (
+                          <div
+                            key={item.id}
+                            onClick={() => toggleChecklistItem(item.id)}
+                            className={`flex items-center gap-1.5 text-[10.5px] cursor-pointer select-none py-0.5 px-1 rounded transition-colors ${
+                              isDark ? 'hover:bg-purple-950/40' : 'hover:bg-purple-100/50'
+                            }`}
+                          >
+                            {item.done ? (
+                              <CheckSquare className="w-3 h-3 text-purple-400 shrink-0" />
+                            ) : (
+                              <Square className="w-3 h-3 text-gray-500 shrink-0" />
+                            )}
+                            <span
+                              className={`${
+                                item.done
+                                  ? 'line-through text-gray-400 dark:text-gray-400'
+                                  : isDark
+                                  ? 'text-gray-200'
+                                  : 'text-slate-800 font-medium'
+                              }`}
+                            >
+                              {item.text}
+                            </span>
+                          </div>
+                        ))}
                       </div>
+
+                      {/* Code Block Snippet (Toggled by code button) */}
+                      {editorFormatting.code && (
+                        <div
+                          onClick={handleCopySnippet}
+                          title="Click to copy snippet"
+                          className={`mt-2 p-2 rounded border font-mono text-[9.5px] leading-snug cursor-pointer group/code relative ${
+                            isDark
+                              ? 'bg-[#0e071c] border-purple-500/20 text-purple-300 hover:border-purple-400/50'
+                              : 'bg-white border-purple-200 text-purple-800 hover:border-purple-300'
+                          }`}
+                        >
+                          <div className="absolute top-1 right-1 opacity-0 group-hover/code:opacity-100 transition-opacity flex items-center gap-1 text-[9px] text-purple-400 bg-purple-950/80 px-1 py-0.5 rounded">
+                            {copiedCode ? (
+                              <>
+                                <Check className="w-2.5 h-2.5 text-emerald-400" />
+                                <span className="text-emerald-400">Copied!</span>
+                              </>
+                            ) : (
+                              <>
+                                <Copy className="w-2.5 h-2.5" />
+                                <span>Copy</span>
+                              </>
+                            )}
+                          </div>
+                          <p>
+                            <span className="text-purple-500 font-semibold">const</span> note = &#123;
+                          </p>
+                          <p className="pl-3.5">
+                            title: <span className="text-amber-500">'NoteNest'</span>,
+                          </p>
+                          <p className="pl-3.5">
+                            offline: <span className="text-emerald-500 font-semibold">true</span>
+                          </p>
+                          <p>&#125;;</p>
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -208,6 +641,15 @@ export const FeaturesOverview = () => {
                   : 'border-purple-200 bg-white/95 hover:border-purple-400 hover:shadow-[0_8px_30px_rgba(147,51,234,0.1)]'
               }`}
             >
+              {/* Center-facing connector node dot */}
+              <div
+                className={`hidden lg:block absolute -right-1.5 top-1/2 -translate-y-1/2 w-3 h-3 rounded-full border-2 transition-transform duration-300 group-hover:scale-125 ${
+                  isDark
+                    ? 'bg-purple-400 border-[#090514] shadow-[0_0_10px_rgba(192,132,252,0.9)]'
+                    : 'bg-purple-600 border-white shadow-[0_0_8px_rgba(147,51,234,0.6)]'
+                }`}
+              />
+
               <div className="grid grid-cols-1 sm:grid-cols-12 gap-5 items-center">
                 {/* Left Description Area */}
                 <div className="sm:col-span-6 space-y-3">
@@ -259,60 +701,89 @@ export const FeaturesOverview = () => {
                       isDark ? 'border-purple-500/25 bg-[#170e2b]' : 'border-purple-200/80 bg-[#f8f5fc]'
                     }`}
                   >
-                    {/* Tag Chips */}
-                    <div className="flex flex-wrap gap-2">
-                      <span
-                        className={`px-2.5 py-1 rounded-[4px] border text-[11px] font-medium ${
-                          isDark
-                            ? 'bg-[#22153b] border-purple-500/30 text-purple-200'
-                            : 'bg-purple-100/70 border-purple-300 text-purple-900'
-                        }`}
-                      >
-                        # DSA
-                      </span>
-                      <span
-                        className={`px-2.5 py-1 rounded-[4px] border text-[11px] font-medium ${
-                          isDark
-                            ? 'bg-[#22153b] border-purple-500/30 text-purple-200'
-                            : 'bg-purple-100/70 border-purple-300 text-purple-900'
-                        }`}
-                      >
-                        # React
-                      </span>
-                    </div>
-                    <div className="flex flex-wrap gap-2">
-                      <span
-                        className={`px-2.5 py-1 rounded-[4px] border text-[11px] font-medium ${
-                          isDark
-                            ? 'bg-[#22153b] border-purple-500/30 text-purple-200'
-                            : 'bg-purple-100/70 border-purple-300 text-purple-900'
-                        }`}
-                      >
-                        # System Design
-                      </span>
-                      <span
-                        className={`px-2.5 py-1 rounded-[4px] border text-[11px] font-medium ${
-                          isDark
-                            ? 'bg-[#22153b] border-purple-500/30 text-purple-200'
-                            : 'bg-purple-100/70 border-purple-300 text-purple-900'
-                        }`}
-                      >
-                        # Notes
-                      </span>
+                    {/* Interactive Tag Chips */}
+                    <div className="space-y-2">
+                      <div className="flex flex-wrap gap-2">
+                        {initialTags.slice(0, 4).map((tag) => {
+                          const isSelected = selectedTags.includes(tag);
+                          return (
+                            <button
+                              key={tag}
+                              type="button"
+                              onClick={() => toggleTag(tag)}
+                              className={`px-2.5 py-1 rounded-[4px] border text-[11px] font-medium transition-all cursor-pointer ${
+                                isSelected
+                                  ? 'bg-purple-600 border-purple-400 text-white shadow-[0_0_10px_rgba(168,85,247,0.4)] scale-105'
+                                  : isDark
+                                  ? 'bg-[#22153b] border-purple-500/30 text-purple-200 hover:border-purple-400/60'
+                                  : 'bg-purple-100/70 border-purple-300 text-purple-900 hover:bg-purple-200/80'
+                              }`}
+                            >
+                              #{tag}
+                            </button>
+                          );
+                        })}
+                      </div>
+
+                      <div className="flex flex-wrap gap-2">
+                        {initialTags.slice(4).map((tag) => {
+                          const isSelected = selectedTags.includes(tag);
+                          return (
+                            <button
+                              key={tag}
+                              type="button"
+                              onClick={() => toggleTag(tag)}
+                              className={`px-2.5 py-1 rounded-[4px] border text-[11px] font-medium transition-all cursor-pointer ${
+                                isSelected
+                                  ? 'bg-purple-600 border-purple-400 text-white shadow-[0_0_10px_rgba(168,85,247,0.4)] scale-105'
+                                  : isDark
+                                  ? 'bg-[#22153b] border-purple-500/30 text-purple-200 hover:border-purple-400/60'
+                                  : 'bg-purple-100/70 border-purple-300 text-purple-900 hover:bg-purple-200/80'
+                              }`}
+                            >
+                              #{tag}
+                            </button>
+                          );
+                        })}
+                        <span className="text-[10px] text-purple-300/60 self-center">
+                          {selectedTags.length} active
+                        </span>
+                      </div>
                     </div>
 
-                    {/* Favorite Notes Pill */}
+                    {/* Favorite Notes Pill (Interactive Toggle) */}
                     <div className="pt-1">
-                      <div
-                        className={`flex items-center gap-2 px-3 py-2 rounded-[5px] border text-xs font-semibold ${
-                          isDark
-                            ? 'bg-gradient-to-r from-purple-950/60 to-purple-900/30 border-purple-500/30 text-white'
-                            : 'bg-purple-50 border-purple-200 text-purple-950 shadow-xs'
+                      <button
+                        type="button"
+                        onClick={() => setIsFavoriteActive(!isFavoriteActive)}
+                        className={`w-full flex items-center justify-between px-3 py-2 rounded-[5px] border text-xs font-semibold transition-all cursor-pointer ${
+                          isFavoriteActive
+                            ? 'bg-gradient-to-r from-purple-950/80 to-purple-900/60 border-purple-400/60 text-white shadow-[0_0_14px_rgba(168,85,247,0.3)]'
+                            : isDark
+                            ? 'bg-[#1a1130] border-purple-500/20 text-gray-400 hover:text-white'
+                            : 'bg-white border-purple-200 text-slate-700'
                         }`}
                       >
-                        <Star className="w-3.5 h-3.5 text-amber-400 fill-amber-400" />
-                        <span>Favorite Notes</span>
-                      </div>
+                        <div className="flex items-center gap-2">
+                          <Star
+                            className={`w-3.5 h-3.5 transition-transform ${
+                              isFavoriteActive
+                                ? 'text-amber-400 fill-amber-400 scale-110 animate-pulse'
+                                : 'text-gray-400'
+                            }`}
+                          />
+                          <span>Favorite Notes</span>
+                        </div>
+                        <span
+                          className={`text-[10px] px-1.5 py-0.5 rounded font-mono ${
+                            isFavoriteActive
+                              ? 'bg-amber-400/20 text-amber-300 border border-amber-400/30'
+                              : 'bg-purple-950/40 text-gray-400'
+                          }`}
+                        >
+                          {isFavoriteActive ? '3 pinned' : 'Off'}
+                        </span>
+                      </button>
                     </div>
                   </div>
                 </div>
@@ -327,6 +798,15 @@ export const FeaturesOverview = () => {
                   : 'border-purple-200 bg-white/95 hover:border-purple-400 hover:shadow-[0_8px_30px_rgba(147,51,234,0.1)]'
               }`}
             >
+              {/* Center-facing connector node dot */}
+              <div
+                className={`hidden lg:block absolute -right-1.5 top-1/2 -translate-y-1/2 w-3 h-3 rounded-full border-2 transition-transform duration-300 group-hover:scale-125 ${
+                  isDark
+                    ? 'bg-purple-400 border-[#090514] shadow-[0_0_10px_rgba(192,132,252,0.9)]'
+                    : 'bg-purple-600 border-white shadow-[0_0_8px_rgba(147,51,234,0.6)]'
+                }`}
+              />
+
               <div className="grid grid-cols-1 sm:grid-cols-12 gap-5 items-center">
                 {/* Left Description Area */}
                 <div className="sm:col-span-6 space-y-3">
@@ -374,15 +854,17 @@ export const FeaturesOverview = () => {
                 {/* Right Interactive Preview Widget */}
                 <div className="sm:col-span-6">
                   <div
-                    className={`rounded-[6px] border p-4 text-xs shadow-inner flex flex-col items-center justify-center text-center space-y-3 ${
-                      isDark ? 'border-purple-500/25 bg-[#170e2b]' : 'border-purple-200/80 bg-[#f8f5fc]'
+                    onClick={triggerSync}
+                    title="Click to toggle Online/Offline simulation"
+                    className={`rounded-[6px] border p-4 text-xs shadow-inner flex flex-col items-center justify-center text-center space-y-3 cursor-pointer group/sync transition-all ${
+                      isDark ? 'border-purple-500/25 bg-[#170e2b] hover:border-purple-400/50' : 'border-purple-200/80 bg-[#f8f5fc]'
                     }`}
                   >
                     {/* Device & Sync Visualization */}
                     <div className="relative flex items-center justify-center py-2 w-full">
-                      {/* Laptop */}
+                      {/* Laptop / Book */}
                       <div
-                        className={`relative px-3 py-2 rounded-[5px] border shadow-md flex items-center justify-center ${
+                        className={`relative px-3 py-2 rounded-[5px] border shadow-md flex items-center justify-center transition-all ${
                           isDark
                             ? 'bg-[#22153b] border-purple-500/40 text-purple-300'
                             : 'bg-white border-purple-200 text-purple-700'
@@ -393,21 +875,59 @@ export const FeaturesOverview = () => {
 
                       {/* Floating Cloud */}
                       <div
-                        className={`absolute right-2 top-0 px-2 py-1 rounded-[4px] border ${
-                          isDark
+                        onClick={handleSyncButton}
+                        title="Click to trigger sync"
+                        className={`absolute right-2 top-0 px-2 py-1 rounded-[4px] border transition-transform hover:scale-110 ${
+                          syncStatus === 'offline'
+                            ? 'bg-amber-950/60 border-amber-500/40 text-amber-300'
+                            : syncStatus === 'syncing'
+                            ? 'bg-purple-900/80 border-purple-400 text-purple-200 animate-pulse'
+                            : isDark
                             ? 'bg-purple-950/60 border-purple-500/30 text-purple-300'
                             : 'bg-purple-100 border-purple-200 text-purple-700'
                         }`}
                       >
-                        <Cloud className="w-4 h-4" />
+                        {syncStatus === 'syncing' ? (
+                          <RotateCw className="w-4 h-4 animate-spin text-purple-300" />
+                        ) : (
+                          <Cloud className="w-4 h-4" />
+                        )}
                       </div>
                     </div>
 
                     {/* Status Badge */}
-                    <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-950/50 border border-emerald-500/40 text-emerald-300 text-[10.5px] font-semibold">
-                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                      <span>Synced</span>
+                    <div
+                      className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10.5px] font-semibold border transition-all ${
+                        syncStatus === 'synced'
+                          ? 'bg-emerald-950/50 border-emerald-500/40 text-emerald-300 shadow-[0_0_12px_rgba(16,185,129,0.3)]'
+                          : syncStatus === 'syncing'
+                          ? 'bg-purple-950/60 border-purple-400/60 text-purple-200'
+                          : 'bg-amber-950/60 border-amber-500/50 text-amber-300 shadow-[0_0_12px_rgba(245,158,11,0.25)]'
+                      }`}
+                    >
+                      <span
+                        className={`w-1.5 h-1.5 rounded-full ${
+                          syncStatus === 'synced'
+                            ? 'bg-emerald-400 animate-pulse'
+                            : syncStatus === 'syncing'
+                            ? 'bg-purple-400 animate-ping'
+                            : 'bg-amber-400'
+                        }`}
+                      />
+                      <span>
+                        {syncStatus === 'synced'
+                          ? 'Synced'
+                          : syncStatus === 'syncing'
+                          ? 'Syncing changes...'
+                          : 'Offline (Dexie Mode)'}
+                      </span>
                     </div>
+
+                    <p className="text-[9.5px] text-purple-300/60">
+                      {syncStatus === 'offline'
+                        ? 'Click to reconnect and sync'
+                        : `Auto-saved • ${lastSyncTime}`}
+                    </p>
                   </div>
                 </div>
               </div>
@@ -415,9 +935,53 @@ export const FeaturesOverview = () => {
           </div>
 
           {/* ======================================================= */}
-          {/* RIGHT COLUMN: 3 Feature Panels                         */}
+          {/* CENTER COLUMN: Central 3D Knowledge Hub Emblem          */}
           {/* ======================================================= */}
-          <div className="space-y-6 lg:space-y-7 relative z-10">
+          <div className="hidden lg:flex lg:col-span-2 flex-col items-center justify-center relative z-20 py-8">
+            <div className="relative flex items-center justify-center">
+              {/* Pulsing Concentric Aura Rings */}
+              <div
+                className={`absolute w-36 sm:w-48 h-36 sm:h-48 rounded-full border opacity-25 pointer-events-none transition-all duration-700 ${
+                  isHubPulsing ? 'scale-125 border-purple-300 opacity-60' : 'animate-ping border-purple-500'
+                }`}
+              />
+              <div
+                className={`absolute w-44 sm:w-56 h-44 sm:h-56 rounded-full border transition-all ${
+                  isDark
+                    ? 'border-purple-400/30 shadow-[0_0_20px_rgba(168,85,247,0.25)]'
+                    : 'border-purple-300/60 shadow-[0_0_15px_rgba(147,51,234,0.15)]'
+                }`}
+              />
+
+              {/* Central Glowing 3D Emblem Container */}
+              <div
+                onClick={triggerHubWave}
+                title="Click to pulse energy across NoteNest features"
+                className={`relative z-10 w-28 sm:w-36 h-28 sm:h-36 rounded-[12px] border-2 shadow-2xl flex items-center justify-center transform -rotate-12 hover:rotate-0 transition-all duration-500 group cursor-pointer backdrop-blur-md ${
+                  isHubPulsing ? 'scale-110 shadow-[0_0_60px_rgba(168,85,247,0.85)] border-purple-300' : ''
+                } ${
+                  isDark
+                    ? 'bg-gradient-to-tr from-purple-950/70 via-[#271447]/90 to-purple-800/50 border-purple-400/60 shadow-[0_0_40px_rgba(168,85,247,0.5)]'
+                    : 'bg-gradient-to-tr from-purple-100 via-white to-purple-50 border-purple-400/80 shadow-[0_0_30px_rgba(147,51,234,0.25)]'
+                }`}
+              >
+                {/* Central Holographic Image Crop */}
+                <img
+                  src={centralHologramImg}
+                  alt="NoteNest Knowledge Universe"
+                  className="w-full h-full object-contain drop-shadow-[0_0_20px_rgba(192,132,252,0.8)] p-2 group-hover:scale-105 transition-transform"
+                />
+
+                {/* Ambient Beacon Highlights */}
+                <span className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-purple-300 shadow-[0_0_10px_rgba(216,180,254,1)] animate-ping" />
+              </div>
+            </div>
+          </div>
+
+          {/* ======================================================= */}
+          {/* RIGHT COLUMN: 3 Feature Panels (lg:col-span-5)          */}
+          {/* ======================================================= */}
+          <div className="lg:col-span-5 space-y-6 lg:space-y-7 relative z-10">
             {/* PANEL 4: Folders & Nested Folders */}
             <div
               className={`group relative rounded-[8px] p-5 sm:p-6 transition-all duration-300 border backdrop-blur-md ${
@@ -426,6 +990,15 @@ export const FeaturesOverview = () => {
                   : 'border-purple-200 bg-white/95 hover:border-purple-400 hover:shadow-[0_8px_30px_rgba(147,51,234,0.1)]'
               }`}
             >
+              {/* Center-facing connector node dot */}
+              <div
+                className={`hidden lg:block absolute -left-1.5 top-1/2 -translate-y-1/2 w-3 h-3 rounded-full border-2 transition-transform duration-300 group-hover:scale-125 ${
+                  isDark
+                    ? 'bg-purple-400 border-[#090514] shadow-[0_0_10px_rgba(192,132,252,0.9)]'
+                    : 'bg-purple-600 border-white shadow-[0_0_8px_rgba(147,51,234,0.6)]'
+                }`}
+              />
+
               <div className="grid grid-cols-1 sm:grid-cols-12 gap-5 items-center">
                 {/* Left Description Area */}
                 <div className="sm:col-span-6 space-y-3">
@@ -478,45 +1051,110 @@ export const FeaturesOverview = () => {
                     }`}
                   >
                     {/* Root Folder Header */}
-                    <div className="flex items-center gap-1.5 text-[11px] text-gray-400">
-                      <ChevronDown className="w-3 h-3 text-purple-400" />
-                      <span className={`font-semibold ${isDark ? 'text-gray-200' : 'text-slate-800'}`}>
-                        My Folders
-                      </span>
+                    <div className="flex items-center justify-between text-[11px] text-gray-400 pb-0.5">
+                      <div className="flex items-center gap-1.5">
+                        <ChevronDown className="w-3 h-3 text-purple-400" />
+                        <span className={`font-semibold ${isDark ? 'text-gray-200' : 'text-slate-800'}`}>
+                          My Folders
+                        </span>
+                      </div>
+                      <span className="text-[9.5px] text-purple-400/70 font-mono">3 items</span>
                     </div>
 
-                    {/* Subfolders */}
+                    {/* Subfolders Tree */}
                     <div className="pl-3 space-y-1 text-[10.5px]">
-                      <div className={`flex items-center gap-1.5 ${isDark ? 'text-gray-300' : 'text-slate-700'}`}>
+                      {/* College Folder */}
+                      <div
+                        onClick={() => setSelectedFolderItem('College')}
+                        className={`flex items-center gap-1.5 px-2 py-1 rounded-[4px] cursor-pointer transition-colors ${
+                          selectedFolderItem === 'College'
+                            ? 'bg-purple-600 text-white font-semibold shadow-xs'
+                            : isDark
+                            ? 'text-gray-300 hover:bg-purple-950/40'
+                            : 'text-slate-700 hover:bg-purple-100/50'
+                        }`}
+                      >
                         <Folder className="w-3 h-3 text-purple-400" />
                         <span>College</span>
                       </div>
 
+                      {/* Projects Folder with Nested Items */}
                       <div className="space-y-1">
-                        <div className={`flex items-center gap-1 ${isDark ? 'text-gray-300' : 'text-slate-700'}`}>
-                          <ChevronDown className="w-2.5 h-2.5 text-purple-400" />
-                          <Folder className="w-3 h-3 text-purple-400" />
-                          <span className="font-medium">Projects</span>
+                        <div
+                          onClick={() => setIsProjectsOpen(!isProjectsOpen)}
+                          className={`flex items-center justify-between px-2 py-1 rounded-[4px] cursor-pointer transition-colors ${
+                            isDark ? 'hover:bg-purple-950/40' : 'hover:bg-purple-100/50'
+                          }`}
+                        >
+                          <div className="flex items-center gap-1 text-gray-300">
+                            {isProjectsOpen ? (
+                              <ChevronDown className="w-2.5 h-2.5 text-purple-400" />
+                            ) : (
+                              <ChevronRight className="w-2.5 h-2.5 text-purple-400" />
+                            )}
+                            <Folder className="w-3 h-3 text-purple-400" />
+                            <span className="font-medium">Projects</span>
+                          </div>
+                          <span className="text-[9px] text-purple-400/60">3 notes</span>
                         </div>
 
                         {/* Nested Items */}
-                        <div className="pl-4 space-y-1">
-                          <div className="px-2 py-0.5 rounded-[4px] bg-purple-600/80 text-white font-semibold flex items-center gap-1 shadow-sm">
-                            <FileText className="w-2.5 h-2.5" />
-                            <span>NoteNest</span>
+                        {isProjectsOpen && (
+                          <div className="pl-4 space-y-1 transition-all">
+                            <div
+                              onClick={() => setSelectedFolderItem('NoteNest')}
+                              className={`px-2 py-1 rounded-[4px] cursor-pointer font-semibold flex items-center gap-1 shadow-sm transition-all ${
+                                selectedFolderItem === 'NoteNest'
+                                  ? 'bg-purple-600 text-white shadow-[0_0_10px_rgba(168,85,247,0.35)]'
+                                  : isDark
+                                  ? 'text-gray-300 hover:bg-purple-950/50'
+                                  : 'text-slate-800 hover:bg-purple-100'
+                              }`}
+                            >
+                              <FileText className="w-2.5 h-2.5" />
+                              <span>NoteNest</span>
+                            </div>
+                            <div
+                              onClick={() => setSelectedFolderItem('API Gateway')}
+                              className={`px-2 py-1 rounded-[4px] cursor-pointer flex items-center gap-1 transition-all ${
+                                selectedFolderItem === 'API Gateway'
+                                  ? 'bg-purple-600 text-white font-semibold'
+                                  : isDark
+                                  ? 'text-gray-400 hover:text-gray-200 hover:bg-purple-950/40'
+                                  : 'text-slate-500 hover:text-slate-900 hover:bg-purple-100'
+                              }`}
+                            >
+                              <FileText className="w-2.5 h-2.5" />
+                              <span>API Gateway</span>
+                            </div>
+                            <div
+                              onClick={() => setSelectedFolderItem('Traffic System')}
+                              className={`px-2 py-1 rounded-[4px] cursor-pointer flex items-center gap-1 transition-all ${
+                                selectedFolderItem === 'Traffic System'
+                                  ? 'bg-purple-600 text-white font-semibold'
+                                  : isDark
+                                  ? 'text-gray-400 hover:text-gray-200 hover:bg-purple-950/40'
+                                  : 'text-slate-500 hover:text-slate-900 hover:bg-purple-100'
+                              }`}
+                            >
+                              <FileText className="w-2.5 h-2.5" />
+                              <span>Traffic System</span>
+                            </div>
                           </div>
-                          <div className={`px-2 py-0.5 flex items-center gap-1 ${isDark ? 'text-gray-400' : 'text-slate-500'}`}>
-                            <FileText className="w-2.5 h-2.5" />
-                            <span>API Gateway</span>
-                          </div>
-                          <div className={`px-2 py-0.5 flex items-center gap-1 ${isDark ? 'text-gray-400' : 'text-slate-500'}`}>
-                            <FileText className="w-2.5 h-2.5" />
-                            <span>Traffic System</span>
-                          </div>
-                        </div>
+                        )}
                       </div>
 
-                      <div className={`flex items-center gap-1.5 pt-0.5 ${isDark ? 'text-gray-300' : 'text-slate-700'}`}>
+                      {/* Personal Folder */}
+                      <div
+                        onClick={() => setSelectedFolderItem('Personal')}
+                        className={`flex items-center gap-1.5 px-2 py-1 rounded-[4px] cursor-pointer transition-colors ${
+                          selectedFolderItem === 'Personal'
+                            ? 'bg-purple-600 text-white font-semibold shadow-xs'
+                            : isDark
+                            ? 'text-gray-300 hover:bg-purple-950/40'
+                            : 'text-slate-700 hover:bg-purple-100/50'
+                        }`}
+                      >
                         <Folder className="w-3 h-3 text-purple-400" />
                         <span>Personal</span>
                       </div>
@@ -534,6 +1172,15 @@ export const FeaturesOverview = () => {
                   : 'border-purple-200 bg-white/95 hover:border-purple-400 hover:shadow-[0_8px_30px_rgba(147,51,234,0.1)]'
               }`}
             >
+              {/* Center-facing connector node dot */}
+              <div
+                className={`hidden lg:block absolute -left-1.5 top-1/2 -translate-y-1/2 w-3 h-3 rounded-full border-2 transition-transform duration-300 group-hover:scale-125 ${
+                  isDark
+                    ? 'bg-purple-400 border-[#090514] shadow-[0_0_10px_rgba(192,132,252,0.9)]'
+                    : 'bg-purple-600 border-white shadow-[0_0_8px_rgba(147,51,234,0.6)]'
+                }`}
+              />
+
               <div className="grid grid-cols-1 sm:grid-cols-12 gap-5 items-center">
                 {/* Left Description Area */}
                 <div className="sm:col-span-6 space-y-3">
@@ -585,84 +1232,72 @@ export const FeaturesOverview = () => {
                       isDark ? 'border-purple-500/25 bg-[#170e2b]' : 'border-purple-200/80 bg-[#f8f5fc]'
                     }`}
                   >
-                    {/* Search Input Simulation */}
+                    {/* Live Working Search Input */}
                     <div
-                      className={`flex items-center justify-between px-2.5 py-1.5 rounded-[4px] border text-xs ${
+                      className={`flex items-center justify-between px-2.5 py-1.5 rounded-[4px] border text-xs focus-within:border-purple-400 transition-colors ${
                         isDark
                           ? 'bg-[#0e071c] border-purple-500/30 text-white'
                           : 'bg-white border-purple-300 text-slate-900'
                       }`}
                     >
-                      <div className="flex items-center gap-2">
-                        <Search className="w-3.5 h-3.5 text-purple-500" />
-                        <span className="font-mono text-purple-400">database</span>
+                      <div className="flex items-center gap-2 flex-1 min-w-0">
+                        <Search className="w-3.5 h-3.5 text-purple-500 shrink-0" />
+                        <input
+                          type="text"
+                          value={searchQuery}
+                          onChange={(e) => setSearchQuery(e.target.value)}
+                          placeholder="Type to search..."
+                          className="bg-transparent font-mono text-purple-400 focus:outline-none w-full text-xs placeholder:text-gray-500"
+                        />
                       </div>
-                      <X className="w-3.5 h-3.5 text-gray-400 cursor-pointer" />
+                      {searchQuery && (
+                        <button
+                          type="button"
+                          onClick={() => setSearchQuery('')}
+                          className="text-gray-400 hover:text-white transition-colors"
+                        >
+                          <X className="w-3.5 h-3.5" />
+                        </button>
+                      )}
                     </div>
 
-                    <div className="text-[10px] text-gray-400 px-0.5">3 results</div>
+                    <div className="flex items-center justify-between text-[10px] text-gray-400 px-0.5">
+                      <span>{filteredNotes.length} results</span>
+                      {searchQuery && (
+                        <span className="text-purple-300/80 font-mono">query: "{searchQuery}"</span>
+                      )}
+                    </div>
 
                     {/* Results List */}
-                    <div className="space-y-1.5">
-                      <div
-                        className={`p-1.5 rounded-[4px] border ${
-                          isDark
-                            ? 'bg-[#22153b] border-purple-500/20'
-                            : 'bg-white border-purple-200/90'
-                        }`}
-                      >
-                        <p
-                          className={`text-[11px] font-semibold flex items-center gap-1.5 ${
-                            isDark ? 'text-white' : 'text-slate-900'
-                          }`}
-                        >
-                          <FileText className="w-3 h-3 text-purple-400" />
-                          <span>DBMS Notes</span>
-                        </p>
-                        <p className={`text-[9.5px] truncate mt-0.5 ${isDark ? 'text-gray-400' : 'text-slate-500'}`}>
-                          ... database normalization ...
-                        </p>
-                      </div>
-
-                      <div
-                        className={`p-1.5 rounded-[4px] border ${
-                          isDark
-                            ? 'bg-[#1a102e] border-purple-500/15'
-                            : 'bg-white border-purple-100'
-                        }`}
-                      >
-                        <p
-                          className={`text-[11px] font-semibold flex items-center gap-1.5 ${
-                            isDark ? 'text-gray-200' : 'text-slate-800'
-                          }`}
-                        >
-                          <FileText className="w-3 h-3 text-purple-400" />
-                          <span>SQL Queries</span>
-                        </p>
-                        <p className={`text-[9.5px] truncate mt-0.5 ${isDark ? 'text-gray-400' : 'text-slate-500'}`}>
-                          ... joins, indexes, database ...
-                        </p>
-                      </div>
-
-                      <div
-                        className={`p-1.5 rounded-[4px] border ${
-                          isDark
-                            ? 'bg-[#1a102e] border-purple-500/15'
-                            : 'bg-white border-purple-100'
-                        }`}
-                      >
-                        <p
-                          className={`text-[11px] font-semibold flex items-center gap-1.5 ${
-                            isDark ? 'text-gray-200' : 'text-slate-800'
-                          }`}
-                        >
-                          <FileText className="w-3 h-3 text-purple-400" />
-                          <span>System Design</span>
-                        </p>
-                        <p className={`text-[9.5px] truncate mt-0.5 ${isDark ? 'text-gray-400' : 'text-slate-500'}`}>
-                          ... database scaling strategies ...
-                        </p>
-                      </div>
+                    <div className="space-y-1.5 max-h-[140px] overflow-y-auto pr-0.5">
+                      {filteredNotes.length > 0 ? (
+                        filteredNotes.slice(0, 3).map((item) => (
+                          <div
+                            key={item.id}
+                            className={`p-1.5 rounded-[4px] border transition-colors ${
+                              isDark
+                                ? 'bg-[#22153b] border-purple-500/20 hover:border-purple-400/40'
+                                : 'bg-white border-purple-200/90 hover:border-purple-300'
+                            }`}
+                          >
+                            <p
+                              className={`text-[11px] font-semibold flex items-center gap-1.5 ${
+                                isDark ? 'text-white' : 'text-slate-900'
+                              }`}
+                            >
+                              <FileText className="w-3 h-3 text-purple-400 shrink-0" />
+                              <span>{renderHighlightedText(item.title, searchQuery)}</span>
+                            </p>
+                            <p className={`text-[9.5px] truncate mt-0.5 ${isDark ? 'text-gray-400' : 'text-slate-500'}`}>
+                              {renderHighlightedText(item.snippet, searchQuery)}
+                            </p>
+                          </div>
+                        ))
+                      ) : (
+                        <div className="text-center py-4 text-[10.5px] text-gray-400">
+                          No notes found matching "{searchQuery}"
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -677,6 +1312,15 @@ export const FeaturesOverview = () => {
                   : 'border-purple-200 bg-white/95 hover:border-purple-400 hover:shadow-[0_8px_30px_rgba(147,51,234,0.1)]'
               }`}
             >
+              {/* Center-facing connector node dot */}
+              <div
+                className={`hidden lg:block absolute -left-1.5 top-1/2 -translate-y-1/2 w-3 h-3 rounded-full border-2 transition-transform duration-300 group-hover:scale-125 ${
+                  isDark
+                    ? 'bg-purple-400 border-[#090514] shadow-[0_0_10px_rgba(192,132,252,0.9)]'
+                    : 'bg-purple-600 border-white shadow-[0_0_8px_rgba(147,51,234,0.6)]'
+                }`}
+              />
+
               <div className="grid grid-cols-1 sm:grid-cols-12 gap-5 items-center">
                 {/* Left Description Area */}
                 <div className="sm:col-span-6 space-y-3">
@@ -728,37 +1372,57 @@ export const FeaturesOverview = () => {
                       isDark ? 'border-purple-500/25 bg-[#170e2b]' : 'border-purple-200/80 bg-[#f8f5fc]'
                     }`}
                   >
-                    {/* Markdown Document Card */}
-                    <div
-                      className={`flex items-center gap-3 p-2.5 rounded-[5px] border ${
+                    {/* Live Working Markdown Export */}
+                    <button
+                      type="button"
+                      onClick={handleExportMarkdown}
+                      title="Click to download sample Markdown note"
+                      className={`w-full flex items-center justify-between p-2.5 rounded-[5px] border cursor-pointer group/md transition-all ${
                         isDark
-                          ? 'bg-[#22153b] border-purple-500/30'
-                          : 'bg-white border-purple-200 shadow-xs'
+                          ? 'bg-[#22153b] border-purple-500/30 hover:border-purple-400 hover:shadow-[0_0_16px_rgba(168,85,247,0.3)]'
+                          : 'bg-white border-purple-200 hover:border-purple-300 shadow-xs'
                       }`}
                     >
-                      <span className="px-1.5 py-0.5 text-[10px] font-bold font-mono bg-purple-600 text-white rounded">
-                        MD
-                      </span>
-                      <span className={`text-xs font-semibold ${isDark ? 'text-white' : 'text-slate-900'}`}>
-                        Markdown (.md)
-                      </span>
-                    </div>
+                      <div className="flex items-center gap-3">
+                        <span className="px-1.5 py-0.5 text-[10px] font-bold font-mono bg-purple-600 text-white rounded">
+                          MD
+                        </span>
+                        <span className={`text-xs font-semibold ${isDark ? 'text-white' : 'text-slate-900'}`}>
+                          Markdown (.md)
+                        </span>
+                      </div>
+                      <Download className="w-3.5 h-3.5 text-purple-400 group-hover/md:scale-110 transition-transform" />
+                    </button>
 
-                    {/* PDF Document Card */}
-                    <div
-                      className={`flex items-center gap-3 p-2.5 rounded-[5px] border ${
+                    {/* Live Working PDF Export */}
+                    <button
+                      type="button"
+                      onClick={handleExportPDF}
+                      title="Click to export as PDF Document"
+                      className={`w-full flex items-center justify-between p-2.5 rounded-[5px] border cursor-pointer group/pdf transition-all ${
                         isDark
-                          ? 'bg-[#22153b] border-purple-500/30'
-                          : 'bg-white border-purple-200 shadow-xs'
+                          ? 'bg-[#22153b] border-purple-500/30 hover:border-rose-400 hover:shadow-[0_0_16px_rgba(244,63,94,0.25)]'
+                          : 'bg-white border-purple-200 hover:border-rose-200 shadow-xs'
                       }`}
                     >
-                      <span className="px-1.5 py-0.5 text-[10px] font-bold font-mono bg-rose-600 text-white rounded">
-                        PDF
-                      </span>
-                      <span className={`text-xs font-semibold ${isDark ? 'text-white' : 'text-slate-900'}`}>
-                        PDF Document
-                      </span>
-                    </div>
+                      <div className="flex items-center gap-3">
+                        <span className="px-1.5 py-0.5 text-[10px] font-bold font-mono bg-rose-600 text-white rounded">
+                          PDF
+                        </span>
+                        <span className={`text-xs font-semibold ${isDark ? 'text-white' : 'text-slate-900'}`}>
+                          PDF Document
+                        </span>
+                      </div>
+                      <Download className="w-3.5 h-3.5 text-rose-400 group-hover/pdf:scale-110 transition-transform" />
+                    </button>
+
+                    {/* Dynamic feedback notification */}
+                    {exportNotice && (
+                      <div className="flex items-center gap-1.5 p-2 rounded bg-emerald-950/60 border border-emerald-500/40 text-emerald-300 text-[10px] font-medium animate-fadeIn">
+                        <CheckCircle2 className="w-3 h-3 text-emerald-400 shrink-0" />
+                        <span className="truncate">{exportNotice}</span>
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>

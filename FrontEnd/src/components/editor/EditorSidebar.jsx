@@ -48,6 +48,19 @@ export const EditorSidebar = ({
   const [confirmDeleteId, setConfirmDeleteId] = useState(null);
   const [tagsOpen, setTagsOpen] = useState(true);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const [avatarLoadFailed, setAvatarLoadFailed] = useState(false);
+
+  useEffect(() => {
+    setAvatarLoadFailed(false);
+  }, [user?.avatar]);
+
+  const resolveAvatarUrl = (url) => {
+    if (!url) return '';
+    if (url.startsWith('http://') || url.startsWith('https://') || url.startsWith('data:')) {
+      return url;
+    }
+    return `http://localhost:5001${url.startsWith('/') ? '' : '/'}${url}`;
+  };
 
   const defaultFolders = [
     { id: 'projects', _id: 'projects', name: 'Projects', subfolders: [{ id: 'notenest', _id: 'notenest', name: 'NoteNest' }] },
@@ -176,10 +189,11 @@ export const EditorSidebar = ({
           className="flex items-center gap-2.5 cursor-pointer hover:opacity-90 transition-opacity"
           title={`Logged in as ${displayName}`}
         >
-          {user?.avatar ? (
+          {user?.avatar && !avatarLoadFailed ? (
             <img
-              src={user.avatar}
+              src={resolveAvatarUrl(user.avatar)}
               alt={displayName}
+              onError={() => setAvatarLoadFailed(true)}
               className="w-7 h-7 rounded-full object-cover border border-purple-500/50 shadow-sm shadow-purple-900/40 shrink-0"
             />
           ) : (

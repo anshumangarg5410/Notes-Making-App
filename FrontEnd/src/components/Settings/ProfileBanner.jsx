@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import { Pencil, Image, Sparkles, Crown } from 'lucide-react';
 import purpleMountainMoon from '../../assets/editor/purple-mountain-moon.png';
 
@@ -9,6 +9,19 @@ export const ProfileBanner = ({
 }) => {
   const avatarInputRef = useRef(null);
   const coverInputRef = useRef(null);
+  const [avatarLoadFailed, setAvatarLoadFailed] = useState(false);
+
+  useEffect(() => {
+    setAvatarLoadFailed(false);
+  }, [user?.avatar]);
+
+  const resolveAvatarUrl = (url) => {
+    if (!url) return '';
+    if (url.startsWith('http://') || url.startsWith('https://') || url.startsWith('data:')) {
+      return url;
+    }
+    return `http://localhost:5001${url.startsWith('/') ? '' : '/'}${url}`;
+  };
 
   // Derive initials
   const getInitials = (nameStr) => {
@@ -82,10 +95,11 @@ export const ProfileBanner = ({
         <div className="flex items-center gap-4">
           {/* Avatar Box with Pencil icon */}
           <div className="relative group">
-            {user?.avatar ? (
+            {user?.avatar && !avatarLoadFailed ? (
               <img
-                src={user.avatar}
+                src={resolveAvatarUrl(user.avatar)}
                 alt={user.name || 'User avatar'}
+                onError={() => setAvatarLoadFailed(true)}
                 className="w-16 h-16 rounded-[8px] object-cover border border-purple-500/50 shadow-md shadow-purple-950/50"
               />
             ) : (

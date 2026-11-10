@@ -68,7 +68,20 @@ export const SettingsView = ({
   const [email, setEmail] = useState(user?.email || '');
   const [profileSaving, setProfileSaving] = useState(false);
   const [avatarUploading, setAvatarUploading] = useState(false);
+  const [avatarLoadFailed, setAvatarLoadFailed] = useState(false);
   const fileInputRef = useRef(null);
+
+  useEffect(() => {
+    setAvatarLoadFailed(false);
+  }, [user?.avatar]);
+
+  const resolveAvatarUrl = (url) => {
+    if (!url) return '';
+    if (url.startsWith('http://') || url.startsWith('https://') || url.startsWith('data:')) {
+      return url;
+    }
+    return `http://localhost:5001${url.startsWith('/') ? '' : '/'}${url}`;
+  };
 
   // Password Update State
   const [currentPassword, setCurrentPassword] = useState('');
@@ -519,10 +532,11 @@ export const SettingsView = ({
               <div className="flex items-center gap-4">
                 {/* Avatar with Cloudinary Camera Button */}
                 <div className="relative">
-                  {user?.avatar ? (
+                  {user?.avatar && !avatarLoadFailed ? (
                     <img
-                      src={user.avatar}
+                      src={resolveAvatarUrl(user.avatar)}
                       alt={displayName}
+                      onError={() => setAvatarLoadFailed(true)}
                       className="w-16 h-16 rounded-full object-cover border-2 border-purple-500/50 shadow-md shadow-purple-950/50"
                     />
                   ) : (

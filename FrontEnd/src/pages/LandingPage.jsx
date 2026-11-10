@@ -14,7 +14,14 @@ import { useTheme } from '../context/ThemeContext';
 import landingBgDark from '../assets/landing/hero-bg-dark.png';
 
 export const LandingPage = () => {
-  const { isDark } = useTheme();
+  const { isDark, setTheme } = useTheme();
+
+  // Ensure landing page stays in NoteNest's signature dark aesthetic
+  useEffect(() => {
+    if (!isDark && setTheme) {
+      setTheme('dark');
+    }
+  }, [isDark, setTheme]);
 
   // Scroll to hash section if present in URL
   useEffect(() => {

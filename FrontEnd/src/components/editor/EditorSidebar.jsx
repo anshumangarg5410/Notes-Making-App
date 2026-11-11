@@ -204,9 +204,11 @@ export const EditorSidebar = ({
             </div>
           )}
           {!isCollapsed && (
-            <div className="flex items-center gap-1.5">
-              <span className={`font-semibold text-sm tracking-tight ${isDark ? 'text-gray-100' : 'text-[#181326]'}`}>NoteNest</span>
-              <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-150 ${
+            <div className="flex items-center gap-1.5 min-w-0">
+              <span className={`font-semibold text-sm tracking-tight truncate max-w-[140px] ${isDark ? 'text-gray-100' : 'text-[#181326]'}`}>
+                {displayName}
+              </span>
+              <ChevronDown className={`w-3.5 h-3.5 shrink-0 transition-transform duration-150 ${
                 userMenuOpen ? 'rotate-180 text-purple-500' : isDark ? 'text-gray-400' : 'text-[#6B7280]'
               }`} />
             </div>

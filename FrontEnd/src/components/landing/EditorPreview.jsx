@@ -1,5 +1,5 @@
 import React from 'react';
-import editorPreviewDark from '../../assets/landing/editor-preview-dark.png';
+import editorPreviewDark from '../../assets/landing/newlaptop.png';
 import editorPreviewLight from '../../assets/landing/editor-preview-light-updated.png';
 import stickyHeartDark from '../../assets/landing/sticky-heart-dark.png';
 import binderClipDark from '../../assets/landing/binder-clip-dark.png';
@@ -9,7 +9,7 @@ export const EditorPreview = () => {
   const { isDark } = useTheme();
 
   return (
-    <div className="relative aspect-[13/9] w-full max-w-2xl select-none group">
+    <div className="relative aspect-[3/2] w-full max-w-2xl select-none group">
       {/* Ambient Purple Light Bloom behind Editor */}
       <div
         className="absolute -inset-6 rounded-3xl blur-2xl opacity-50 pointer-events-none transition-opacity duration-500 group-hover:opacity-75"

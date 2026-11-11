@@ -1,7 +1,7 @@
 import React from 'react';
 import { Info, Sparkles } from 'lucide-react';
 import { useTheme } from '../../context/ThemeContext';
-import editorPreviewDark from '../../assets/landing/editor-preview-dark.png';
+import editorPreviewDark from '../../assets/landing/newlaptop.png';
 import editorPreviewLight from '../../assets/landing/editor-preview-light-updated.png';
 import deskDark from '../../assets/dashboard/editor-desk-dark.png';
 

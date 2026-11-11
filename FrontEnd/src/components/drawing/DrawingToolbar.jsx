@@ -144,12 +144,12 @@ export const DrawingToolbar = ({
 
   return (
     <div
-      className={`px-3 py-2 border-b flex items-center justify-between gap-2 select-none text-xs transition-colors duration-150 ${
+      className={`px-3 py-2 border-b flex items-center justify-between gap-2 select-none text-xs transition-colors duration-150 relative z-30 overflow-visible ${
         isDark ? 'bg-[#151520] border-[#222232]' : 'bg-[#FAFAFD] border-[#EAE6F4]'
       }`}
     >
       {/* LEFT: Drawing Tools (Pen, Highlighter, Eraser, Shapes) */}
-      <div className="flex items-center gap-1 overflow-x-auto obsidian-scrollbar py-0.5">
+      <div className="flex items-center gap-1 overflow-visible py-0.5">
         {/* 1. Pen Tool */}
         <button
           type="button"
@@ -227,8 +227,14 @@ export const DrawingToolbar = ({
         <div className="relative" ref={colorRef}>
           <button
             type="button"
-            onClick={() => setShowColorPicker(!showColorPicker)}
-            className={`p-1.5 px-2.5 rounded-lg border flex items-center gap-1.5 transition-colors ${
+            onClick={() => {
+              setShowColorPicker((prev) => !prev);
+              setShowThicknessMenu(false);
+              setShowBgMenu(false);
+              setShowExportMenu(false);
+              setConfirmClear(false);
+            }}
+            className={`p-1.5 px-2.5 rounded-lg border flex items-center gap-1.5 transition-colors cursor-pointer ${
               isDark
                 ? 'bg-[#1a1a26] border-[#29293e] text-gray-200 hover:bg-[#222234]'
                 : 'bg-white border-[#E2DEEE] text-[#181326] hover:bg-[#F9F8FD]'
@@ -262,9 +268,12 @@ export const DrawingToolbar = ({
                       type="button"
                       onClick={() => {
                         onChangeColor(c);
+                        if (activeTool === 'eraser') {
+                          onSelectTool?.('pen');
+                        }
                         setShowColorPicker(false);
                       }}
-                      className="group relative flex flex-col items-center gap-1 p-1 rounded-lg hover:bg-purple-500/10 transition-colors"
+                      className="group relative flex flex-col items-center gap-1 p-1 rounded-lg hover:bg-purple-500/10 transition-colors cursor-pointer"
                       title={p.name}
                     >
                       <span
@@ -286,8 +295,13 @@ export const DrawingToolbar = ({
                 <span className={`text-[11px] ${isDark ? 'text-gray-400' : 'text-[#6B7280]'}`}>Custom:</span>
                 <input
                   type="color"
-                  value={activeColor}
-                  onChange={(e) => onChangeColor(e.target.value)}
+                  value={activeColor.startsWith('#') && activeColor.length === 7 ? activeColor : '#a855f7'}
+                  onChange={(e) => {
+                    onChangeColor(e.target.value);
+                    if (activeTool === 'eraser') {
+                      onSelectTool?.('pen');
+                    }
+                  }}
                   className="w-7 h-7 rounded cursor-pointer border-none bg-transparent"
                   title="Pick custom color"
                 />
@@ -301,8 +315,14 @@ export const DrawingToolbar = ({
         <div className="relative" ref={thicknessRef}>
           <button
             type="button"
-            onClick={() => setShowThicknessMenu(!showThicknessMenu)}
-            className={`p-1.5 px-2 rounded-lg border flex items-center gap-1.5 transition-colors ${
+            onClick={() => {
+              setShowThicknessMenu((prev) => !prev);
+              setShowColorPicker(false);
+              setShowBgMenu(false);
+              setShowExportMenu(false);
+              setConfirmClear(false);
+            }}
+            className={`p-1.5 px-2 rounded-lg border flex items-center gap-1.5 transition-colors cursor-pointer ${
               isDark
                 ? 'bg-[#1a1a26] border-[#29293e] text-gray-200 hover:bg-[#222234]'
                 : 'bg-white border-[#E2DEEE] text-[#181326] hover:bg-[#F9F8FD]'
@@ -339,9 +359,12 @@ export const DrawingToolbar = ({
                     type="button"
                     onClick={() => {
                       onChangeThickness(tp.value);
+                      if (activeTool === 'eraser') {
+                        onSelectTool?.('pen');
+                      }
                       setShowThicknessMenu(false);
                     }}
-                    className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg transition-colors ${
+                    className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg transition-colors cursor-pointer ${
                       thickness === tp.value
                         ? isDark ? 'bg-purple-900/40 text-purple-300' : 'bg-[#EDE9FE] text-[#7C3AED] font-semibold'
                         : isDark ? 'hover:bg-[#232336] text-gray-300' : 'hover:bg-[#F4F2FA] text-[#374151]'
@@ -379,8 +402,14 @@ export const DrawingToolbar = ({
         <div className="relative" ref={bgRef}>
           <button
             type="button"
-            onClick={() => setShowBgMenu(!showBgMenu)}
-            className={`p-1.5 px-2 rounded-lg border flex items-center gap-1.5 transition-colors ${
+            onClick={() => {
+              setShowBgMenu((prev) => !prev);
+              setShowColorPicker(false);
+              setShowThicknessMenu(false);
+              setShowExportMenu(false);
+              setConfirmClear(false);
+            }}
+            className={`p-1.5 px-2 rounded-lg border flex items-center gap-1.5 transition-colors cursor-pointer ${
               isDark
                 ? 'bg-[#1a1a26] border-[#29293e] text-gray-200 hover:bg-[#222234]'
                 : 'bg-white border-[#E2DEEE] text-[#181326] hover:bg-[#F9F8FD]'
@@ -406,7 +435,7 @@ export const DrawingToolbar = ({
                     onChangeBackground(bg);
                     setShowBgMenu(false);
                   }}
-                  className={`w-full text-left px-3 py-1.5 rounded-lg capitalize transition-colors flex items-center justify-between ${
+                  className={`w-full text-left px-3 py-1.5 rounded-lg capitalize transition-colors flex items-center justify-between cursor-pointer ${
                     background === bg
                       ? isDark ? 'bg-purple-900/40 text-purple-300 font-semibold' : 'bg-[#EDE9FE] text-[#7C3AED] font-semibold'
                       : isDark ? 'text-gray-300 hover:bg-[#232336]' : 'text-[#374151] hover:bg-[#F4F2FA]'

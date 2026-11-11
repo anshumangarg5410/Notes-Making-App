@@ -154,6 +154,11 @@ export const DrawingCanvas = forwardRef(({
     redrawCanvas();
   }, [dimensions, zoom, redrawCanvas]);
 
+  // Immediate redraw on background, theme, or strokes change
+  useEffect(() => {
+    redrawCanvas();
+  }, [background, isDark, strokes, redrawCanvas]);
+
   // Push new state to history stack
   const pushToHistory = useCallback((newStrokes) => {
     setHistory((prev) => {

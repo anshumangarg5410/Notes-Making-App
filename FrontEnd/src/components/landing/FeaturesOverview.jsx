@@ -23,7 +23,6 @@ import {
   FolderPlus
 } from 'lucide-react';
 import { useTheme } from '../../context/ThemeContext';
-import centralHologramImg from '../../assets/landing/central-book-hologram-glow.png';
 
 export const FeaturesOverview = () => {
   const { isDark } = useTheme();
@@ -235,16 +234,6 @@ const note = {
     }, 1000);
   };
 
-  // =========================================================================
-  // Central Hologram Hub Interactive Wave State
-  // =========================================================================
-  const [isHubPulsing, setIsHubPulsing] = useState(false);
-
-  const triggerHubWave = () => {
-    setIsHubPulsing(true);
-    setTimeout(() => setIsHubPulsing(false), 1600);
-  };
-
   return (
     <section
       id="features"
@@ -302,93 +291,13 @@ const note = {
         </div>
 
         {/* ============================================================== */}
-        {/* INTERCONNECTED KNOWLEDGE UNIVERSE COMPOSITION */}
+        {/* FEATURE CARDS GRID                                           */}
         {/* ============================================================== */}
-        <div className="relative grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-center">
-          {/* SVG Connection Network Beams (Visible on Desktop) */}
-          <svg
-            className="absolute inset-0 w-full h-full pointer-events-none hidden lg:block z-0"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <defs>
-              <linearGradient id="beamGlowLeft" x1="100%" y1="50%" x2="0%" y2="50%">
-                <stop offset="0%" stopColor="#c084fc" stopOpacity={isHubPulsing ? '1' : '0.9'} />
-                <stop offset="50%" stopColor="#a855f7" stopOpacity={isHubPulsing ? '0.85' : '0.5'} />
-                <stop offset="100%" stopColor="#7e22ce" stopOpacity="0.15" />
-              </linearGradient>
-              <linearGradient id="beamGlowRight" x1="0%" y1="50%" x2="100%" y2="50%">
-                <stop offset="0%" stopColor="#c084fc" stopOpacity={isHubPulsing ? '1' : '0.9'} />
-                <stop offset="50%" stopColor="#a855f7" stopOpacity={isHubPulsing ? '0.85' : '0.5'} />
-                <stop offset="100%" stopColor="#7e22ce" stopOpacity="0.15" />
-              </linearGradient>
-              <filter id="purpleBloom" x="-20%" y="-20%" width="140%" height="140%">
-                <feGaussianBlur stdDeviation={isHubPulsing ? '6' : '4'} result="blur" />
-                <feMerge>
-                  <feMergeNode in="blur" />
-                  <feMergeNode in="SourceGraphic" />
-                </feMerge>
-              </filter>
-            </defs>
-
-            {/* Left 3 Connecting Beams */}
-            <path
-              d="M 480 390 C 430 390, 420 160, 395 155"
-              fill="none"
-              stroke="url(#beamGlowLeft)"
-              strokeWidth={isHubPulsing ? '3' : '2'}
-              strokeDasharray="4 4"
-              filter="url(#purpleBloom)"
-              className="animate-pulse"
-            />
-            <path
-              d="M 470 420 C 420 420, 410 405, 395 400"
-              fill="none"
-              stroke="url(#beamGlowLeft)"
-              strokeWidth={isHubPulsing ? '3.5' : '2.2'}
-              filter="url(#purpleBloom)"
-            />
-            <path
-              d="M 480 450 C 430 450, 420 650, 395 650"
-              fill="none"
-              stroke="url(#beamGlowLeft)"
-              strokeWidth={isHubPulsing ? '3' : '2'}
-              strokeDasharray="4 4"
-              filter="url(#purpleBloom)"
-              className="animate-pulse"
-            />
-
-            {/* Right 3 Connecting Beams */}
-            <path
-              d="M 550 390 C 600 390, 610 160, 635 155"
-              fill="none"
-              stroke="url(#beamGlowRight)"
-              strokeWidth={isHubPulsing ? '3' : '2'}
-              strokeDasharray="4 4"
-              filter="url(#purpleBloom)"
-              className="animate-pulse"
-            />
-            <path
-              d="M 560 420 C 610 420, 620 405, 635 400"
-              fill="none"
-              stroke="url(#beamGlowRight)"
-              strokeWidth={isHubPulsing ? '3.5' : '2.2'}
-              filter="url(#purpleBloom)"
-            />
-            <path
-              d="M 550 450 C 600 450, 610 650, 635 650"
-              fill="none"
-              stroke="url(#beamGlowRight)"
-              strokeWidth={isHubPulsing ? '3' : '2'}
-              strokeDasharray="4 4"
-              filter="url(#purpleBloom)"
-              className="animate-pulse"
-            />
-          </svg>
-
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8 items-start">
           {/* ======================================================= */}
-          {/* LEFT COLUMN: 3 Feature Panels (lg:col-span-5)           */}
+          {/* LEFT COLUMN: 3 Feature Panels                          */}
           {/* ======================================================= */}
-          <div className="lg:col-span-5 space-y-6 lg:space-y-7 relative z-10">
+          <div className="space-y-6 lg:space-y-7 relative z-10">
             {/* PANEL 1: Advanced Rich Text Editor */}
             <div
               className={`group relative rounded-[8px] p-5 sm:p-6 transition-all duration-300 border backdrop-blur-md ${
@@ -397,15 +306,6 @@ const note = {
                   : 'border-purple-200 bg-white/95 hover:border-purple-400 hover:shadow-[0_8px_30px_rgba(147,51,234,0.1)]'
               }`}
             >
-              {/* Center-facing connector node dot */}
-              <div
-                className={`hidden lg:block absolute -right-1.5 top-1/2 -translate-y-1/2 w-3 h-3 rounded-full border-2 transition-transform duration-300 group-hover:scale-125 ${
-                  isDark
-                    ? 'bg-purple-400 border-[#090514] shadow-[0_0_10px_rgba(192,132,252,0.9)]'
-                    : 'bg-purple-600 border-white shadow-[0_0_8px_rgba(147,51,234,0.6)]'
-                }`}
-              />
-
               <div className="grid grid-cols-1 sm:grid-cols-12 gap-5 items-center">
                 {/* Left Description Area */}
                 <div className="sm:col-span-6 space-y-3">
@@ -641,15 +541,6 @@ const note = {
                   : 'border-purple-200 bg-white/95 hover:border-purple-400 hover:shadow-[0_8px_30px_rgba(147,51,234,0.1)]'
               }`}
             >
-              {/* Center-facing connector node dot */}
-              <div
-                className={`hidden lg:block absolute -right-1.5 top-1/2 -translate-y-1/2 w-3 h-3 rounded-full border-2 transition-transform duration-300 group-hover:scale-125 ${
-                  isDark
-                    ? 'bg-purple-400 border-[#090514] shadow-[0_0_10px_rgba(192,132,252,0.9)]'
-                    : 'bg-purple-600 border-white shadow-[0_0_8px_rgba(147,51,234,0.6)]'
-                }`}
-              />
-
               <div className="grid grid-cols-1 sm:grid-cols-12 gap-5 items-center">
                 {/* Left Description Area */}
                 <div className="sm:col-span-6 space-y-3">
@@ -798,15 +689,6 @@ const note = {
                   : 'border-purple-200 bg-white/95 hover:border-purple-400 hover:shadow-[0_8px_30px_rgba(147,51,234,0.1)]'
               }`}
             >
-              {/* Center-facing connector node dot */}
-              <div
-                className={`hidden lg:block absolute -right-1.5 top-1/2 -translate-y-1/2 w-3 h-3 rounded-full border-2 transition-transform duration-300 group-hover:scale-125 ${
-                  isDark
-                    ? 'bg-purple-400 border-[#090514] shadow-[0_0_10px_rgba(192,132,252,0.9)]'
-                    : 'bg-purple-600 border-white shadow-[0_0_8px_rgba(147,51,234,0.6)]'
-                }`}
-              />
-
               <div className="grid grid-cols-1 sm:grid-cols-12 gap-5 items-center">
                 {/* Left Description Area */}
                 <div className="sm:col-span-6 space-y-3">
@@ -935,53 +817,9 @@ const note = {
           </div>
 
           {/* ======================================================= */}
-          {/* CENTER COLUMN: Central 3D Knowledge Hub Emblem          */}
+          {/* RIGHT COLUMN: 3 Feature Panels                         */}
           {/* ======================================================= */}
-          <div className="hidden lg:flex lg:col-span-2 flex-col items-center justify-center relative z-20 py-8">
-            <div className="relative flex items-center justify-center">
-              {/* Pulsing Concentric Aura Rings */}
-              <div
-                className={`absolute w-36 sm:w-48 h-36 sm:h-48 rounded-full border opacity-25 pointer-events-none transition-all duration-700 ${
-                  isHubPulsing ? 'scale-125 border-purple-300 opacity-60' : 'animate-ping border-purple-500'
-                }`}
-              />
-              <div
-                className={`absolute w-44 sm:w-56 h-44 sm:h-56 rounded-full border transition-all ${
-                  isDark
-                    ? 'border-purple-400/30 shadow-[0_0_20px_rgba(168,85,247,0.25)]'
-                    : 'border-purple-300/60 shadow-[0_0_15px_rgba(147,51,234,0.15)]'
-                }`}
-              />
-
-              {/* Central Glowing 3D Emblem Container */}
-              <div
-                onClick={triggerHubWave}
-                title="Click to pulse energy across NoteNest features"
-                className={`relative z-10 w-28 sm:w-36 h-28 sm:h-36 rounded-[12px] border-2 shadow-2xl flex items-center justify-center transform -rotate-12 hover:rotate-0 transition-all duration-500 group cursor-pointer backdrop-blur-md ${
-                  isHubPulsing ? 'scale-110 shadow-[0_0_60px_rgba(168,85,247,0.85)] border-purple-300' : ''
-                } ${
-                  isDark
-                    ? 'bg-gradient-to-tr from-purple-950/70 via-[#271447]/90 to-purple-800/50 border-purple-400/60 shadow-[0_0_40px_rgba(168,85,247,0.5)]'
-                    : 'bg-gradient-to-tr from-purple-100 via-white to-purple-50 border-purple-400/80 shadow-[0_0_30px_rgba(147,51,234,0.25)]'
-                }`}
-              >
-                {/* Central Holographic Image Crop */}
-                <img
-                  src={centralHologramImg}
-                  alt="NoteNest Knowledge Universe"
-                  className="w-full h-full object-contain drop-shadow-[0_0_20px_rgba(192,132,252,0.8)] p-2 group-hover:scale-105 transition-transform"
-                />
-
-                {/* Ambient Beacon Highlights */}
-                <span className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-purple-300 shadow-[0_0_10px_rgba(216,180,254,1)] animate-ping" />
-              </div>
-            </div>
-          </div>
-
-          {/* ======================================================= */}
-          {/* RIGHT COLUMN: 3 Feature Panels (lg:col-span-5)          */}
-          {/* ======================================================= */}
-          <div className="lg:col-span-5 space-y-6 lg:space-y-7 relative z-10">
+          <div className="space-y-6 lg:space-y-7 relative z-10">
             {/* PANEL 4: Folders & Nested Folders */}
             <div
               className={`group relative rounded-[8px] p-5 sm:p-6 transition-all duration-300 border backdrop-blur-md ${
@@ -990,15 +828,6 @@ const note = {
                   : 'border-purple-200 bg-white/95 hover:border-purple-400 hover:shadow-[0_8px_30px_rgba(147,51,234,0.1)]'
               }`}
             >
-              {/* Center-facing connector node dot */}
-              <div
-                className={`hidden lg:block absolute -left-1.5 top-1/2 -translate-y-1/2 w-3 h-3 rounded-full border-2 transition-transform duration-300 group-hover:scale-125 ${
-                  isDark
-                    ? 'bg-purple-400 border-[#090514] shadow-[0_0_10px_rgba(192,132,252,0.9)]'
-                    : 'bg-purple-600 border-white shadow-[0_0_8px_rgba(147,51,234,0.6)]'
-                }`}
-              />
-
               <div className="grid grid-cols-1 sm:grid-cols-12 gap-5 items-center">
                 {/* Left Description Area */}
                 <div className="sm:col-span-6 space-y-3">
@@ -1172,15 +1001,6 @@ const note = {
                   : 'border-purple-200 bg-white/95 hover:border-purple-400 hover:shadow-[0_8px_30px_rgba(147,51,234,0.1)]'
               }`}
             >
-              {/* Center-facing connector node dot */}
-              <div
-                className={`hidden lg:block absolute -left-1.5 top-1/2 -translate-y-1/2 w-3 h-3 rounded-full border-2 transition-transform duration-300 group-hover:scale-125 ${
-                  isDark
-                    ? 'bg-purple-400 border-[#090514] shadow-[0_0_10px_rgba(192,132,252,0.9)]'
-                    : 'bg-purple-600 border-white shadow-[0_0_8px_rgba(147,51,234,0.6)]'
-                }`}
-              />
-
               <div className="grid grid-cols-1 sm:grid-cols-12 gap-5 items-center">
                 {/* Left Description Area */}
                 <div className="sm:col-span-6 space-y-3">
@@ -1312,15 +1132,6 @@ const note = {
                   : 'border-purple-200 bg-white/95 hover:border-purple-400 hover:shadow-[0_8px_30px_rgba(147,51,234,0.1)]'
               }`}
             >
-              {/* Center-facing connector node dot */}
-              <div
-                className={`hidden lg:block absolute -left-1.5 top-1/2 -translate-y-1/2 w-3 h-3 rounded-full border-2 transition-transform duration-300 group-hover:scale-125 ${
-                  isDark
-                    ? 'bg-purple-400 border-[#090514] shadow-[0_0_10px_rgba(192,132,252,0.9)]'
-                    : 'bg-purple-600 border-white shadow-[0_0_8px_rgba(147,51,234,0.6)]'
-                }`}
-              />
-
               <div className="grid grid-cols-1 sm:grid-cols-12 gap-5 items-center">
                 {/* Left Description Area */}
                 <div className="sm:col-span-6 space-y-3">

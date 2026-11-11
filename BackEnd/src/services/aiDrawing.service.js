@@ -58,15 +58,6 @@ class AiDrawingService {
     cleanBase64 = cleanBase64.replace(/\s/g, '');
 
     const genAI = new GoogleGenerativeAI(apiKey);
-    // Use gemini-1.5-flash for fastest multimodal inference
-    const model = genAI.getGenerativeModel({
-      model: 'gemini-1.5-flash',
-      generationConfig: {
-        temperature: 0.2,
-        topP: 0.95,
-        maxOutputTokens: 2048
-      }
-    });
 
     const systemPrompt = `You are NoteNest's Smart Ink AI handwriting recognition engine.
 Your mission is to transcribe, organize, and enhance the handwritten content and sketches in this image.
@@ -98,11 +89,50 @@ IMPORTANT: Return ONLY the JSON object. Do not wrap in markdown fences (\`\`\`js
       }
     };
 
-    let result;
-    try {
-      result = await model.generateContent([systemPrompt, imagePart]);
-    } catch (apiError) {
-      const errorMsg = apiError.message || 'Gemini API call failed';
+    // Candidate models in preference order (supports Google AI Studio & Vertex models)
+    const candidateModels = [
+      process.env.GEMINI_MODEL,
+      'gemini-3.8-flash',
+      'gemini-flash-latest',
+      'gemini-2.5-flash-lite',
+      'gemini-2.5-flash',
+      'gemini-1.5-flash'
+    ].filter(Boolean);
+
+    let result = null;
+    let lastError = null;
+
+    for (const modelName of candidateModels) {
+      try {
+        const model = genAI.getGenerativeModel({
+          model: modelName,
+          generationConfig: {
+            temperature: 0.2,
+            topP: 0.95,
+            maxOutputTokens: 2048
+          }
+        });
+
+        result = await model.generateContent([systemPrompt, imagePart]);
+        if (result) break;
+      } catch (err) {
+        lastError = err;
+        // If model is not found / deprecated for this API key, try next candidate
+        const msg = err.message || '';
+        if (
+          msg.includes('404') ||
+          msg.includes('not found') ||
+          msg.includes('no longer available') ||
+          msg.includes('is not supported')
+        ) {
+          continue;
+        }
+        throw err;
+      }
+    }
+
+    if (!result) {
+      const errorMsg = lastError?.message || 'Gemini API call failed';
       const error = new Error(`AI Handwriting Recognition error: ${errorMsg}`);
       error.statusCode = 502;
       throw error;

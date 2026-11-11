@@ -89,14 +89,13 @@ IMPORTANT: Return ONLY the JSON object. Do not wrap in markdown fences (\`\`\`js
       }
     };
 
-    // Candidate models in preference order (supports Google AI Studio & Vertex models)
+    // Candidate models in preference order (fastest multimodal flash models first)
     const candidateModels = [
       process.env.GEMINI_MODEL,
-      'gemini-3.8-flash',
-      'gemini-flash-latest',
-      'gemini-2.5-flash-lite',
-      'gemini-2.5-flash',
-      'gemini-1.5-flash'
+      'gemini-3.5-flash-lite',
+      'gemini-3.5-flash',
+      'gemini-3.1-flash-lite',
+      'gemini-2.5-flash-image'
     ].filter(Boolean);
 
     let result = null;
@@ -113,17 +112,23 @@ IMPORTANT: Return ONLY the JSON object. Do not wrap in markdown fences (\`\`\`js
           }
         });
 
-        result = await model.generateContent([systemPrompt, imagePart]);
+        const generatePromise = model.generateContent([systemPrompt, imagePart]);
+        const timeoutPromise = new Promise((_, reject) =>
+          setTimeout(() => reject(new Error(`Timeout after 12s on model ${modelName}`)), 12000)
+        );
+
+        result = await Promise.race([generatePromise, timeoutPromise]);
         if (result) break;
       } catch (err) {
         lastError = err;
-        // If model is not found / deprecated for this API key, try next candidate
+        // If model is not found / deprecated / timed out, try next candidate
         const msg = err.message || '';
         if (
           msg.includes('404') ||
           msg.includes('not found') ||
           msg.includes('no longer available') ||
-          msg.includes('is not supported')
+          msg.includes('is not supported') ||
+          msg.includes('Timeout after')
         ) {
           continue;
         }

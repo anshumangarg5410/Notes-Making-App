@@ -8,11 +8,14 @@ class AiDrawingService {
    */
   getApiKey() {
     let key = (process.env.GEMINI_API_KEY || environment.gemini?.apiKey || '').replace(/["'\s]/g, '').trim();
-    if (!key) {
+    if (!key && environment.nodeEnv !== 'test') {
       try {
         require('dotenv').config({ path: path.resolve(__dirname, '../../.env'), override: true });
         key = (process.env.GEMINI_API_KEY || '').replace(/["'\s]/g, '').trim();
       } catch (_) {}
+    }
+    if (key === 'your_gemini_api_key_here' || key === 'your_api_key') {
+      return '';
     }
     return key;
   }

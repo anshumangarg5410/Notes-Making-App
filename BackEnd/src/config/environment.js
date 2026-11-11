@@ -45,7 +45,9 @@ const environment = {
   },
 
   gemini: {
-    apiKey: (process.env.GEMINI_API_KEY || '').replace(/["'\s]/g, '').trim()
+    get apiKey() {
+      return (process.env.GEMINI_API_KEY || '').replace(/["'\s]/g, '').trim();
+    }
   }
 };
 

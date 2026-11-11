@@ -3,6 +3,8 @@ import { useTheme } from '../../context/ThemeContext';
 import { useToast } from '../../context/ToastContext';
 import { DrawingCanvas } from './DrawingCanvas';
 import { DrawingToolbar } from './DrawingToolbar';
+import { DrawingAiCleanupModal } from './DrawingAiCleanupModal';
+import { cleanupDrawingWithAi } from '../../services/drawingAiService';
 import {
   PenTool,
   Save,
@@ -36,6 +38,10 @@ export const DrawingWorkspace = ({
   const [strokeCount, setStrokeCount] = useState(0);
   const [isSaving, setIsSaving] = useState(false);
   const [smartInkEnabled, setSmartInkEnabled] = useState(true);
+  const [isAiCleaning, setIsAiCleaning] = useState(false);
+  const [aiCleanupData, setAiCleanupData] = useState(null);
+  const [aiPreviewImage, setAiPreviewImage] = useState(null);
+  const [isAiModalOpen, setIsAiModalOpen] = useState(false);
 
   const handleAlignWriting = () => {
     if (!canvasRef.current) return;
@@ -44,6 +50,54 @@ export const DrawingWorkspace = ({
       success(`Aligned ${result.linesAligned} line${result.linesAligned === 1 ? '' : 's'} of handwriting`);
     } else {
       info('No handwriting lines detected to align');
+    }
+  };
+
+  const handleAiCleanup = async () => {
+    if (!canvasRef.current) return;
+    if (strokeCount === 0) {
+      info('Draw or write something first before running AI cleanup');
+      return;
+    }
+
+    setIsAiCleaning(true);
+    try {
+      const pngDataUri = canvasRef.current.getPngDataUri();
+      setAiPreviewImage(pngDataUri);
+
+      const res = await cleanupDrawingWithAi({
+        image: pngDataUri,
+        promptHint: title && title !== 'Untitled Sketch' ? title : ''
+      });
+
+      if (res && res.data) {
+        setAiCleanupData(res.data);
+        setIsAiModalOpen(true);
+        success('Smart Ink AI handwriting recognition completed!');
+      } else {
+        toastError('Failed to recognize handwriting. Please try again.');
+      }
+    } catch (err) {
+      const message =
+        err.response?.data?.message ||
+        err.message ||
+        'AI handwriting cleanup failed. Check your connection or API key.';
+      toastError(message);
+    } finally {
+      setIsAiCleaning(false);
+    }
+  };
+
+  const handleInsertAiContent = (markdownText, recognizedTitle) => {
+    if (onSaveToNotes && activeNote) {
+      // Package into note format and update
+      const formattedHtml = `<div class="ai-smart-ink-notes"><h3>${recognizedTitle || 'Handwritten Notes'}</h3><pre>${markdownText}</pre></div>`;
+      const currentContent = activeNote.content || '';
+      onSaveToNotes(
+        canvasRef.current?.getDrawingData(),
+        canvasRef.current?.getSvgDataUri(),
+        `${currentContent}<p>${formattedHtml}</p>`
+      );
     }
   };
 
@@ -167,6 +221,8 @@ export const DrawingWorkspace = ({
         smartInkEnabled={smartInkEnabled}
         onToggleSmartInk={() => setSmartInkEnabled((prev) => !prev)}
         onAlignWriting={handleAlignWriting}
+        onAiCleanup={handleAiCleanup}
+        isAiCleaning={isAiCleaning}
       />
 
       {/* Distraction-free drawing canvas */}
@@ -184,6 +240,15 @@ export const DrawingWorkspace = ({
           onStrokesChange={(s) => setStrokeCount(s.length)}
         />
       </div>
+
+      {/* Smart Ink AI Cleanup Preview Modal */}
+      <DrawingAiCleanupModal
+        isOpen={isAiModalOpen}
+        onClose={() => setIsAiModalOpen(false)}
+        data={aiCleanupData}
+        previewImage={aiPreviewImage}
+        onInsertIntoNote={handleInsertAiContent}
+      />
     </div>
   );
 };

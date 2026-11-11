@@ -400,6 +400,7 @@ export const DrawingCanvas = forwardRef(({
     exportPNG: (filename) => exportDrawingToPNG(getDrawingData(), isDark, filename),
     exportSVG: (filename) => downloadDrawingSVG(getDrawingData(), isDark, filename),
     getSvgDataUri: () => createDrawingSvgDataUri(getDrawingData(), isDark),
+    getPngDataUri: () => createDrawingPngDataUri(getDrawingData(), isDark),
     getSvgString: () => exportDrawingToSVG(getDrawingData(), { isDark, includeBackground: true }),
     getStrokesCount: () => strokes.length,
     addVerticalSpace: (amount = 800) => {

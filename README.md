@@ -112,12 +112,15 @@ In today's fast-paced digital workflow, knowledge capture is often fragmented be
 - **Real-Time Document Analytics:** Live word count, character count, and calculated reading time updated on every keystroke.
 - **Pinned & Favorite Notes:** Star critical notes to isolate them in the Favorites view, or toggle Pin to keep priority drafts at the top of the explorer.
 
-### 3. Scribble & Drawing Workspace (Canvas)
+### 3. Scribble & Drawing Workspace (Canvas) with Smart Ink AI
 - **Comprehensive Drawing Tools:** Freehand Pen tool, semi-transparent Highlighter, Eraser, Lines, directional Arrows, Rectangles, and Circles.
-- **Custom Stroke & Palette Controls:** 6 preset colors with custom HEX picker support and variable brush sizes (1px, 2px, 3px, 6px, 12px).
-- **Interactive Canvas Grid:** Toggle between Dark Grid, Isometric Dots, and Plain Canvas backgrounds.
+- **Smart Ink AI Enhancement:** Client-side micro-jitter reduction and stroke smoothing that preserves personal handwriting style and pressure sensitivity.
+- **Intelligent Baseline Alignment:** Mathematical stroke-clustering algorithm detects writing baselines and corrects vertical drift without altering diagrams or shapes.
+- **Gemini-Powered AI Cleanup:** Optional multimodal handwriting recognition using Google Gemini (`gemini-1.5-flash`) that transcribes handwritten notes, identifies headings/checklists/diagrams, and generates structured Markdown previews.
+- **Custom Stroke & Palette Controls:** 8 preset colors with custom HEX picker support and variable brush sizes (Fine, Medium, Thick, Bold).
+- **Interactive Canvas Grid:** Toggle between Plain, Dark Grid, Isometric Dots, and Lined Notebook paper styles.
 - **Dynamic Auto-Scroll Expansion:** Canvas height automatically expands vertically as your sketch reaches the bottom edge, providing an infinite vertical drawing surface.
-- **Zoom & Export:** Canvas zoom controls (50% to 200%), fit-to-screen reset, and instant **Export to PNG** functionality.
+- **Zoom & Export:** Canvas zoom controls (40% to 250%), fit-to-screen reset, and instant **Export to PNG/SVG** functionality.
 
 ### 4. Hierarchical Folders & Organization
 - **Recursive Multi-Tier Folder Tree:** Create top-level root folders and nested subfolders directly from the sidebar with inline name inputs.
@@ -480,6 +483,7 @@ http://localhost:5173
 | `REFRESH_TOKEN_EXPIRES_IN`| Backend | Optional | Expiration duration for refresh tokens | `7d` |
 | `FRONTEND_URL` | Backend | **Required** | Client origin allowed by CORS & cookie policy | `http://localhost:5173` |
 | `GOOGLE_CLIENT_ID` | Backend | Optional | Google OAuth 2.0 Client ID for server verification | `*.apps.googleusercontent.com` |
+| `GEMINI_API_KEY` | Backend | Optional | Google Gemini API Key for Smart Ink AI handwriting recognition | `AIzaSy...` |
 | `CLOUDINARY_CLOUD_NAME` | Backend | Optional | Cloudinary account cloud name for image uploads | `your_cloud_name` |
 | `CLOUDINARY_API_KEY` | Backend | Optional | Cloudinary API key | `123456789012345` |
 | `CLOUDINARY_API_SECRET` | Backend | Optional | Cloudinary API secret | `your_api_secret` |
@@ -562,6 +566,14 @@ All routes (except public auth & contact submission) require a valid JWT token v
 |---|---|---|:---:|
 | `POST` | `/api/contact` | Submit a public message or inquiry from Contact page | Public |
 | `GET` | `/api/contact/messages` | Retrieve inquiry messages (admin/internal scope) | **Required** |
+
+---
+
+### Smart Ink AI & Drawing (`/api/drawing`)
+
+| Method | Endpoint | Description | Authentication |
+|---|---|---|:---:|
+| `POST` | `/api/drawing/ai-cleanup` | Gemini-powered handwriting recognition, transcription & layout analysis | **Required** |
 
 ---
 

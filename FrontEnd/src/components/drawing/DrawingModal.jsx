@@ -2,6 +2,8 @@ import React, { useState, useRef, useEffect } from 'react';
 import { useTheme } from '../../context/ThemeContext';
 import { DrawingCanvas } from './DrawingCanvas';
 import { DrawingToolbar } from './DrawingToolbar';
+import { DrawingAiCleanupModal } from './DrawingAiCleanupModal';
+import { cleanupDrawingWithAi } from '../../services/drawingAiService';
 import {
   X,
   Maximize2,
@@ -35,10 +37,39 @@ export const DrawingModal = ({
   const [historyStatus, setHistoryStatus] = useState({ canUndo: false, canRedo: false });
   const [strokeCount, setStrokeCount] = useState(0);
   const [smartInkEnabled, setSmartInkEnabled] = useState(true);
+  const [isAiCleaning, setIsAiCleaning] = useState(false);
+  const [aiCleanupData, setAiCleanupData] = useState(null);
+  const [aiPreviewImage, setAiPreviewImage] = useState(null);
+  const [isAiModalOpen, setIsAiModalOpen] = useState(false);
 
   const handleAlignWriting = () => {
     if (!canvasRef.current) return;
     canvasRef.current.alignHandwriting();
+  };
+
+  const handleAiCleanup = async () => {
+    if (!canvasRef.current) return;
+    if (strokeCount === 0) return;
+
+    setIsAiCleaning(true);
+    try {
+      const pngDataUri = canvasRef.current.getPngDataUri();
+      setAiPreviewImage(pngDataUri);
+
+      const res = await cleanupDrawingWithAi({
+        image: pngDataUri,
+        promptHint: title && title !== 'Drawing' ? title : ''
+      });
+
+      if (res && res.data) {
+        setAiCleanupData(res.data);
+        setIsAiModalOpen(true);
+      }
+    } catch (err) {
+      console.error('Smart Ink AI cleanup notice:', err);
+    } finally {
+      setIsAiCleaning(false);
+    }
   };
 
   // Sync title & background on open
@@ -169,6 +200,8 @@ export const DrawingModal = ({
           smartInkEnabled={smartInkEnabled}
           onToggleSmartInk={() => setSmartInkEnabled((prev) => !prev)}
           onAlignWriting={handleAlignWriting}
+          onAiCleanup={handleAiCleanup}
+          isAiCleaning={isAiCleaning}
         />
 
         {/* Drawing Canvas Area */}
@@ -187,6 +220,14 @@ export const DrawingModal = ({
           />
         </div>
       </div>
+
+      {/* Smart Ink AI Cleanup Preview Modal */}
+      <DrawingAiCleanupModal
+        isOpen={isAiModalOpen}
+        onClose={() => setIsAiModalOpen(false)}
+        data={aiCleanupData}
+        previewImage={aiPreviewImage}
+      />
     </div>
   );
 };

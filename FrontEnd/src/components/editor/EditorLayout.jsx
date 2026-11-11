@@ -439,11 +439,7 @@ export const EditorLayout = ({
     let createdNote = null;
     const formatExt = defaultFormat === 'markdown' ? '.md' : defaultFormat === 'plaintext' ? '.txt' : '';
     const initialTitle = formatExt ? `Untitled Note${formatExt}` : 'Untitled Note';
-    const initialContent = defaultFormat === 'markdown'
-      ? '# Untitled Note\n\nStart writing in markdown...'
-      : defaultFormat === 'plaintext'
-      ? 'Start typing plain text...'
-      : '<p>Start writing...</p>';
+    const initialContent = '';
 
     // 1. If online, attempt to create directly on backend for permanent ObjectId
     if (navigator.onLine) {
@@ -451,7 +447,7 @@ export const EditorLayout = ({
         const res = await noteService.createNote({
           title: initialTitle,
           content: initialContent,
-          plainText: defaultFormat === 'markdown' ? '# Untitled Note\n\nStart writing in markdown...' : '',
+          plainText: '',
           tags: selectedTag ? [selectedTag] : [],
           folder: selectedFolder || 'Personal',
           category: selectedFolder || 'Personal',

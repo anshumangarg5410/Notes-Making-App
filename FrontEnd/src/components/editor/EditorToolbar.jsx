@@ -35,10 +35,23 @@ export const EditorToolbar = ({
   const [headingDropdownOpen, setHeadingDropdownOpen] = useState(false);
   const [imageDropdownOpen, setImageDropdownOpen] = useState(false);
   const [tableDropdownOpen, setTableDropdownOpen] = useState(false);
+  const [, setEditorTick] = useState(0);
 
   const headingRef = useRef(null);
   const imageRef = useRef(null);
   const tableRef = useRef(null);
+
+  // Sync toolbar with editor state (selection changes, format changes)
+  useEffect(() => {
+    if (!editor) return;
+    const update = () => setEditorTick((t) => t + 1);
+    editor.on('transaction', update);
+    editor.on('selectionUpdate', update);
+    return () => {
+      editor.off('transaction', update);
+      editor.off('selectionUpdate', update);
+    };
+  }, [editor]);
 
   // Close dropdowns when clicking outside
   useEffect(() => {
@@ -65,7 +78,7 @@ export const EditorToolbar = ({
     if (editor.isActive('heading', { level: 1 })) return 'H1';
     if (editor.isActive('heading', { level: 2 })) return 'H2';
     if (editor.isActive('heading', { level: 3 })) return 'H3';
-    return 'H2';
+    return 'Text';
   };
 
   // Smart Code / CodeBlock Handler
@@ -181,7 +194,23 @@ export const EditorToolbar = ({
               <button
                 type="button"
                 onClick={() => {
-                  editor.chain().focus().toggleHeading({ level: 1 }).run();
+                  editor.chain().focus().setParagraph().run();
+                  setHeadingDropdownOpen(false);
+                }}
+                className={`w-full text-left px-3 py-1.5 flex items-center justify-between transition-colors ${
+                  !editor.isActive('heading')
+                    ? isDark ? 'text-purple-400 font-semibold bg-[#272738]/50' : 'text-[#7C3AED] font-semibold bg-[#EDE9FE]'
+                    : isDark ? 'text-gray-300 hover:bg-[#272738]' : 'text-[#374151] hover:bg-[#F3F0F9]'
+                }`}
+              >
+                <span>Normal Text</span>
+                <span className={`text-[10px] font-mono ${isDark ? 'text-gray-500' : 'text-[#9CA3AF]'}`}>P</span>
+              </button>
+              <div className={`my-1 border-t ${isDark ? 'border-[#2a2a3d]' : 'border-[#EAE6F4]'}`} />
+              <button
+                type="button"
+                onClick={() => {
+                  editor.chain().focus().setHeading({ level: 1 }).run();
                   setHeadingDropdownOpen(false);
                 }}
                 className={`w-full text-left px-3 py-1.5 flex items-center justify-between transition-colors ${
@@ -190,13 +219,13 @@ export const EditorToolbar = ({
                     : isDark ? 'text-gray-300 hover:bg-[#272738]' : 'text-[#374151] hover:bg-[#F3F0F9]'
                 }`}
               >
-                <span>Heading 1</span>
+                <span className="font-bold">Heading 1</span>
                 <span className={`text-[10px] font-mono ${isDark ? 'text-gray-500' : 'text-[#9CA3AF]'}`}>H1</span>
               </button>
               <button
                 type="button"
                 onClick={() => {
-                  editor.chain().focus().toggleHeading({ level: 2 }).run();
+                  editor.chain().focus().setHeading({ level: 2 }).run();
                   setHeadingDropdownOpen(false);
                 }}
                 className={`w-full text-left px-3 py-1.5 flex items-center justify-between transition-colors ${
@@ -205,13 +234,13 @@ export const EditorToolbar = ({
                     : isDark ? 'text-gray-300 hover:bg-[#272738]' : 'text-[#374151] hover:bg-[#F3F0F9]'
                 }`}
               >
-                <span>Heading 2</span>
+                <span className="font-semibold">Heading 2</span>
                 <span className={`text-[10px] font-mono ${isDark ? 'text-gray-500' : 'text-[#9CA3AF]'}`}>H2</span>
               </button>
               <button
                 type="button"
                 onClick={() => {
-                  editor.chain().focus().toggleHeading({ level: 3 }).run();
+                  editor.chain().focus().setHeading({ level: 3 }).run();
                   setHeadingDropdownOpen(false);
                 }}
                 className={`w-full text-left px-3 py-1.5 flex items-center justify-between transition-colors ${
@@ -220,24 +249,8 @@ export const EditorToolbar = ({
                     : isDark ? 'text-gray-300 hover:bg-[#272738]' : 'text-[#374151] hover:bg-[#F3F0F9]'
                 }`}
               >
-                <span>Heading 3</span>
+                <span className="font-medium">Heading 3</span>
                 <span className={`text-[10px] font-mono ${isDark ? 'text-gray-500' : 'text-[#9CA3AF]'}`}>H3</span>
-              </button>
-              <div className={`my-1 border-t ${isDark ? 'border-[#2a2a3d]' : 'border-[#EAE6F4]'}`} />
-              <button
-                type="button"
-                onClick={() => {
-                  editor.chain().focus().setParagraph().run();
-                  setHeadingDropdownOpen(false);
-                }}
-                className={`w-full text-left px-3 py-1.5 flex items-center justify-between transition-colors ${
-                  editor.isActive('paragraph')
-                    ? isDark ? 'text-purple-400 font-semibold bg-[#272738]/50' : 'text-[#7C3AED] font-semibold bg-[#EDE9FE]'
-                    : isDark ? 'text-gray-300 hover:bg-[#272738]' : 'text-[#374151] hover:bg-[#F3F0F9]'
-                }`}
-              >
-                <span>Paragraph</span>
-                <span className={`text-[10px] font-mono ${isDark ? 'text-gray-500' : 'text-[#9CA3AF]'}`}>P</span>
               </button>
             </div>
           )}

@@ -13,7 +13,7 @@ import { offlineService, db } from '../../services/db';
 import { useToast } from '../../context/ToastContext';
 import { useTheme } from '../../context/ThemeContext';
 import { useEditorSettings } from '../../context/EditorSettingsContext';
-import { RotateCcw, Trash2 } from 'lucide-react';
+import { RotateCcw, Trash2, FileText, Plus } from 'lucide-react';
 import './editorTheme.css';
 
 export const EditorLayout = ({
@@ -367,10 +367,44 @@ export const EditorLayout = ({
     const updatedTabs = tabs.filter((t) => t.id !== idToClose);
     setTabs(updatedTabs);
 
-    if (activeTabId === idToClose && updatedTabs.length > 0) {
-      setActiveTabId(updatedTabs[updatedTabs.length - 1].id);
+    if (activeTabId === idToClose) {
+      if (updatedTabs.length > 0) {
+        setActiveTabId(updatedTabs[updatedTabs.length - 1].id);
+      } else {
+        setActiveTabId(null);
+      }
     }
   };
+
+  // When switching navigation / folder / tag filter, deselect active note if it does not belong to the selected view
+  useEffect(() => {
+    if (!activeTabId) return;
+    const current = notes.find((n) => (n._id || n.id) === activeTabId);
+    if (!current) return;
+
+    if (activeNav === 'trash') {
+      if (!current.isDeleted) {
+        setActiveTabId(null);
+      }
+    } else {
+      if (current.isDeleted) {
+        setActiveTabId(null);
+        return;
+      }
+      if (activeNav === 'favorites' && !current.isFavorite) {
+        setActiveTabId(null);
+        return;
+      }
+      if (selectedFolder && current.folder !== selectedFolder && current.category !== selectedFolder) {
+        setActiveTabId(null);
+        return;
+      }
+      if (selectedTag && !(current.tags || []).includes(selectedTag)) {
+        setActiveTabId(null);
+        return;
+      }
+    }
+  }, [activeNav, selectedFolder, selectedTag, activeTabId, notes]);
 
   // Create new note respecting defaultFormat preference
   const handleNewNote = async () => {
@@ -747,12 +781,8 @@ export const EditorLayout = ({
 
     try {
       setNotes([]);
-      // Close tabs for any deleted notes
-      tabs.forEach((t) => {
-        if (t.note?.isDeleted) {
-          handleCloseTab(t.id);
-        }
-      });
+      setTabs([]);
+      setActiveTabId(null);
 
       await offlineService.emptyLocalTrash();
 
@@ -1012,23 +1042,84 @@ export const EditorLayout = ({
               </div>
             )}
 
-            {/* Tiptap Writing Workspace */}
-            <div className="flex-1 overflow-hidden relative flex flex-col">
-              <RichTextEditor
-                key={`${activeTabId || 'editor-default'}-${currentMode}`}
-                note={activeNote}
-                mode={currentMode}
-                onUpdateNote={handleUpdateNote}
-                onWordCountChange={setWordStats}
-                onManualSave={handleManualSave}
-              />
-            </div>
+            {/* Active Note Editor OR Empty Workspace State */}
+            {activeNote && activeTabId && (!activeNote.isDeleted || activeNav === 'trash') ? (
+              <div className="flex-1 overflow-hidden relative flex flex-col">
+                <RichTextEditor
+                  key={`${activeTabId}-${currentMode}`}
+                  note={activeNote}
+                  mode={currentMode}
+                  onUpdateNote={handleUpdateNote}
+                  onWordCountChange={setWordStats}
+                  onManualSave={handleManualSave}
+                />
+              </div>
+            ) : (
+              <div className="flex-1 flex flex-col items-center justify-center p-8 text-center select-none">
+                <div className={`w-16 h-16 rounded-2xl flex items-center justify-center mb-4 border shadow-sm transition-all ${
+                  isDark
+                    ? 'bg-gradient-to-br from-purple-950/40 to-indigo-950/30 border-purple-500/30 text-purple-400 shadow-purple-950/40'
+                    : 'bg-gradient-to-br from-purple-50 to-indigo-50 border-purple-200 text-purple-600 shadow-purple-100'
+                }`}>
+                  <FileText className="w-8 h-8" />
+                </div>
+
+                <h3 className={`text-xl font-bold tracking-tight mb-2 ${
+                  isDark ? 'text-gray-100' : 'text-slate-800'
+                }`}>
+                  Select a note to view or create a new note
+                </h3>
+
+                <p className={`text-sm max-w-md mb-6 leading-relaxed ${
+                  isDark ? 'text-gray-400' : 'text-slate-500'
+                }`}>
+                  Choose an existing note from the explorer on the left, or create a brand new note to begin writing.
+                </p>
+
+                <button
+                  type="button"
+                  onClick={handleNewNote}
+                  className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white text-sm font-semibold shadow-md shadow-purple-500/20 hover:shadow-purple-500/35 transition-all hover:scale-105 active:scale-95 cursor-pointer"
+                >
+                  <Plus className="w-4 h-4" />
+                  <span>Create New Note</span>
+                </button>
+
+                <div className={`mt-8 pt-6 border-t flex flex-wrap items-center justify-center gap-4 text-xs ${
+                  isDark ? 'border-[#20202e] text-gray-500' : 'border-[#EAE6F4] text-slate-400'
+                }`}>
+                  <span className="flex items-center gap-1.5">
+                    <kbd className={`px-1.5 py-0.5 rounded text-[10px] font-mono border ${
+                      isDark ? 'bg-[#181824] border-[#2d2d3e] text-gray-300' : 'bg-slate-100 border-slate-200 text-slate-600'
+                    }`}>Ctrl</kbd>
+                    <span>+</span>
+                    <kbd className={`px-1.5 py-0.5 rounded text-[10px] font-mono border ${
+                      isDark ? 'bg-[#181824] border-[#2d2d3e] text-gray-300' : 'bg-slate-100 border-slate-200 text-slate-600'
+                    }`}>K</kbd>
+                    <span>Search notes</span>
+                  </span>
+
+                  <span className="opacity-40">•</span>
+
+                  <span className="flex items-center gap-1.5">
+                    <kbd className={`px-1.5 py-0.5 rounded text-[10px] font-mono border ${
+                      isDark ? 'bg-[#181824] border-[#2d2d3e] text-gray-300' : 'bg-slate-100 border-slate-200 text-slate-600'
+                    }`}>Ctrl</kbd>
+                    <span>+</span>
+                    <kbd className={`px-1.5 py-0.5 rounded text-[10px] font-mono border ${
+                      isDark ? 'bg-[#181824] border-[#2d2d3e] text-gray-300' : 'bg-slate-100 border-slate-200 text-slate-600'
+                    }`}>S</kbd>
+                    <span>Save note</span>
+                  </span>
+                </div>
+              </div>
+            )}
 
             {/* Bottom Status Bar matching screenshot */}
             <EditorStatusBar
-              wordCount={wordStats.words}
-              charCount={wordStats.chars}
-              readingTime={wordStats.readingTime}
+              wordCount={activeNote ? wordStats.words : 0}
+              charCount={activeNote ? wordStats.chars : 0}
+              readingTime={activeNote ? wordStats.readingTime : 0}
               lastSaved={lastSavedTime}
               isOnline={isOnline}
               mode={currentMode}
@@ -1037,7 +1128,7 @@ export const EditorLayout = ({
           </main>
 
           {/* PANE 4: Right Document Inspector (Properties & Outline) */}
-          {!isFocusMode && isInspectorOpen && (
+          {!isFocusMode && isInspectorOpen && activeNote && (
             <DocumentInspector
               note={activeNote}
               wordCount={wordStats.words}

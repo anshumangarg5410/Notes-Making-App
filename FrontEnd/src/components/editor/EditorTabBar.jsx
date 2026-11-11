@@ -62,21 +62,19 @@ export const EditorTabBar = ({
                 <span className="w-1.5 h-1.5 rounded-full bg-amber-400" title="Unsaved changes" />
               )}
 
-              {tabs.length > 1 && (
-                <button
-                  type="button"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onCloseTab(tab.id);
-                  }}
-                  className={`p-0.5 rounded opacity-60 group-hover:opacity-100 transition-opacity ${
-                    isDark ? 'hover:bg-[#252536] text-gray-400 hover:text-gray-200' : 'hover:bg-[#EAE6F4] text-[#6B7280] hover:text-[#181326]'
-                  }`}
-                  title="Close tab"
-                >
-                  <X className="w-3 h-3" />
-                </button>
-              )}
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onCloseTab(tab.id);
+                }}
+                className={`p-0.5 rounded opacity-60 group-hover:opacity-100 transition-opacity ${
+                  isDark ? 'hover:bg-[#252536] text-gray-400 hover:text-gray-200' : 'hover:bg-[#EAE6F4] text-[#6B7280] hover:text-[#181326]'
+                }`}
+                title="Close tab"
+              >
+                <X className="w-3 h-3" />
+              </button>
             </div>
           );
         })}
@@ -96,38 +94,40 @@ export const EditorTabBar = ({
       {/* Right: Status badge & Window Controls */}
       <div className="flex items-center gap-2 pl-2 shrink-0">
         {/* Sync/Save Status Badge */}
-        {saveStatus === 'saving' ? (
-          <div
-            className="flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[11px] border"
-            style={{
-              backgroundColor: 'var(--accent-bg, rgba(168, 85, 247, 0.15))',
-              borderColor: 'var(--accent-border, rgba(168, 85, 247, 0.4))',
-              color: 'var(--accent-text, #c084fc)'
-            }}
-          >
-            <Clock className="w-3 h-3 animate-spin" />
-            <span>Saving...</span>
-          </div>
-        ) : saveStatus === 'unsaved' ? (
-          <button
-            type="button"
-            onClick={onManualSave}
-            title="Click or press Ctrl+S to save"
-            className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-amber-950/40 border border-amber-500/40 hover:border-amber-400 text-[11px] text-amber-300 transition-colors cursor-pointer"
-          >
-            <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse" />
-            <span>Save (Ctrl+S)</span>
-          </button>
-        ) : saveStatus === 'offline' ? (
-          <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-blue-950/40 border border-blue-500/30 text-[11px] text-blue-300">
-            <span className="w-2 h-2 rounded-full bg-blue-400" />
-            <span>Saved locally</span>
-          </div>
-        ) : (
-          <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-emerald-950/40 border border-emerald-500/30 text-[11px] text-emerald-400">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
-            <span>Saved</span>
-          </div>
+        {activeTabId && tabs.length > 0 && (
+          saveStatus === 'saving' ? (
+            <div
+              className="flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[11px] border"
+              style={{
+                backgroundColor: 'var(--accent-bg, rgba(168, 85, 247, 0.15))',
+                borderColor: 'var(--accent-border, rgba(168, 85, 247, 0.4))',
+                color: 'var(--accent-text, #c084fc)'
+              }}
+            >
+              <Clock className="w-3 h-3 animate-spin" />
+              <span>Saving...</span>
+            </div>
+          ) : saveStatus === 'unsaved' ? (
+            <button
+              type="button"
+              onClick={onManualSave}
+              title="Click or press Ctrl+S to save"
+              className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-amber-950/40 border border-amber-500/40 hover:border-amber-400 text-[11px] text-amber-300 transition-colors cursor-pointer"
+            >
+              <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse" />
+              <span>Save (Ctrl+S)</span>
+            </button>
+          ) : saveStatus === 'offline' ? (
+            <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-blue-950/40 border border-blue-500/30 text-[11px] text-blue-300">
+              <span className="w-2 h-2 rounded-full bg-blue-400" />
+              <span>Saved locally</span>
+            </div>
+          ) : (
+            <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-emerald-950/40 border border-emerald-500/30 text-[11px] text-emerald-400">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+              <span>Saved</span>
+            </div>
+          )
         )}
 
         {/* Inspector / Properties Panel Toggle */}

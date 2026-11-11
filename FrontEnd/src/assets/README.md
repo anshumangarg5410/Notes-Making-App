@@ -29,6 +29,7 @@ FrontEnd/src/assets/
 │   └── upgrade-pro-icon-clean.png   # Isolated transparent Pro icon
 │
 ├── landing/
+│   ├── newbglandingpage.png         # Active full dark stationery themed background for Landing, About, and Contact pages
 │   ├── hero-bg-dark.png             # Full dark paper texture background with ambient purple glow
 │   ├── wide_dark_moody_stationary_themed_background_des.png # Master dark moody background
 │   ├── pencil-navbar-dark.png       # Realistic wooden pencil navbar for dark mode

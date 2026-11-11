@@ -8,7 +8,7 @@ import { AboutSection } from '../components/landing/AboutSection';
 import { Footer } from '../components/footer/Footer';
 import { SectionDivider } from '../components/landing/SectionDivider';
 import { useTheme } from '../context/ThemeContext';
-import landingBgDark from '../assets/landing/hero-bg-dark.png';
+import landingBgDark from '../assets/landing/newbglandingpage.png';
 
 export const LandingPage = () => {
   const { isDark, setTheme } = useTheme();

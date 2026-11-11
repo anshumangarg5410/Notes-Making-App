@@ -5,7 +5,7 @@ import { ContactForm } from '../components/contact/ContactForm';
 import { ContactInfoCards } from '../components/contact/ContactInfoCards';
 import { Footer } from '../components/footer/Footer';
 import { useTheme } from '../context/ThemeContext';
-import landingBgDark from '../assets/landing/hero-bg-dark.png';
+import landingBgDark from '../assets/landing/newbglandingpage.png';
 
 export const ContactPage = () => {
   const { isDark } = useTheme();

@@ -6,7 +6,7 @@ import { AboutCapabilities } from '../components/about/AboutCapabilities';
 import { AboutStory } from '../components/about/AboutStory';
 import { Footer } from '../components/footer/Footer';
 import { useTheme } from '../context/ThemeContext';
-import landingBgDark from '../assets/landing/hero-bg-dark.png';
+import landingBgDark from '../assets/landing/newbglandingpage.png';
 
 export const AboutPage = () => {
   const { isDark } = useTheme();

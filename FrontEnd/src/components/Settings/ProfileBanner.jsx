@@ -99,6 +99,7 @@ export const ProfileBanner = ({
               <img
                 src={resolveAvatarUrl(user.avatar)}
                 alt={user.name || 'User avatar'}
+                referrerPolicy="no-referrer"
                 onError={() => setAvatarLoadFailed(true)}
                 className="w-16 h-16 rounded-[8px] object-cover border border-purple-500/50 shadow-md shadow-purple-950/50"
               />

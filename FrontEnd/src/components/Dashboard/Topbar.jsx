@@ -211,6 +211,7 @@ export const Topbar = ({
               <img
                 src={user.avatar || user.avatarUrl}
                 alt={displayName}
+                referrerPolicy="no-referrer"
                 className="w-7 h-7 rounded-full object-cover border border-purple-500/50 shadow-[0_0_10px_rgba(147,51,234,0.3)] shrink-0"
               />
             ) : (

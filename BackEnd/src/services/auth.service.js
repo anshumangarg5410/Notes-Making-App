@@ -398,6 +398,9 @@ class AuthService {
     }
 
     const normalizedEmail = payload.email.trim().toLowerCase();
+    // High-res Google profile avatar from Google account picture
+    const googlePicture = payload.picture || '';
+
     let user = await User.findOne({ email: normalizedEmail });
 
     if (!user) {
@@ -405,8 +408,8 @@ class AuthService {
         name: payload.name || payload.given_name || 'Google User',
         email: normalizedEmail,
         googleId: payload.sub,
-        avatar: payload.picture || '',
-        avatarUrl: payload.picture || '',
+        avatar: googlePicture,
+        avatarUrl: googlePicture,
         isEmailVerified: payload.email_verified || true
       });
       await user.save();
@@ -416,9 +419,10 @@ class AuthService {
         user.googleId = payload.sub;
         changed = true;
       }
-      if (!user.avatar && payload.picture) {
-        user.avatar = payload.picture;
-        user.avatarUrl = payload.picture;
+      // Always sync latest Google profile picture to avatar and avatarUrl
+      if (googlePicture && (user.avatar !== googlePicture || user.avatarUrl !== googlePicture)) {
+        user.avatar = googlePicture;
+        user.avatarUrl = googlePicture;
         changed = true;
       }
       if (changed) {
@@ -440,13 +444,20 @@ class AuthService {
     user.refreshTokens = validTokens;
     await user.save();
 
+    const userData = {
+      ...user.toJSON(),
+      avatar: googlePicture || user.avatar || user.avatarUrl || '',
+      avatarUrl: googlePicture || user.avatarUrl || user.avatar || '',
+      picture: googlePicture || user.avatar || ''
+    };
+
     return {
-      user: user.toJSON(),
+      user: userData,
       googleUser: {
         googleId: payload.sub,
         name: user.name,
         email: user.email,
-        picture: payload.picture || user.avatar || ''
+        picture: googlePicture || user.avatar || ''
       },
       accessToken,
       refreshToken

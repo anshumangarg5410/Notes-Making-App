@@ -198,7 +198,9 @@ class AuthController {
           googleId: result.googleUser.googleId,
           name: result.googleUser.name,
           email: result.googleUser.email,
-          picture: result.googleUser.picture
+          picture: result.googleUser.picture,
+          avatar: result.user.avatar || result.googleUser.picture,
+          avatarUrl: result.user.avatarUrl || result.googleUser.picture
         }
       });
     } catch (error) {

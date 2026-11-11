@@ -344,6 +344,7 @@ export const SettingsView = ({
                     <img
                       src={user.avatar}
                       alt={displayName}
+                      referrerPolicy="no-referrer"
                       className="w-16 h-16 rounded-full object-cover border-2 border-purple-500/50 shadow-md shadow-purple-950/50"
                     />
                   ) : (

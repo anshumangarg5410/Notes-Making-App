@@ -52,13 +52,22 @@ export const authService = {
     const response = await api.post('/auth/google', { idToken });
 
     const token = response.data.data?.token || response.data.token;
-    const user = response.data.data?.user || response.data.data;
+    let user = response.data.data?.user || response.data.data;
     const googleData = {
       googleId: response.data.data?.googleId,
       name: response.data.data?.name,
       email: response.data.data?.email,
-      picture: response.data.data?.picture
+      picture: response.data.data?.picture || response.data.data?.avatar
     };
+
+    if (user && googleData.picture) {
+      user = {
+        ...user,
+        avatar: user.avatar || googleData.picture,
+        avatarUrl: user.avatarUrl || googleData.picture,
+        picture: googleData.picture
+      };
+    }
 
     if (token) {
       localStorage.setItem('notely_token', token);

@@ -195,6 +195,7 @@ export const EditorSidebar = ({
             <img
               src={resolveAvatarUrl(avatarSrc)}
               alt={displayName}
+              referrerPolicy="no-referrer"
               onError={() => setAvatarLoadFailed(true)}
               className="w-7 h-7 rounded-full object-cover border border-purple-500/50 shadow-sm shadow-purple-900/40 shrink-0"
             />
@@ -230,6 +231,7 @@ export const EditorSidebar = ({
                   <img
                     src={resolveAvatarUrl(avatarSrc)}
                     alt={displayName}
+                    referrerPolicy="no-referrer"
                     className="w-8 h-8 rounded-full object-cover border border-purple-500/50 shadow-sm shrink-0"
                   />
                 ) : (

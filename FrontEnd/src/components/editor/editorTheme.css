@@ -41,6 +41,7 @@
 
 .editor-workspace-light .obsidian-editor .ProseMirror {
   color: #1E1B2E;
+  caret-color: #7C3AED;
 }
 
 .editor-workspace-light .obsidian-editor .ProseMirror h1,

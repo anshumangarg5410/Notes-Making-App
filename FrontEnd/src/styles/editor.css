@@ -26,6 +26,7 @@
   font-family: inherit;
   line-height: 1.7;
   font-size: var(--editor-font-size, 14px);
+  caret-color: var(--accent, #a855f7);
 }
 
 .obsidian-editor .ProseMirror p {
@@ -220,6 +221,9 @@
   color: #6b7280;
   pointer-events: none;
   height: 0;
+  position: static;
+  width: auto;
+  text-align: left;
 }
 
 /* Custom scrollbars for Obsidian panels */
@@ -253,7 +257,8 @@
   position: relative;
 }
 
-.obsidian-editor.show-line-numbers .ProseMirror > *::before {
+/* Use ::after for line numbers so it never collides with TipTap's ::before placeholder */
+.obsidian-editor.show-line-numbers .ProseMirror > *::after {
   counter-increment: line-counter;
   content: counter(line-counter);
   position: absolute;
@@ -272,7 +277,7 @@
   padding-right: 0.65rem;
 }
 
-.editor-workspace-light .obsidian-editor.show-line-numbers .ProseMirror > *::before {
+.editor-workspace-light .obsidian-editor.show-line-numbers .ProseMirror > *::after {
   color: #94a3b8;
   border-right-color: rgba(203, 213, 225, 0.7);
 }

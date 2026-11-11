@@ -693,7 +693,7 @@ export const RichTextEditor = ({
       {/* 2. MAIN DOCUMENT CANVAS SCROLL AREA                            */}
       {/* ============================================================== */}
       <div className="flex-1 overflow-y-auto obsidian-scrollbar px-6 sm:px-12 py-8 max-w-4xl mx-auto w-full space-y-4">
-        {/* Document Title Header with accent vertical cursor bar */}
+        {/* Document Title Header with themed caret */}
         <div
           className={`flex items-center gap-1 group relative pb-2 border-b ${
             isDark ? 'border-purple-500/20' : 'border-[#EAE6F4]'
@@ -705,11 +705,10 @@ export const RichTextEditor = ({
             onChange={handleTitleChange}
             spellCheck={spellCheck}
             placeholder="Untitled Note"
-            className={`text-2xl sm:text-3xl font-bold bg-transparent border-none focus:outline-none w-full tracking-tight ${
-              isDark ? 'text-white' : 'text-[#111827]'
+            className={`text-2xl sm:text-3xl font-bold bg-transparent border-none focus:outline-none w-full tracking-tight caret-purple-500 ${
+              isDark ? 'text-white placeholder-gray-500' : 'text-[#111827] placeholder-slate-400'
             }`}
           />
-          <span className="title-cursor" />
         </div>
 
         {/* Dynamic Editor Content View */}

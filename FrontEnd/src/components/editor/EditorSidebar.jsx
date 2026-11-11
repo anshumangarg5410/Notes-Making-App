@@ -52,10 +52,11 @@ export const EditorSidebar = ({
   const [tagsOpen, setTagsOpen] = useState(true);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const [avatarLoadFailed, setAvatarLoadFailed] = useState(false);
+  const avatarSrc = user?.avatar || user?.avatarUrl;
 
   useEffect(() => {
     setAvatarLoadFailed(false);
-  }, [user?.avatar]);
+  }, [user?.avatar, user?.avatarUrl]);
 
   const resolveAvatarUrl = (url) => {
     if (!url) return '';
@@ -190,9 +191,9 @@ export const EditorSidebar = ({
           className="flex items-center gap-2.5 cursor-pointer hover:opacity-90 transition-opacity"
           title={`Logged in as ${displayName}`}
         >
-          {user?.avatar && !avatarLoadFailed ? (
+          {avatarSrc && !avatarLoadFailed ? (
             <img
-              src={resolveAvatarUrl(user.avatar)}
+              src={resolveAvatarUrl(avatarSrc)}
               alt={displayName}
               onError={() => setAvatarLoadFailed(true)}
               className="w-7 h-7 rounded-full object-cover border border-purple-500/50 shadow-sm shadow-purple-900/40 shrink-0"
@@ -222,9 +223,22 @@ export const EditorSidebar = ({
             <div className={`absolute top-14 left-3 w-56 border rounded-md shadow-2xl z-50 py-1 text-xs animate-in fade-in zoom-in-95 duration-100 ${
               isDark ? 'bg-[#161622] border-[#2b2b3e]' : 'bg-white border-[#EAE6F4] shadow-purple-200/40'
             }`}>
-              <div className={`px-3 py-2 border-b ${isDark ? 'border-[#242436]' : 'border-[#EAE6F4]'}`}>
-                <div className={`font-semibold truncate ${isDark ? 'text-gray-100' : 'text-[#181326]'}`}>{displayName}</div>
-                <div className={`text-[11px] truncate ${isDark ? 'text-gray-400' : 'text-[#6B7280]'}`}>{user?.email || 'Logged in'}</div>
+              <div className={`px-3 py-2.5 border-b flex items-center gap-2.5 ${isDark ? 'border-[#242436]' : 'border-[#EAE6F4]'}`}>
+                {avatarSrc && !avatarLoadFailed ? (
+                  <img
+                    src={resolveAvatarUrl(avatarSrc)}
+                    alt={displayName}
+                    className="w-8 h-8 rounded-full object-cover border border-purple-500/50 shadow-sm shrink-0"
+                  />
+                ) : (
+                  <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-[#9333ea] to-[#c084fc] text-white text-xs font-bold flex items-center justify-center shadow-sm shrink-0">
+                    {initials}
+                  </div>
+                )}
+                <div className="min-w-0 flex-1">
+                  <div className={`font-semibold truncate ${isDark ? 'text-gray-100' : 'text-[#181326]'}`}>{displayName}</div>
+                  <div className={`text-[11px] truncate ${isDark ? 'text-gray-400' : 'text-[#6B7280]'}`}>{user?.email || 'Logged in'}</div>
+                </div>
               </div>
 
               <button

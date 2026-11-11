@@ -4,7 +4,14 @@ import { authService } from '../services/authService';
 const AuthContext = createContext(null);
 
 export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(null);
+  const [user, setUser] = useState(() => {
+    try {
+      const saved = localStorage.getItem('notely_user');
+      return saved ? JSON.parse(saved) : null;
+    } catch (_) {
+      return null;
+    }
+  });
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -61,7 +68,13 @@ export const AuthProvider = ({ children }) => {
   };
 
   const updateUser = (updatedData) => {
-    setUser((prev) => ({ ...prev, ...updatedData }));
+    setUser((prev) => {
+      const updated = { ...prev, ...updatedData };
+      try {
+        localStorage.setItem('notely_user', JSON.stringify(updated));
+      } catch (_) {}
+      return updated;
+    });
   };
 
   return (

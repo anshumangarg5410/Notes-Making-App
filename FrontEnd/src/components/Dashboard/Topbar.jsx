@@ -202,10 +202,18 @@ export const Topbar = ({
             onClick={() => setProfileOpen(!profileOpen)}
             className="flex items-center gap-2 p-1.5 pr-2.5 rounded-[3px] hover:bg-white/5 border border-purple-500/20 transition-all cursor-pointer group"
           >
-            {/* Avatar Initials Circle with Purple Gradient */}
-            <div className="w-7 h-7 rounded-full bg-gradient-to-tr from-[#9333ea] to-[#c084fc] text-white text-xs font-bold flex items-center justify-center shadow-[0_0_10px_rgba(147,51,234,0.5)]">
-              {initials}
-            </div>
+            {/* Avatar Image or Initials Circle */}
+            {user?.avatar || user?.avatarUrl ? (
+              <img
+                src={user.avatar || user.avatarUrl}
+                alt={displayName}
+                className="w-7 h-7 rounded-full object-cover border border-purple-500/50 shadow-[0_0_10px_rgba(147,51,234,0.3)] shrink-0"
+              />
+            ) : (
+              <div className="w-7 h-7 rounded-full bg-gradient-to-tr from-[#9333ea] to-[#c084fc] text-white text-xs font-bold flex items-center justify-center shadow-[0_0_10px_rgba(147,51,234,0.5)] shrink-0">
+                {initials}
+              </div>
+            )}
 
             {/* Display Name */}
             <span className="hidden sm:inline-block text-xs font-medium text-stone-200 group-hover:text-white transition-colors">

@@ -405,13 +405,6 @@ export const EditorSidebar = ({
               />
               {!isCollapsed && <span>Drawing Canvas</span>}
             </div>
-            {!isCollapsed && (
-              <span className={`text-[9px] font-mono px-1 rounded ${
-                isDark ? 'bg-purple-950/60 text-purple-300' : 'bg-purple-100 text-purple-700'
-              }`}>
-                New
-              </span>
-            )}
           </button>
         </div>
 

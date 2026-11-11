@@ -10,7 +10,8 @@ export const GoogleLoginButton = ({ isDark = true, onSuccess }) => {
   const { googleLogin } = useAuth();
   const { success, error: toastError } = useToast();
 
-  const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID || '';
+  const rawClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID || '';
+  const clientId = rawClientId.replace(/["'\s]/g, '').trim();
 
   // Ensure Google Identity Services script is available
   useEffect(() => {

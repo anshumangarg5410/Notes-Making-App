@@ -363,12 +363,12 @@ class AuthService {
       throw error;
     }
 
-    let clientId = process.env.GOOGLE_CLIENT_ID || environment.google?.clientId;
+    let clientId = (process.env.GOOGLE_CLIENT_ID || environment.google?.clientId || '').replace(/["'\s]/g, '').trim();
     if (!clientId) {
       // Reload environment in case .env was recently updated without a server restart
       const path = require('path');
       require('dotenv').config({ path: path.resolve(__dirname, '../../.env'), override: true });
-      clientId = process.env.GOOGLE_CLIENT_ID;
+      clientId = (process.env.GOOGLE_CLIENT_ID || '').replace(/["'\s]/g, '').trim();
     }
 
     if (!clientId) {

@@ -41,7 +41,7 @@ const environment = {
   },
 
   google: {
-    clientId: process.env.GOOGLE_CLIENT_ID || ''
+    clientId: (process.env.GOOGLE_CLIENT_ID || '').replace(/["'\s]/g, '').trim()
   }
 };
 

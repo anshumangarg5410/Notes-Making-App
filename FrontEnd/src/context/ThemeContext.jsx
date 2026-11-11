@@ -113,6 +113,7 @@ export const ThemeProvider = ({ children }) => {
     root.style.setProperty('--accent-bg', color.bg);
     root.style.setProperty('--accent-border', color.border);
     root.style.setProperty('--accent-text', color.text);
+    root.style.setProperty('--accent-text-light', color.light || color.hover);
     root.style.setProperty('--editor-accent', color.primary);
     root.style.setProperty('--editor-accent-hover', color.hover);
     root.setAttribute('data-accent', accentColor);

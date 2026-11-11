@@ -5,8 +5,8 @@
   --editor-border: #1e293b;
   --editor-text: #f8fafc;
   --editor-muted: #94a3b8;
-  --editor-accent: #818cf8;
-  --editor-accent-hover: #6366f1;
+  --editor-accent: var(--accent, #a855f7);
+  --editor-accent-hover: var(--accent-hover, #9333ea);
   background-color: var(--editor-main);
   color: var(--editor-text);
 }
@@ -18,8 +18,8 @@
   --editor-border: #EAE6F4;
   --editor-text: #1E1B2E;
   --editor-muted: #6B7280;
-  --editor-accent: #7C3AED;
-  --editor-accent-hover: #6D28D9;
+  --editor-accent: var(--accent, #7C3AED);
+  --editor-accent-hover: var(--accent-hover, #6D28D9);
   background-color: var(--editor-main);
   color: var(--editor-text);
 }

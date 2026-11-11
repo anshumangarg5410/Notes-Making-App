@@ -52,12 +52,6 @@
     --text-primary: #F8FAFC;
     --text-secondary: #94A3B8;
     --border-color: #1E293B;
-    --accent: #a855f7;
-    --accent-hover: #9333ea;
-    --accent-glow: rgba(168, 85, 247, 0.35);
-    --accent-bg: rgba(168, 85, 247, 0.15);
-    --accent-border: rgba(168, 85, 247, 0.4);
-    --accent-text: #c084fc;
     --editor-font-size: 14px;
   }
 
@@ -120,6 +114,193 @@
 }
 .shadow-accent {
   box-shadow: 0 0 15px var(--accent-glow) !important;
+}
+
+/* ==========================================================================
+   Comprehensive Dynamic Accent Theme System: Maps across every dashboard component
+   ========================================================================== */
+
+/* Backgrounds */
+[data-accent] .bg-purple-600,
+[data-accent] .bg-purple-500,
+[data-accent] .bg-purple-700,
+[data-accent] .bg-\[\#8b5cf6\],
+[data-accent] .bg-\[\#7c3aed\],
+[data-accent] .bg-\[\#7C3AED\],
+[data-accent] .bg-\[\#9333ea\] {
+  background-color: var(--accent) !important;
+}
+
+[data-accent] .hover\:bg-purple-500:hover,
+[data-accent] .hover\:bg-purple-600:hover,
+[data-accent] .hover\:bg-purple-700:hover,
+[data-accent] .hover\:bg-\[\#7c3aed\]:hover,
+[data-accent] .hover\:bg-\[\#9333ea\]:hover {
+  background-color: var(--accent-hover) !important;
+}
+
+[data-accent] .bg-purple-950\/70,
+[data-accent] .bg-purple-950\/60,
+[data-accent] .bg-purple-950\/50,
+[data-accent] .bg-purple-950\/40,
+[data-accent] .bg-purple-950\/30,
+[data-accent] .bg-purple-950\/20,
+[data-accent] .bg-purple-900\/50,
+[data-accent] .bg-purple-900\/40,
+[data-accent] .bg-purple-900\/35,
+[data-accent] .bg-purple-900\/30,
+[data-accent] .bg-purple-900\/20,
+[data-accent] .bg-purple-900\/10,
+[data-accent] .bg-purple-800\/20,
+[data-accent] .bg-purple-600\/30,
+[data-accent] .bg-purple-600\/20,
+[data-accent] .bg-purple-500\/15,
+[data-accent] .bg-purple-500\/20,
+[data-accent] .bg-purple-100,
+[data-accent] .bg-purple-50,
+[data-accent] .bg-\[\#EDE9FE\],
+[data-accent] .bg-\[\#DDD6FE\] {
+  background-color: var(--accent-bg) !important;
+}
+
+/* Texts */
+[data-accent] .text-purple-600,
+[data-accent] .text-purple-500,
+[data-accent] .text-purple-400,
+[data-accent] .text-purple-300,
+[data-accent] .text-purple-200,
+[data-accent] .text-purple-700,
+[data-accent] .text-\[\#7C3AED\],
+[data-accent] .text-\[\#8b5cf6\],
+[data-accent] .text-\[\#9333ea\],
+[data-accent] .hover\:text-purple-300:hover,
+[data-accent] .hover\:text-purple-400:hover,
+[data-accent] .hover\:text-purple-600:hover,
+[data-accent] .hover\:text-purple-700:hover,
+[data-accent] .hover\:text-\[\#7C3AED\]:hover,
+[data-accent] .hover\:text-\[\#9333ea\]:hover {
+  color: var(--accent-text, var(--accent)) !important;
+}
+
+.light[data-accent] .text-purple-600,
+.light[data-accent] .text-purple-500,
+.light[data-accent] .text-purple-400,
+.light[data-accent] .text-purple-300,
+.light[data-accent] .text-purple-700,
+.light[data-accent] .text-\[\#7C3AED\],
+.light[data-accent] .text-\[\#8b5cf6\],
+.light[data-accent] .text-\[\#9333ea\] {
+  color: var(--accent-text-light, var(--accent)) !important;
+}
+
+/* Fills & Strokes */
+[data-accent] .fill-purple-400,
+[data-accent] .fill-purple-500,
+[data-accent] .fill-\[\#7C3AED\] {
+  fill: var(--accent) !important;
+}
+
+/* Borders */
+[data-accent] .border-purple-600,
+[data-accent] .border-purple-500,
+[data-accent] .border-purple-400,
+[data-accent] .border-purple-300,
+[data-accent] .border-purple-200,
+[data-accent] .border-\[\#7C3AED\],
+[data-accent] .border-\[\#8b5cf6\],
+[data-accent] .border-\[\#9333ea\] {
+  border-color: var(--accent) !important;
+}
+
+[data-accent] .border-purple-500\/60,
+[data-accent] .border-purple-500\/50,
+[data-accent] .border-purple-500\/40,
+[data-accent] .border-purple-500\/30,
+[data-accent] .border-purple-500\/20,
+[data-accent] .border-purple-400\/50,
+[data-accent] .border-purple-400\/40,
+[data-accent] .border-purple-400\/30,
+[data-accent] .border-purple-300\/40,
+[data-accent] .border-purple-300\/30,
+[data-accent] .border-\[\#DDD6FE\],
+[data-accent] .border-\[\#EAE6F4\],
+[data-accent] .border-\[\#E2DEEE\] {
+  border-color: var(--accent-border) !important;
+}
+
+[data-accent] .border-l-purple-500,
+[data-accent] .border-l-\[\#7C3AED\],
+[data-accent] .border-t-purple-500,
+[data-accent] .border-t-\[\#7C3AED\] {
+  border-color: var(--accent) !important;
+}
+
+/* Gradients */
+[data-accent] .from-purple-600,
+[data-accent] .from-purple-500,
+[data-accent] .from-\[\#9333ea\] {
+  --tw-gradient-from: var(--accent) var(--tw-gradient-from-position) !important;
+  --tw-gradient-to: var(--accent-hover) var(--tw-gradient-to-position) !important;
+  --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to) !important;
+}
+
+[data-accent] .to-indigo-600,
+[data-accent] .to-indigo-500,
+[data-accent] .to-purple-500,
+[data-accent] .to-purple-600,
+[data-accent] .to-\[\#c084fc\] {
+  --tw-gradient-to: var(--accent-hover) var(--tw-gradient-to-position) !important;
+}
+
+[data-accent] .from-purple-950\/70,
+[data-accent] .from-purple-950\/40,
+[data-accent] .from-purple-900\/40,
+[data-accent] .from-purple-50 {
+  --tw-gradient-from: var(--accent-bg) var(--tw-gradient-from-position) !important;
+  --tw-gradient-stops: var(--tw-gradient-from), var(--accent-bg) !important;
+}
+
+[data-accent] .to-purple-900\/35,
+[data-accent] .to-indigo-950\/30,
+[data-accent] .to-purple-900\/20,
+[data-accent] .to-indigo-50 {
+  --tw-gradient-to: var(--accent-bg) var(--tw-gradient-to-position) !important;
+}
+
+/* Shadows & Glows */
+[data-accent] .shadow-purple-900\/40,
+[data-accent] .shadow-purple-900\/50,
+[data-accent] .shadow-purple-950\/40,
+[data-accent] .shadow-purple-950\/50,
+[data-accent] .shadow-purple-500\/20,
+[data-accent] .shadow-purple-500\/25,
+[data-accent] .shadow-purple-500\/30,
+[data-accent] .shadow-purple-500\/35,
+[data-accent] .shadow-purple-500\/40,
+[data-accent] .shadow-purple-100,
+[data-accent] .shadow-purple-200\/40,
+[data-accent] .shadow-purple-200\/50 {
+  box-shadow: 0 4px 14px var(--accent-glow) !important;
+}
+
+/* Caret & Focus */
+[data-accent] .caret-purple-500,
+[data-accent] .caret-purple-400 {
+  caret-color: var(--accent) !important;
+}
+
+[data-accent] .focus\:border-purple-500:focus,
+[data-accent] .focus\:border-purple-500\/60:focus {
+  border-color: var(--accent) !important;
+}
+
+[data-accent] input[type="range"] {
+  accent-color: var(--accent) !important;
+}
+
+[data-accent] input[type="checkbox"]:checked {
+  background-color: var(--accent) !important;
+  border-color: var(--accent) !important;
 }
 
 .sharp-tag {

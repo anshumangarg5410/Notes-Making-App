@@ -86,3 +86,4 @@ export const AboutCapabilities = () => {
 };
 
 export default AboutCapabilities;
+

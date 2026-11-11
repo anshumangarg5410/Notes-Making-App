@@ -96,3 +96,4 @@ export const AboutHero = () => {
 };
 
 export default AboutHero;
+

@@ -39,6 +39,9 @@ export const EditorSidebar = ({
   onToggleCollapse
 }) => {
   const navigate = useNavigate();
+  const { user, logout } = useAuth();
+  const { isDark } = useTheme();
+
   const [foldersOpen, setFoldersOpen] = useState(true);
   const [expandedFolders, setExpandedFolders] = useState({});
   const [activeAddSubfolderParentId, setActiveAddSubfolderParentId] = useState(null);
@@ -109,8 +112,6 @@ export const EditorSidebar = ({
     }).length;
   };
 
-  const { user, logout } = useAuth();
-  const { isDark } = useTheme();
   const displayName = user?.name || user?.username || 'User';
   const initials = displayName
     .split(' ')

@@ -79,3 +79,4 @@ export const AboutMissionCards = () => {
 };
 
 export default AboutMissionCards;
+

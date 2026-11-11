@@ -21,7 +21,9 @@ import {
   Sparkles,
   FileImage,
   Layers,
-  Palette
+  Palette,
+  Wand2,
+  AlignLeft
 } from 'lucide-react';
 
 export const DRAWING_PALETTES = [
@@ -73,7 +75,10 @@ export const DrawingToolbar = ({
   onExportSVG,
   onSave,
   saveLabel = 'Insert into Note',
-  isCompact = false
+  isCompact = false,
+  smartInkEnabled = true,
+  onToggleSmartInk,
+  onAlignWriting
 }) => {
   const { isDark } = useTheme();
   const [showColorPicker, setShowColorPicker] = useState(false);
@@ -448,6 +453,52 @@ export const DrawingToolbar = ({
             </div>
           )}
         </div>
+
+        {/* Separator */}
+        <div className={`w-[1px] h-5 mx-1 hidden sm:block ${isDark ? 'bg-[#28283a]' : 'bg-[#EAE6F4]'}`} />
+
+        {/* 8. Smart Ink AI Mode Toggle */}
+        {onToggleSmartInk && (
+          <button
+            type="button"
+            onClick={onToggleSmartInk}
+            className={`p-1.5 px-2.5 rounded-lg border flex items-center gap-1.5 text-xs font-medium transition-all duration-150 cursor-pointer ${
+              smartInkEnabled
+                ? isDark
+                  ? 'bg-purple-950/60 border-purple-500/60 text-purple-200 shadow-[0_0_12px_rgba(168,85,247,0.25)]'
+                  : 'bg-purple-100 border-purple-400 text-purple-900 shadow-sm'
+                : isDark
+                  ? 'bg-[#1a1a26] border-[#29293e] text-gray-400 hover:text-gray-200 hover:bg-[#222234]'
+                  : 'bg-white border-[#E2DEEE] text-[#6B7280] hover:text-[#181326] hover:bg-[#F9F8FD]'
+            }`}
+            title="Smart Ink: Natural jitter reduction & handwriting smoothing (Click to toggle)"
+          >
+            <Wand2 className={`w-3.5 h-3.5 ${smartInkEnabled ? 'text-purple-400' : 'text-gray-400'}`} />
+            <span className="hidden sm:inline">Smart Ink</span>
+            <span
+              className={`w-1.5 h-1.5 rounded-full ${
+                smartInkEnabled ? 'bg-purple-400 shadow-[0_0_6px_#c084fc]' : 'bg-gray-500'
+              }`}
+            />
+          </button>
+        )}
+
+        {/* 9. Align Handwriting Action */}
+        {onAlignWriting && (
+          <button
+            type="button"
+            onClick={onAlignWriting}
+            className={`p-1.5 px-2 rounded-lg border flex items-center gap-1.5 text-xs transition-colors cursor-pointer ${
+              isDark
+                ? 'bg-[#1a1a26] border-[#29293e] text-gray-300 hover:text-white hover:border-purple-500/40 hover:bg-[#222234]'
+                : 'bg-white border-[#E2DEEE] text-[#374151] hover:text-[#181326] hover:border-purple-300 hover:bg-[#F9F8FD]'
+            }`}
+            title="Align Handwriting: Straighten writing baselines & spacing (Ctrl+Z to undo)"
+          >
+            <AlignLeft className="w-3.5 h-3.5 text-purple-400" />
+            <span className="hidden md:inline">Align Writing</span>
+          </button>
+        )}
       </div>
 
       {/* RIGHT: History, Zoom, Clear, Export, Save Action */}

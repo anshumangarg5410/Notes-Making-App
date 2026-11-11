@@ -10,6 +10,10 @@ import {
   downloadDrawingSVG,
   createDrawingSvgDataUri
 } from '../../utils/drawingUtils';
+import {
+  smoothStrokePoints,
+  alignHandwritingStrokes
+} from '../../utils/smartInkUtils';
 
 // Helper to determine the maximum Y coordinate in a stroke
 const getStrokeMaxY = (stroke) => {
@@ -38,6 +42,7 @@ export const DrawingCanvas = forwardRef(({
   onHistoryChange,
   onStrokesChange,
   isInteractive = true,
+  smartInkEnabled = true,
   className = ''
 }, ref) => {
   const { isDark } = useTheme();
@@ -325,8 +330,22 @@ export const DrawingCanvas = forwardRef(({
     }
 
     if (currentStrokeRef.current) {
-      const finishedStroke = currentStrokeRef.current;
+      let finishedStroke = currentStrokeRef.current;
       currentStrokeRef.current = null;
+
+      // Smart Ink: smooth handwriting stroke points on pointerUp if enabled
+      if (
+        smartInkEnabled &&
+        finishedStroke.tool === 'pen' &&
+        finishedStroke.points &&
+        finishedStroke.points.length >= 3
+      ) {
+        finishedStroke = {
+          ...finishedStroke,
+          points: smoothStrokePoints(finishedStroke.points)
+        };
+      }
+
       const nextStrokes = [...strokes, finishedStroke];
       pushToHistory(nextStrokes);
 
@@ -369,6 +388,14 @@ export const DrawingCanvas = forwardRef(({
     redo,
     clear,
     getDrawingData,
+    alignHandwriting: (options = {}) => {
+      const result = alignHandwritingStrokes(strokes, options);
+      if (result.changed) {
+        pushToHistory(result.strokes);
+        return { success: true, linesAligned: result.linesAligned };
+      }
+      return { success: false, linesAligned: 0 };
+    },
     exportPNG: (filename) => exportDrawingToPNG(getDrawingData(), isDark, filename),
     exportSVG: (filename) => downloadDrawingSVG(getDrawingData(), isDark, filename),
     getSvgDataUri: () => createDrawingSvgDataUri(getDrawingData(), isDark),

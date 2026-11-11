@@ -35,6 +35,17 @@ export const DrawingWorkspace = ({
   const [historyStatus, setHistoryStatus] = useState({ canUndo: false, canRedo: false });
   const [strokeCount, setStrokeCount] = useState(0);
   const [isSaving, setIsSaving] = useState(false);
+  const [smartInkEnabled, setSmartInkEnabled] = useState(true);
+
+  const handleAlignWriting = () => {
+    if (!canvasRef.current) return;
+    const result = canvasRef.current.alignHandwriting();
+    if (result && result.success) {
+      success(`Aligned ${result.linesAligned} line${result.linesAligned === 1 ? '' : 's'} of handwriting`);
+    } else {
+      info('No handwriting lines detected to align');
+    }
+  };
 
   const handleSave = async () => {
     if (!canvasRef.current) return;
@@ -153,6 +164,9 @@ export const DrawingWorkspace = ({
         onExportSVG={handleExportSVG}
         onSave={handleSave}
         saveLabel={activeNote ? 'Save to Active Note' : 'Save Sketch'}
+        smartInkEnabled={smartInkEnabled}
+        onToggleSmartInk={() => setSmartInkEnabled((prev) => !prev)}
+        onAlignWriting={handleAlignWriting}
       />
 
       {/* Distraction-free drawing canvas */}
@@ -165,6 +179,7 @@ export const DrawingWorkspace = ({
           thickness={thickness}
           background={background}
           zoom={zoom}
+          smartInkEnabled={smartInkEnabled}
           onHistoryChange={setHistoryStatus}
           onStrokesChange={(s) => setStrokeCount(s.length)}
         />

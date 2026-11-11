@@ -34,6 +34,12 @@ export const DrawingModal = ({
   const [isFullscreen, setIsFullscreen] = useState(!isQuickScribble);
   const [historyStatus, setHistoryStatus] = useState({ canUndo: false, canRedo: false });
   const [strokeCount, setStrokeCount] = useState(0);
+  const [smartInkEnabled, setSmartInkEnabled] = useState(true);
+
+  const handleAlignWriting = () => {
+    if (!canvasRef.current) return;
+    canvasRef.current.alignHandwriting();
+  };
 
   // Sync title & background on open
   useEffect(() => {
@@ -160,6 +166,9 @@ export const DrawingModal = ({
           onSave={handleSave}
           saveLabel={initialData ? 'Update in Note' : 'Insert into Note'}
           isCompact={isQuickScribble}
+          smartInkEnabled={smartInkEnabled}
+          onToggleSmartInk={() => setSmartInkEnabled((prev) => !prev)}
+          onAlignWriting={handleAlignWriting}
         />
 
         {/* Drawing Canvas Area */}
@@ -172,6 +181,7 @@ export const DrawingModal = ({
             thickness={thickness}
             background={background}
             zoom={zoom}
+            smartInkEnabled={smartInkEnabled}
             onHistoryChange={setHistoryStatus}
             onStrokesChange={(s) => setStrokeCount(s.length)}
           />

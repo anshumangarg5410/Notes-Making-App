@@ -152,4 +152,25 @@ describe('NoteNest Authentication System', () => {
       expect(res.body.success).toBe(true);
     });
   });
+
+  describe('POST /api/auth/google', () => {
+    it('should reject requests with missing token', async () => {
+      const res = await request(app)
+        .post('/api/auth/google')
+        .send({});
+
+      expect(res.status).toBe(400);
+      expect(res.body.success).toBe(false);
+    });
+
+    it('should reject invalid or tampered Google tokens', async () => {
+      process.env.GOOGLE_CLIENT_ID = 'test-client-id.apps.googleusercontent.com';
+      const res = await request(app)
+        .post('/api/auth/google')
+        .send({ idToken: 'invalid.malformed.token' });
+
+      expect(res.status).toBe(401);
+      expect(res.body.success).toBe(false);
+    });
+  });
 });

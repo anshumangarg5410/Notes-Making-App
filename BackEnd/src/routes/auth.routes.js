@@ -46,6 +46,13 @@ router.post(
   authController.login
 );
 
+// B2. Google Login
+router.post(
+  '/google',
+  generalAuthLimiter,
+  authController.googleLogin
+);
+
 // C. Get Current User (Protected)
 router.get(
   '/me',

@@ -51,6 +51,14 @@ export const AuthProvider = ({ children }) => {
     return res;
   };
 
+  const googleLogin = async (idToken) => {
+    const res = await authService.googleLogin(idToken);
+    if (res.success && res.data) {
+      setUser(res.data);
+    }
+    return res;
+  };
+
   const register = async (name, email, password, confirmPassword) => {
     const res = await authService.register(name, email, password, confirmPassword);
     if (res.success && res.data) {
@@ -84,6 +92,7 @@ export const AuthProvider = ({ children }) => {
         loading,
         isAuthenticated: !!user,
         login,
+        googleLogin,
         register,
         logout,
         updateUser

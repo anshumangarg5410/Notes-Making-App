@@ -31,6 +31,11 @@ const userSchema = new mongoose.Schema(
       type: String,
       select: false
     },
+    googleId: {
+      type: String,
+      sparse: true,
+      index: true
+    },
     avatar: {
       type: String,
       default: ''

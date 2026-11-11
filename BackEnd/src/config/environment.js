@@ -38,6 +38,10 @@ const environment = {
     apiKey: process.env.CLOUDINARY_API_KEY || '',
     apiSecret: process.env.CLOUDINARY_API_SECRET || '',
     uploadPreset: process.env.CLOUDINARY_UPLOAD_PRESET || ''
+  },
+
+  google: {
+    clientId: process.env.GOOGLE_CLIENT_ID || ''
   }
 };
 

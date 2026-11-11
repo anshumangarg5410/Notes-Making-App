@@ -48,6 +48,34 @@ export const authService = {
     };
   },
 
+  async googleLogin(idToken) {
+    const response = await api.post('/auth/google', { idToken });
+
+    const token = response.data.data?.token || response.data.token;
+    const user = response.data.data?.user || response.data.data;
+    const googleData = {
+      googleId: response.data.data?.googleId,
+      name: response.data.data?.name,
+      email: response.data.data?.email,
+      picture: response.data.data?.picture
+    };
+
+    if (token) {
+      localStorage.setItem('notely_token', token);
+    }
+    if (user) {
+      localStorage.setItem('notely_user', JSON.stringify(user));
+    }
+
+    return {
+      success: true,
+      message: response.data.message || 'Google authentication successful',
+      data: user,
+      googleData,
+      token
+    };
+  },
+
   async logout() {
     try {
       await api.post('/auth/logout');

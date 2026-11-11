@@ -176,6 +176,35 @@ class AuthController {
       next(error);
     }
   }
+
+  /**
+   * POST /api/auth/google
+   * Verifies Google ID token and logs in the user
+   */
+  async googleLogin(req, res, next) {
+    try {
+      const idToken = req.body?.idToken || req.body?.token || req.body?.credential;
+      const result = await authService.googleLogin(idToken);
+
+      // Attach secure HttpOnly cookies
+      setAuthCookies(res, result.accessToken, result.refreshToken);
+
+      return res.status(200).json({
+        success: true,
+        message: 'Google authentication successful',
+        data: {
+          user: result.user,
+          token: result.accessToken,
+          googleId: result.googleUser.googleId,
+          name: result.googleUser.name,
+          email: result.googleUser.email,
+          picture: result.googleUser.picture
+        }
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
 }
 
 module.exports = new AuthController();

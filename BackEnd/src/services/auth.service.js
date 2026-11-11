@@ -1,5 +1,6 @@
 const User = require('../models/User');
 const crypto = require('crypto');
+const { OAuth2Client } = require('google-auth-library');
 const {
   generateAccessToken,
   generateRefreshToken,
@@ -348,6 +349,100 @@ class AuthService {
       success: true,
       message: 'Verification email sent.',
       ...(environment.nodeEnv !== 'production' ? { verificationToken } : {})
+    };
+  }
+
+  /**
+   * Google ID Token Verification & Login
+   * POST /api/auth/google
+   */
+  async googleLogin(idToken) {
+    if (!idToken) {
+      const error = new Error('Google ID token is required.');
+      error.statusCode = 400;
+      throw error;
+    }
+
+    const clientId = environment.google?.clientId || process.env.GOOGLE_CLIENT_ID;
+    if (!clientId) {
+      const error = new Error('GOOGLE_CLIENT_ID is not configured on the server. Please set GOOGLE_CLIENT_ID in BackEnd/.env.');
+      error.statusCode = 500;
+      throw error;
+    }
+
+    const client = new OAuth2Client(clientId);
+    let ticket;
+    try {
+      ticket = await client.verifyIdToken({
+        idToken,
+        audience: clientId
+      });
+    } catch (err) {
+      const error = new Error(`Invalid Google ID token: ${err.message}`);
+      error.statusCode = 401;
+      throw error;
+    }
+
+    const payload = ticket.getPayload();
+    if (!payload || !payload.email) {
+      const error = new Error('Invalid token payload: missing email.');
+      error.statusCode = 401;
+      throw error;
+    }
+
+    const normalizedEmail = payload.email.trim().toLowerCase();
+    let user = await User.findOne({ email: normalizedEmail });
+
+    if (!user) {
+      user = new User({
+        name: payload.name || payload.given_name || 'Google User',
+        email: normalizedEmail,
+        googleId: payload.sub,
+        avatar: payload.picture || '',
+        avatarUrl: payload.picture || '',
+        isEmailVerified: payload.email_verified || true
+      });
+      await user.save();
+    } else {
+      let changed = false;
+      if (!user.googleId) {
+        user.googleId = payload.sub;
+        changed = true;
+      }
+      if (!user.avatar && payload.picture) {
+        user.avatar = payload.picture;
+        user.avatarUrl = payload.picture;
+        changed = true;
+      }
+      if (changed) {
+        await user.save();
+      }
+    }
+
+    // Generate tokens for existing auth architecture
+    const accessToken = generateAccessToken(user);
+    const refreshToken = generateRefreshToken(user);
+
+    const tokenHash = hashToken(refreshToken);
+    const now = new Date();
+    const validTokens = (user.refreshTokens || []).filter((t) => t.expiresAt > now);
+    validTokens.push({
+      tokenHash,
+      expiresAt: new Date(Date.now() + environment.jwt.refreshExpiresInMs)
+    });
+    user.refreshTokens = validTokens;
+    await user.save();
+
+    return {
+      user: user.toJSON(),
+      googleUser: {
+        googleId: payload.sub,
+        name: user.name,
+        email: user.email,
+        picture: payload.picture || user.avatar || ''
+      },
+      accessToken,
+      refreshToken
     };
   }
 }

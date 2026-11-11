@@ -30,3 +30,4 @@ class AiDrawingController {
 }
 
 module.exports = new AiDrawingController();
+

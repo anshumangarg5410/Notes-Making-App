@@ -26,3 +26,4 @@ export const cleanupDrawingWithAi = async ({ image, mimeType = 'image/png', prom
 export default {
   cleanupDrawingWithAi
 };
+

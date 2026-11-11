@@ -11,3 +11,4 @@ router.use(authenticate);
 router.post('/ai-cleanup', aiDrawingController.cleanupDrawing);
 
 module.exports = router;
+

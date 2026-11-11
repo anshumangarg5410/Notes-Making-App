@@ -23,7 +23,8 @@ import {
   Layers,
   Palette,
   Wand2,
-  AlignLeft
+  AlignLeft,
+  Loader2
 } from 'lucide-react';
 
 export const DRAWING_PALETTES = [
@@ -78,7 +79,9 @@ export const DrawingToolbar = ({
   isCompact = false,
   smartInkEnabled = true,
   onToggleSmartInk,
-  onAlignWriting
+  onAlignWriting,
+  onAiCleanup,
+  isAiCleaning = false
 }) => {
   const { isDark } = useTheme();
   const [showColorPicker, setShowColorPicker] = useState(false);
@@ -497,6 +500,35 @@ export const DrawingToolbar = ({
           >
             <AlignLeft className="w-3.5 h-3.5 text-purple-400" />
             <span className="hidden md:inline">Align Writing</span>
+          </button>
+        )}
+
+        {/* 10. AI Cleanup Action (Gemini Powered) */}
+        {onAiCleanup && (
+          <button
+            type="button"
+            onClick={onAiCleanup}
+            disabled={isAiCleaning}
+            className={`p-1.5 px-2.5 rounded-lg border flex items-center gap-1.5 text-xs font-medium transition-all duration-150 cursor-pointer ${
+              isAiCleaning
+                ? 'bg-purple-950/60 border-purple-500/50 text-purple-300 animate-pulse'
+                : isDark
+                ? 'bg-gradient-to-r from-purple-900/40 to-indigo-900/40 border-purple-500/40 text-purple-200 hover:border-purple-400 hover:shadow-[0_0_12px_rgba(168,85,247,0.25)]'
+                : 'bg-purple-50 border-purple-300 text-purple-900 hover:bg-purple-100 hover:shadow-sm'
+            }`}
+            title="Smart Ink AI Cleanup: Transcribe & organize handwriting with Gemini (Click to run)"
+          >
+            {isAiCleaning ? (
+              <>
+                <Loader2 className="w-3.5 h-3.5 text-purple-400 animate-spin" />
+                <span className="hidden md:inline">Analyzing...</span>
+              </>
+            ) : (
+              <>
+                <Sparkles className="w-3.5 h-3.5 text-purple-400" />
+                <span className="hidden md:inline">AI Cleanup</span>
+              </>
+            )}
           </button>
         )}
       </div>

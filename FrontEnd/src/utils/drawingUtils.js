@@ -346,6 +346,25 @@ export const createDrawingSvgDataUri = (drawingData, isDark = true) => {
   return `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`;
 };
 
+// Generate a PNG data URI for export or AI recognition
+export const createDrawingPngDataUri = (drawingData, isDark = true, maxWidth = 1200) => {
+  const { width = 900, height = 550, strokes = [], background = 'plain' } = drawingData;
+  const canvas = document.createElement('canvas');
+  const scale = width > maxWidth ? maxWidth / width : 1.5;
+  canvas.width = Math.round(width * scale);
+  canvas.height = Math.round(height * scale);
+
+  const ctx = canvas.getContext('2d');
+  ctx.scale(scale, scale);
+
+  drawBackground(ctx, width, height, background, isDark);
+  for (const stroke of strokes) {
+    renderStroke(ctx, stroke);
+  }
+
+  return canvas.toDataURL('image/png', 0.92);
+};
+
 // Export drawing to PNG file download
 export const exportDrawingToPNG = (drawingData, isDark = true, filename = 'drawing.png') => {
   const { width = 900, height = 550, strokes = [], background = 'plain' } = drawingData;

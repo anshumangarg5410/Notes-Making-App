@@ -42,6 +42,10 @@ const environment = {
 
   google: {
     clientId: (process.env.GOOGLE_CLIENT_ID || '').replace(/["'\s]/g, '').trim()
+  },
+
+  gemini: {
+    apiKey: (process.env.GEMINI_API_KEY || '').replace(/["'\s]/g, '').trim()
   }
 };
 

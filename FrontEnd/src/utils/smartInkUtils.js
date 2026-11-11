@@ -315,3 +315,4 @@ export const alignHandwritingStrokes = (strokes, options = {}) => {
     linesAligned: viableLines.length
   };
 };
+

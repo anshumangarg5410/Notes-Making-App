@@ -8,7 +8,8 @@ import {
   exportDrawingToSVG,
   exportDrawingToPNG,
   downloadDrawingSVG,
-  createDrawingSvgDataUri
+  createDrawingSvgDataUri,
+  createDrawingPngDataUri
 } from '../../utils/drawingUtils';
 import {
   smoothStrokePoints,

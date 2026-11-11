@@ -223,12 +223,19 @@ export const offlineService = {
     }
   },
 
-  async deleteLocalFolder(id) {
+  async deleteLocalFolder(id, folderName) {
     try {
-      await db.folders.delete(id);
-      const subfolders = await db.folders.filter((f) => f.parentId === id).toArray();
-      for (const sub of subfolders) {
-        await db.folders.delete(sub.id || sub._id);
+      if (id) {
+        await db.folders.delete(id);
+      }
+      const allMatching = await db.folders.filter((f) =>
+        (id && (f.id === id || f._id === id || f.parentId === id)) ||
+        (folderName && f.name?.toLowerCase() === folderName?.toLowerCase())
+      ).toArray();
+
+      for (const f of allMatching) {
+        if (f.id) await db.folders.delete(f.id);
+        if (f._id) await db.folders.delete(f._id);
       }
     } catch (err) {
       console.warn('Dexie deleteLocalFolder error:', err);

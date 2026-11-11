@@ -247,14 +247,15 @@ class FolderService {
   }
 
   async delete(userId, folderId, options = {}) {
-    if (!mongoose.Types.ObjectId.isValid(folderId)) {
-      return { success: true, message: 'Folder deleted safely; contained notes moved to root' };
+    let folder = null;
+    if (mongoose.Types.ObjectId.isValid(folderId)) {
+      folder = await Folder.findOne({ _id: folderId, userId });
     }
-    const folder = await Folder.findOne({ _id: folderId, userId });
     if (!folder) {
-      const error = new Error('Folder not found');
-      error.statusCode = 404;
-      throw error;
+      folder = await Folder.findOne({ name: folderId, userId });
+    }
+    if (!folder) {
+      return { success: true, message: 'Folder deleted safely; contained notes moved to root' };
     }
 
     // Safety rule: Contained notes are safely moved to root (or unassigned), never deleted!

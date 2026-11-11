@@ -249,8 +249,9 @@ export const EditorLayout = ({
           if (res.success && Array.isArray(res.data)) {
             let fetchedFolders = res.data;
 
-            // Seed helpful initial folders if database has 0 folders
-            if (fetchedFolders.length === 0 && (!localFolders || localFolders.length === 0)) {
+            // Seed helpful initial folders only if user hasn't customized/deleted folders and db is empty
+            const isCustomized = localStorage.getItem('notenest_folders_customized') === 'true';
+            if (!isCustomized && fetchedFolders.length === 0 && (!localFolders || localFolders.length === 0)) {
               try {
                 const projectsRes = await folderService.createFolder({ name: 'Projects' });
                 await folderService.createFolder({ name: 'College' });
@@ -274,6 +275,10 @@ export const EditorLayout = ({
             }
 
             setFolders(fetchedFolders);
+            // Replace Dexie cache with fresh server folders (clearing deleted ones)
+            try {
+              await db.folders.clear();
+            } catch (_) {}
             await offlineService.cacheServerFolders(fetchedFolders);
           }
         } catch (apiErr) {
@@ -314,21 +319,44 @@ export const EditorLayout = ({
 
   const handleDeleteFolder = async (folderId, folderName) => {
     try {
-      if (navigator.onLine) {
-        await folderService.deleteFolder(folderId);
-        success(`Folder "${folderName || 'Folder'}" deleted`);
-      } else {
-        await offlineService.deleteLocalFolder(folderId);
-        success(`Folder "${folderName || 'Folder'}" deleted locally`);
-      }
+      // 1. Optimistically remove from state immediately
+      setFolders((prev) => prev.filter((f) => (f._id || f.id) !== folderId && f.name !== folderName));
 
       if (selectedFolder === folderName) {
         setSelectedFolder(null);
       }
 
-      await loadFolders();
-      await loadNotes();
+      // 2. Prevent re-seeding default folders
+      localStorage.setItem('notenest_folders_customized', 'true');
+
+      // 3. Delete from local Dexie database
+      await offlineService.deleteLocalFolder(folderId, folderName);
+
+      // 4. Update any local notes in this folder
+      setNotes((prev) =>
+        prev.map((n) => {
+          if (n.folder === folderName || n.category === folderName) {
+            const updated = { ...n, folder: '', category: 'Personal' };
+            offlineService.saveLocalNote(updated, false).catch(() => {});
+            return updated;
+          }
+          return n;
+        })
+      );
+
+      // 5. If online, sync to backend
+      if (navigator.onLine) {
+        try {
+          await folderService.deleteFolder(folderId);
+        } catch (apiErr) {
+          console.warn('Backend folder delete error (safe fallback):', apiErr);
+        }
+      }
+
+      success(`Folder "${folderName || 'Folder'}" deleted`);
+      await refreshStats();
     } catch (err) {
+      console.error('Delete folder error:', err);
       toastError(err?.response?.data?.message || err.message || 'Failed to delete folder');
     }
   };
@@ -991,6 +1019,8 @@ export const EditorLayout = ({
               onRestoreNote={handleRestoreNote}
               onPermanentDeleteNote={handlePermanentDeleteNote}
               onEmptyTrash={handleEmptyTrash}
+              folders={folders}
+              onDeleteFolder={handleDeleteFolder}
               isLoading={isLoading}
             />
           )}

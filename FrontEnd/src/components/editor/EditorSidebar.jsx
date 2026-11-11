@@ -534,21 +534,29 @@ export const EditorSidebar = ({
                         {confirmDeleteId === folderId ? (
                           <div
                             onClick={(e) => e.stopPropagation()}
-                            className="flex items-center gap-1 bg-[#281822] border border-red-500/40 rounded px-1.5 py-0.5 text-[10px] text-red-300 shrink-0"
+                            className={`flex items-center gap-1 border rounded px-1.5 py-0.5 text-[10px] shrink-0 ${
+                              isDark ? 'bg-[#281822] border-red-500/40 text-red-300' : 'bg-red-50 border-red-200 text-red-600'
+                            }`}
                           >
                             <span>Delete?</span>
                             <button
                               type="button"
-                              onClick={() => handleDelete(folder)}
-                              className="text-red-400 hover:text-red-200 font-bold px-1"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleDelete(folder);
+                              }}
+                              className="text-red-400 hover:text-red-200 font-bold px-1 cursor-pointer"
                               title="Confirm delete"
                             >
                               Yes
                             </button>
                             <button
                               type="button"
-                              onClick={() => setConfirmDeleteId(null)}
-                              className="text-gray-400 hover:text-gray-200 px-0.5"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setConfirmDeleteId(null);
+                              }}
+                              className="text-gray-400 hover:text-gray-200 px-0.5 cursor-pointer"
                               title="Cancel"
                             >
                               No
@@ -556,13 +564,13 @@ export const EditorSidebar = ({
                           </div>
                         ) : (
                           <div className="flex items-center gap-1 shrink-0">
-                            {/* Note count (visible when not hovering) */}
-                            <span className={`text-[10px] group-hover:hidden ${isDark ? 'text-gray-500' : 'text-[#9CA3AF]'}`}>
+                            {/* Note count (visible when not hovering and not selected) */}
+                            <span className={`text-[10px] ${isSelected ? 'hidden' : 'group-hover:hidden'} ${isDark ? 'text-gray-500' : 'text-[#9CA3AF]'}`}>
                               {noteCount}
                             </span>
 
-                            {/* Hover actions: Add subfolder (+) & Delete folder (🗑) */}
-                            <div className="hidden group-hover:flex items-center gap-0.5">
+                            {/* Actions: Add subfolder (+) & Delete folder (🗑) - visible on hover or when selected */}
+                            <div className={`${isSelected ? 'flex' : 'hidden group-hover:flex'} items-center gap-0.5`}>
                               <button
                                 type="button"
                                 onClick={(e) => {
@@ -677,21 +685,29 @@ export const EditorSidebar = ({
                                   {confirmDeleteId === subId ? (
                                     <div
                                       onClick={(e) => e.stopPropagation()}
-                                      className="flex items-center gap-1 bg-[#281822] border border-red-500/40 rounded px-1.5 py-0.5 text-[10px] text-red-300 shrink-0"
+                                      className={`flex items-center gap-1 border rounded px-1.5 py-0.5 text-[10px] shrink-0 ${
+                                        isDark ? 'bg-[#281822] border-red-500/40 text-red-300' : 'bg-red-50 border-red-200 text-red-600'
+                                      }`}
                                     >
                                       <span>Delete?</span>
                                       <button
                                         type="button"
-                                        onClick={() => handleDelete(sub)}
-                                        className="text-red-400 hover:text-red-200 font-bold px-1"
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          handleDelete(sub);
+                                        }}
+                                        className="text-red-400 hover:text-red-200 font-bold px-1 cursor-pointer"
                                         title="Delete this subfolder"
                                       >
                                         Yes
                                       </button>
                                       <button
                                         type="button"
-                                        onClick={() => setConfirmDeleteId(null)}
-                                        className="text-gray-400 hover:text-gray-200 px-0.5"
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          setConfirmDeleteId(null);
+                                        }}
+                                        className="text-gray-400 hover:text-gray-200 px-0.5 cursor-pointer"
                                         title="Cancel"
                                       >
                                         No
@@ -700,12 +716,12 @@ export const EditorSidebar = ({
                                   ) : (
                                     <div className="flex items-center gap-1 shrink-0">
                                       {/* Subfolder note count */}
-                                      <span className={`text-[10px] group-hover:hidden ${isDark ? 'text-gray-500' : 'text-[#9CA3AF]'}`}>
+                                      <span className={`text-[10px] ${isSubSelected ? 'hidden' : 'group-hover:hidden'} ${isDark ? 'text-gray-500' : 'text-[#9CA3AF]'}`}>
                                         {subCount}
                                       </span>
 
-                                      {/* Hover actions: Add nested (+) & Delete Subfolder (🗑) */}
-                                      <div className="hidden group-hover:flex items-center gap-0.5">
+                                      {/* Actions: Add nested (+) & Delete Subfolder (🗑) - visible on hover or when selected */}
+                                      <div className={`${isSubSelected ? 'flex' : 'hidden group-hover:flex'} items-center gap-0.5`}>
                                         <button
                                           type="button"
                                           onClick={(e) => {

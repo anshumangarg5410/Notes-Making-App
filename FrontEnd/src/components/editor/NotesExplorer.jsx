@@ -20,6 +20,8 @@ export const NotesExplorer = ({
   onRestoreNote,
   onPermanentDeleteNote,
   onEmptyTrash,
+  folders = [],
+  onDeleteFolder,
   isLoading = false
 }) => {
   const [subFilter, setSubFilter] = useState('all'); // 'all', 'recent', 'pinned'
@@ -123,13 +125,33 @@ export const NotesExplorer = ({
             </button>
           )
         ) : (
-          <button
-            onClick={onNewNote}
-            className="w-7 h-7 bg-[#8b5cf6] hover:bg-[#7c3aed] text-white rounded-[4px] flex items-center justify-center transition-colors shadow-sm shadow-purple-900/40"
-            title="New Note (Cmd+N)"
-          >
-            <Plus className="w-4 h-4 stroke-[2.5]" />
-          </button>
+          <div className="flex items-center gap-1">
+            {selectedFolder && onDeleteFolder && (
+              <button
+                type="button"
+                onClick={() => {
+                  const targetFolder = folders.find((f) => f.name?.toLowerCase() === selectedFolder?.toLowerCase());
+                  const folderId = targetFolder?._id || targetFolder?.id || selectedFolder;
+                  if (window.confirm(`Delete folder "${selectedFolder}"? Any contained notes will remain safe.`)) {
+                    onDeleteFolder(folderId, selectedFolder);
+                  }
+                }}
+                className={`p-1.5 rounded transition-colors cursor-pointer ${
+                  isDark ? 'hover:bg-red-950/60 text-gray-400 hover:text-red-400' : 'hover:bg-red-50 text-gray-500 hover:text-red-600'
+                }`}
+                title={`Delete folder "${selectedFolder}"`}
+              >
+                <Trash2 className="w-3.5 h-3.5" />
+              </button>
+            )}
+            <button
+              onClick={onNewNote}
+              className="w-7 h-7 bg-[#8b5cf6] hover:bg-[#7c3aed] text-white rounded-[4px] flex items-center justify-center transition-colors shadow-sm shadow-purple-900/40 cursor-pointer"
+              title="New Note (Cmd+N)"
+            >
+              <Plus className="w-4 h-4 stroke-[2.5]" />
+            </button>
+          </div>
         )}
       </div>
 

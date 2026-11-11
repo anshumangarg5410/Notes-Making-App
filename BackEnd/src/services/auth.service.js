@@ -363,7 +363,14 @@ class AuthService {
       throw error;
     }
 
-    const clientId = environment.google?.clientId || process.env.GOOGLE_CLIENT_ID;
+    let clientId = process.env.GOOGLE_CLIENT_ID || environment.google?.clientId;
+    if (!clientId) {
+      // Reload environment in case .env was recently updated without a server restart
+      const path = require('path');
+      require('dotenv').config({ path: path.resolve(__dirname, '../../.env'), override: true });
+      clientId = process.env.GOOGLE_CLIENT_ID;
+    }
+
     if (!clientId) {
       const error = new Error('GOOGLE_CLIENT_ID is not configured on the server. Please set GOOGLE_CLIENT_ID in BackEnd/.env.');
       error.statusCode = 500;

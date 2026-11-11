@@ -1,6 +1,7 @@
 import React from 'react';
-import { X, BookOpen, Sun, Moon } from 'lucide-react';
+import { X, Sun, Moon } from 'lucide-react';
 import { useTheme } from '../../context/ThemeContext';
+import websiteLogo from '../../assets/shared/logo/websiteLogo.png';
 
 export const AuthCardFrame = ({ children, onClose, themeOverride = null }) => {
   const { theme } = useTheme();
@@ -42,14 +43,13 @@ export const AuthCardFrame = ({ children, onClose, themeOverride = null }) => {
 
         {/* Centered NoteNest Brand Logo */}
         <div className="flex items-center gap-2 cursor-pointer select-none">
-          <div
-            className={`w-7 h-7 rounded-[3px] flex items-center justify-center ${
-              isDark
-                ? 'bg-gradient-to-br from-purple-500 to-indigo-600 text-white shadow-[0_0_12px_rgba(168,85,247,0.5)]'
-                : 'bg-gradient-to-br from-purple-600 to-indigo-600 text-white shadow-sm'
-            }`}
-          >
-            <BookOpen className="w-4 h-4" />
+          <div className="relative w-7 h-7 flex items-center justify-center shrink-0">
+            <div className="absolute inset-0 rounded-full blur-xs bg-purple-500/30 pointer-events-none" />
+            <img
+              src={websiteLogo}
+              alt="NoteNest Logo"
+              className="relative z-10 w-full h-full object-contain filter drop-shadow-[0_0_6px_rgba(168,85,247,0.4)]"
+            />
           </div>
           <span
             className={`font-serif font-bold text-lg sm:text-xl tracking-tight ${

@@ -1,7 +1,7 @@
 import React from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { BookOpen } from 'lucide-react';
+import websiteLogo from '../assets/shared/logo/websiteLogo.png';
 
 export const ProtectedRoute = ({ children }) => {
   const { isAuthenticated, loading } = useAuth();
@@ -12,10 +12,15 @@ export const ProtectedRoute = ({ children }) => {
   if (loading && !isDemo) {
     return (
       <div className="min-h-screen bg-[#0d0a14] text-[#f5f3f0] flex flex-col items-center justify-center select-none">
-        <div className="w-12 h-12 rounded-2xl bg-purple-900/60 border border-purple-500/30 text-purple-300 flex items-center justify-center mb-4 animate-pulse shadow-[0_0_20px_rgba(168,85,247,0.5)]">
-          <BookOpen className="w-6 h-6" />
+        <div className="relative w-16 h-16 flex items-center justify-center mb-4">
+          <div className="absolute inset-0 rounded-full blur-xl bg-purple-500/40 animate-pulse pointer-events-none" />
+          <img
+            src={websiteLogo}
+            alt="NoteNest Logo"
+            className="relative z-10 w-full h-full object-contain filter drop-shadow-[0_0_16px_rgba(168,85,247,0.6)] animate-pulse"
+          />
         </div>
-        <h2 className="font-serif font-bold text-xl text-white">
+        <h2 className="font-serif font-bold text-xl text-white tracking-tight">
           NoteNest
         </h2>
         <p className="text-xs text-stone-400 mt-1">

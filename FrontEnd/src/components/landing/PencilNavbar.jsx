@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { Pencil, Menu, X, ArrowRight, LogOut, Moon, Sun } from 'lucide-react';
+import { Menu, X, ArrowRight, LogOut, Moon, Sun } from 'lucide-react';
+import websiteLogo from '../../assets/shared/logo/websiteLogo.png';
 import { useAuthModal } from '../../context/AuthModalContext';
 import { useAuth } from '../../context/AuthContext';
 import { useTheme } from '../../context/ThemeContext';
@@ -148,12 +149,17 @@ export const PencilNavbar = () => {
             onClick={() => handleNavClick('home')}
             className="group flex w-fit items-center gap-2.5"
           >
-            <span className={`relative flex h-8 w-8 items-center justify-center transition-transform duration-200 group-hover:-rotate-12 ${isDark ? 'text-indigo-300' : 'text-indigo-600'}`}>
-              <Pencil className="h-7 w-7 -rotate-[18deg] stroke-[1.8]" />
-              <span className="absolute -bottom-0.5 left-1 h-px w-7 bg-gradient-to-r from-transparent via-[#c45aff] to-transparent shadow-[0_0_5px_#c45aff]" />
-            </span>
+            <div className="relative flex h-8 w-8 items-center justify-center shrink-0 transition-transform duration-200 group-hover:scale-105">
+              <div className="absolute inset-0 rounded-full blur-sm bg-purple-500/30 pointer-events-none" />
+              <img
+                src={websiteLogo}
+                alt="NoteNest Logo"
+                className="relative z-10 w-full h-full object-contain filter drop-shadow-[0_0_8px_rgba(168,85,247,0.4)]"
+                loading="eager"
+              />
+            </div>
             <span className={`whitespace-nowrap text-[22px] font-bold tracking-tight sm:text-[25px] ${isDark ? 'text-slate-100' : 'text-slate-900'}`}>
-            Note<span className={isDark ? 'text-indigo-300' : 'text-indigo-600'}>Nest</span>
+              Note<span className={isDark ? 'text-indigo-300' : 'text-indigo-600'}>Nest</span>
             </span>
           </Link>
 

@@ -14,6 +14,7 @@ import { useToast } from '../../context/ToastContext';
 import { useTheme } from '../../context/ThemeContext';
 import { useEditorSettings } from '../../context/EditorSettingsContext';
 import { RotateCcw, Trash2, FileText, Plus } from 'lucide-react';
+import websiteLogo from '../../assets/shared/logo/websiteLogo.png';
 import './editorTheme.css';
 
 export const EditorLayout = ({
@@ -1082,12 +1083,13 @@ export const EditorLayout = ({
               </div>
             ) : (
               <div className="flex-1 flex flex-col items-center justify-center p-8 text-center select-none">
-                <div className={`w-16 h-16 rounded-2xl flex items-center justify-center mb-4 border shadow-sm transition-all ${
-                  isDark
-                    ? 'bg-gradient-to-br from-purple-950/40 to-indigo-950/30 border-purple-500/30 text-purple-400 shadow-purple-950/40'
-                    : 'bg-gradient-to-br from-purple-50 to-indigo-50 border-purple-200 text-purple-600 shadow-purple-100'
-                }`}>
-                  <FileText className="w-8 h-8" />
+                <div className="relative w-20 h-20 flex items-center justify-center mb-4 shrink-0">
+                  <div className="absolute inset-0 rounded-full blur-xl bg-purple-500/25 pointer-events-none" />
+                  <img
+                    src={websiteLogo}
+                    alt="NoteNest Logo"
+                    className="relative z-10 w-full h-full object-contain filter drop-shadow-[0_0_12px_rgba(168,85,247,0.4)]"
+                  />
                 </div>
 
                 <h3 className={`text-xl font-bold tracking-tight mb-2 ${

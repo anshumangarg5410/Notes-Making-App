@@ -1,5 +1,6 @@
 import React from 'react';
-import { Info, BookOpen, ExternalLink, Github, Heart } from 'lucide-react';
+import { Info, ExternalLink, Github, Heart } from 'lucide-react';
+import websiteLogo from '../../assets/shared/logo/websiteLogo.png';
 
 export const AboutSettings = () => {
   return (
@@ -7,8 +8,13 @@ export const AboutSettings = () => {
       <div className="rounded-[6px] border border-[#272738] bg-[#14141e] p-6 shadow-sm">
         {/* Header with App Logo */}
         <div className="flex items-center gap-3 mb-4">
-          <div className="w-10 h-10 rounded-[6px] bg-gradient-to-br from-purple-600 to-indigo-600 flex items-center justify-center text-white shadow-md">
-            <BookOpen className="w-5 h-5" />
+          <div className="relative w-10 h-10 flex items-center justify-center shrink-0">
+            <div className="absolute inset-0 rounded-full blur-xs bg-purple-500/30 pointer-events-none" />
+            <img
+              src={websiteLogo}
+              alt="NoteNest Logo"
+              className="relative z-10 w-full h-full object-contain filter drop-shadow-[0_0_8px_rgba(168,85,247,0.4)]"
+            />
           </div>
           <div>
             <h3 className="text-base font-bold text-white tracking-tight flex items-center gap-2">

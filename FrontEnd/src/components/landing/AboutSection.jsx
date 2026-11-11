@@ -1,9 +1,10 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { BookOpen, ShieldCheck, Feather, Sparkles, Layers, Cpu, ArrowRight } from 'lucide-react';
+import { ShieldCheck, Feather, Sparkles, Layers, Cpu, ArrowRight } from 'lucide-react';
 import { useTheme } from '../../context/ThemeContext';
 import cardAboutDark from '../../assets/landing/card-about-dark.png';
 import cardAboutLight from '../../assets/landing/card-about-light.png';
+import websiteLogo from '../../assets/shared/logo/websiteLogo.png';
 
 export const AboutSection = () => {
   const { isDark } = useTheme();
@@ -105,7 +106,7 @@ export const AboutSection = () => {
                 backgroundColor: isDark ? 'rgba(124,58,237,0.15)' : 'rgba(124,58,237,0.08)'
               }}
             >
-              <BookOpen className="w-3.5 h-3.5" />
+              <img src={websiteLogo} alt="NoteNest Logo" className="w-4 h-4 object-contain shrink-0" />
               <span>About NoteNest</span>
             </div>
 

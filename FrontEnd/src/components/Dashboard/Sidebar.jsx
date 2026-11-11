@@ -11,7 +11,6 @@ import {
   ChevronRight,
   ChevronsLeft,
   ChevronsRight,
-  BookOpen,
   X,
   Sparkles,
   Settings,
@@ -21,6 +20,7 @@ import upgradeProIcon from '../../assets/dashboard/upgrade-pro-icon-clean.png';
 import { useTheme } from '../../context/ThemeContext';
 import sidebarQuoteDark from '../../assets/dashboard/sidebar-quote-dark.png';
 import sidebarQuoteLight from '../../assets/dashboard/sidebar-quote-light.png';
+import websiteLogo from '../../assets/shared/logo/websiteLogo.png';
 
 export const Sidebar = ({
   activeNav = 'dashboard',
@@ -89,8 +89,13 @@ export const Sidebar = ({
               onClick={() => onSelectNav && onSelectNav('dashboard')}
               className="flex items-center gap-2.5 cursor-pointer group"
             >
-              <div className="w-8 h-8 rounded-[4px] bg-gradient-to-br from-[#8b5cf6] to-[#6d28d9] border border-purple-400/40 text-white flex items-center justify-center shadow-[0_0_14px_rgba(139,92,246,0.5)] group-hover:scale-105 transition-transform">
-                <BookOpen className="w-4 h-4" />
+              <div className="relative w-8 h-8 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
+                <div className="absolute inset-0 rounded-full blur-xs bg-purple-500/30 pointer-events-none" />
+                <img
+                  src={websiteLogo}
+                  alt="NoteNest Logo"
+                  className="relative z-10 w-full h-full object-contain filter drop-shadow-[0_0_8px_rgba(168,85,247,0.4)]"
+                />
               </div>
               {!isCollapsed && (
                 <span className="font-serif font-bold text-xl tracking-tight text-white">

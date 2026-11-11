@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useAuthModal } from '../../context/AuthModalContext';
+import { BrandLogo } from '../common/BrandLogo';
 
 export const Topbar = ({
   searchQuery = '',
@@ -82,15 +83,18 @@ export const Topbar = ({
     <header className="h-16 px-4 sm:px-6 lg:px-8 border-b border-purple-500/15 bg-[#110d1c]/90 backdrop-blur-md flex items-center justify-between gap-4 select-none z-30 sticky top-0">
       {/* Left Area: Mobile Menu Trigger + Search Bar */}
       <div className="flex items-center gap-3 flex-1 max-w-2xl">
-        {/* Mobile menu trigger */}
-        <button
-          type="button"
-          onClick={onToggleMobileSidebar}
-          className="lg:hidden p-2 rounded-[3px] text-stone-300 hover:text-white hover:bg-white/5 transition-colors cursor-pointer"
-          title="Open menu"
-        >
-          <Menu className="w-5 h-5" />
-        </button>
+        {/* Mobile menu trigger + Logo */}
+        <div className="flex items-center gap-2 lg:hidden">
+          <button
+            type="button"
+            onClick={onToggleMobileSidebar}
+            className="p-2 rounded-[3px] text-stone-300 hover:text-white hover:bg-white/5 transition-colors cursor-pointer"
+            title="Open menu"
+          >
+            <Menu className="w-5 h-5" />
+          </button>
+          <BrandLogo size="xs" showText={false} />
+        </div>
 
         {/* Global Search Bar */}
         <div className="relative flex-1">

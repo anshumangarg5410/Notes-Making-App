@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import {
-  Leaf,
   Plus,
   Sun,
   Moon,
@@ -14,6 +13,7 @@ import {
   User as UserIcon,
   ArrowRight
 } from 'lucide-react';
+import websiteLogo from '../../assets/shared/logo/websiteLogo.png';
 import { useAuth } from '../../context/AuthContext';
 import { useTheme } from '../../context/ThemeContext';
 
@@ -68,15 +68,17 @@ export const Navbar = () => {
           to="/"
           className="flex items-center space-x-2.5 group focus:outline-none"
         >
-          <div className="w-9 h-9 rounded-[4px] bg-orange-500/10 dark:bg-orange-500/20 border border-orange-500/30 flex items-center justify-center text-orange-500 shadow-sm group-hover:scale-105 transition-transform duration-200">
-            <Leaf className="w-5 h-5 fill-orange-500/20 text-orange-500 transform -rotate-12" />
+          <div className="relative w-8 h-8 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform duration-200">
+            <div className="absolute inset-0 rounded-full blur-xs bg-purple-500/30 pointer-events-none" />
+            <img
+              src={websiteLogo}
+              alt="NoteNest Logo"
+              className="relative z-10 w-full h-full object-contain filter drop-shadow-[0_0_8px_rgba(168,85,247,0.4)]"
+            />
           </div>
           <div>
             <span className="font-serif font-bold text-xl tracking-tight text-charcoal-900 dark:text-cream-50">
-              Notely
-            </span>
-            <span className="hidden sm:inline-block ml-2 text-[10px] font-semibold uppercase tracking-wider text-orange-600 dark:text-orange-400 bg-orange-50 dark:bg-orange-950/60 px-2 py-0.5 rounded-[2px] border border-orange-200/80 dark:border-orange-900/40">
-              Notes
+              Note<span className="text-purple-500">Nest</span>
             </span>
           </div>
         </Link>

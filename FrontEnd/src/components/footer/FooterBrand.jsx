@@ -1,23 +1,22 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { BookOpen } from 'lucide-react';
 import { useTheme } from '../../context/ThemeContext';
+import websiteLogo from '../../assets/shared/logo/websiteLogo.png';
 
 export const FooterBrand = () => {
   const { isDark } = useTheme();
 
   return (
     <div className="relative space-y-4 pr-4">
-      {/* NoteNest Logo with Open Book */}
+      {/* NoteNest Logo */}
       <Link to="/" className="inline-flex items-center gap-2.5 group">
-        <div
-          className={`w-9 h-9 rounded-xl flex items-center justify-center transition-transform group-hover:scale-105 ${
-            isDark
-              ? 'bg-[#25173e]/90 border border-purple-500/50 text-purple-300 shadow-[0_0_12px_rgba(168,85,247,0.4)]'
-              : 'bg-purple-100 border border-purple-300 text-purple-700 shadow-sm'
-          }`}
-        >
-          <BookOpen className="w-5 h-5 transition-transform group-hover:-rotate-6" />
+        <div className="relative w-9 h-9 flex items-center justify-center shrink-0 transition-transform group-hover:scale-105">
+          <div className="absolute inset-0 rounded-full blur-md bg-purple-500/30 pointer-events-none" />
+          <img
+            src={websiteLogo}
+            alt="NoteNest Logo"
+            className="relative z-10 w-full h-full object-contain filter drop-shadow-[0_0_10px_rgba(168,85,247,0.45)]"
+          />
         </div>
         <span
           className={`text-2xl font-bold font-serif tracking-tight ${

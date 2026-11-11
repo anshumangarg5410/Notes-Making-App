@@ -4,6 +4,7 @@ import { useTheme } from '../../context/ThemeContext';
 import editorPreviewDark from '../../assets/landing/newlaptop.png';
 import editorPreviewLight from '../../assets/landing/editor-preview-light-updated.png';
 import deskDark from '../../assets/dashboard/editor-desk-dark.png';
+import websiteLogo from '../../assets/shared/logo/websiteLogo.png';
 
 export const AboutHero = () => {
   const { isDark } = useTheme();
@@ -21,7 +22,7 @@ export const AboutHero = () => {
                 : 'border-purple-300 bg-purple-50 text-purple-700 shadow-sm'
             }`}
           >
-            <Info className="w-3.5 h-3.5 text-purple-400" />
+            <img src={websiteLogo} alt="NoteNest Logo" className="w-4 h-4 object-contain shrink-0" />
             <span>About NoteNest</span>
           </div>
 

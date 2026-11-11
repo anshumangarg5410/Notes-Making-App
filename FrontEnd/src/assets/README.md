@@ -60,6 +60,11 @@ FrontEnd/src/assets/
 │   ├── notenest-logo-dark.png       # NoteNest glow logo (dark)
 │   └── notenest-logo-light.png      # NoteNest logo (light)
 │
+├── shared/
+│   └── logo/
+│       ├── websiteLogo.png          # Master clean transparent NoteNest brand logo
+│       └── websiteLogo-square.png   # Padded square NoteNest logo for app icons & favicons
+│
 ├── contact/
 │   ├── envelope-message-dark.png    # Glassmorphic envelope message illustration (dark)
 │   └── envelope-message-glow.png    # Glowing envelope message illustration with purple ambient light

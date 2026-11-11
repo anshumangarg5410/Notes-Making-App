@@ -8,9 +8,9 @@ import {
   Tag,
   Trash2,
   Plus,
-  X,
-  BookOpen
+  X
 } from 'lucide-react';
+import websiteLogo from '../../assets/shared/logo/websiteLogo.png';
 import { useTheme } from '../../context/ThemeContext';
 
 export const Sidebar = ({
@@ -60,8 +60,13 @@ export const Sidebar = ({
           {/* Header Brand */}
           <div className="flex items-center justify-between mb-5">
             <Link to="/" className="flex items-center space-x-2.5 group">
-              <div className="w-8 h-8 rounded-[4px] bg-gradient-to-br from-[#8b5cf6] to-[#6d28d9] text-white flex items-center justify-center shadow-[0_0_12px_rgba(139,92,246,0.5)] group-hover:scale-105 transition-transform">
-                <BookOpen className="w-4 h-4" />
+              <div className="relative w-8 h-8 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
+                <div className="absolute inset-0 rounded-full blur-xs bg-purple-500/30 pointer-events-none" />
+                <img
+                  src={websiteLogo}
+                  alt="NoteNest Logo"
+                  className="relative z-10 w-full h-full object-contain filter drop-shadow-[0_0_8px_rgba(168,85,247,0.4)]"
+                />
               </div>
               <div>
                 <h1 className="font-serif font-bold text-lg tracking-tight text-white leading-none">

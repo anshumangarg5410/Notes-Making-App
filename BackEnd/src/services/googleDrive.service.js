@@ -1,6 +1,6 @@
 const { OAuth2Client } = require('google-auth-library');
 const environment = require('../config/environment');
-const { encryptToken, decryptToken, createSignedState, verifySignedState } = require('../utils/crypto');
+const { encryptToken, decryptToken, createSignedState, verifySignedState, peekSignedState } = require('../utils/crypto');
 
 class GoogleDriveService {
   /**
@@ -20,11 +20,12 @@ class GoogleDriveService {
    * Generates a Google Drive OAuth authorization URL
    * @param {string} userId - Authenticated user's ID
    * @param {string} [redirectUri] - Optional dynamic redirect URI
+   * @param {Object} [metadata={}] - Optional metadata such as originating client origin
    * @returns {{ authUrl: string, state: string }}
    */
-  generateAuthUrl(userId, redirectUri) {
+  generateAuthUrl(userId, redirectUri, metadata = {}) {
     const oauth2Client = this.createOAuthClient(redirectUri);
-    const state = createSignedState(userId);
+    const state = createSignedState(userId, metadata);
 
     const scopes = [
       'https://www.googleapis.com/auth/drive.file',
@@ -44,11 +45,21 @@ class GoogleDriveService {
   }
 
   /**
+   * Peeks origin metadata from state parameter safely
+   * @param {string} state
+   * @returns {{ origin?: string }|null}
+   */
+  peekStateOrigin(state) {
+    const peeked = peekSignedState(state);
+    return peeked?.metadata || null;
+  }
+
+  /**
    * Handles Google OAuth callback, verifies signed state, exchanges code for tokens
    * @param {string} code - OAuth authorization code
    * @param {string} state - Cryptographically signed state parameter
    * @param {string} [redirectUri] - Callback URL
-   * @returns {Promise<{ userId: string, refreshTokenEncrypted: string, email: string }>}
+   * @returns {Promise<{ userId: string, refreshTokenEncrypted: string, email: string, metadata: Object }>}
    */
   async handleCallback(code, state, redirectUri) {
     if (!code) {
@@ -57,12 +68,15 @@ class GoogleDriveService {
       throw err;
     }
 
-    const userId = verifySignedState(state);
-    if (!userId) {
+    const stateResult = verifySignedState(state, 600000, true);
+    if (!stateResult || !stateResult.userId) {
       const err = new Error('Invalid or expired OAuth state parameter (CSRF protection)');
       err.statusCode = 403;
       throw err;
     }
+
+    const userId = stateResult.userId;
+    const metadata = stateResult.metadata || {};
 
     const oauth2Client = this.createOAuthClient(redirectUri);
     const { tokens } = await oauth2Client.getToken(code);
@@ -95,7 +109,8 @@ class GoogleDriveService {
       userId,
       refreshTokenEncrypted,
       email,
-      tokens
+      tokens,
+      metadata
     };
   }
 

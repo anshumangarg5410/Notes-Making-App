@@ -2,6 +2,42 @@ const storageService = require('../services/storage.service');
 const googleDriveService = require('../services/googleDrive.service');
 const environment = require('../config/environment');
 
+function sanitizeFrontendUrl(url) {
+  if (!url || typeof url !== 'string') {
+    return 'http://localhost:5173';
+  }
+  let cleaned = url.trim().replace(/\/+$/, '');
+  if (!/^https?:\/\//i.test(cleaned)) {
+    cleaned = `https://${cleaned}`;
+  }
+  return cleaned;
+}
+
+function isAllowedReturnOrigin(url) {
+  if (!url) return false;
+  try {
+    const parsed = new URL(url);
+    const host = parsed.hostname;
+    if (host === 'localhost' || host === '127.0.0.1') return true;
+    if (host === 'notenest5410.vercel.app' || host.endsWith('.vercel.app')) return true;
+    if (process.env.CLIENT_URL) {
+      try {
+        const clientHost = new URL(sanitizeFrontendUrl(process.env.CLIENT_URL)).hostname;
+        if (host === clientHost) return true;
+      } catch (_) {}
+    }
+    if (process.env.FRONTEND_URL) {
+      try {
+        const frontHost = new URL(sanitizeFrontendUrl(process.env.FRONTEND_URL)).hostname;
+        if (host === frontHost) return true;
+      } catch (_) {}
+    }
+    return false;
+  } catch (_) {
+    return false;
+  }
+}
+
 class StorageController {
   /**
    * GET /api/storage/preferences
@@ -41,7 +77,20 @@ class StorageController {
   async connectGoogle(req, res, next) {
     try {
       const redirectUri = req.query.redirect_uri || undefined;
-      const { authUrl, state } = googleDriveService.generateAuthUrl(req.user._id.toString(), redirectUri);
+      // Capture originating client origin from query or headers
+      const rawOrigin = req.query.origin || req.headers.origin || req.headers.referer || undefined;
+      let origin = undefined;
+      if (rawOrigin) {
+        try {
+          origin = new URL(rawOrigin).origin;
+        } catch (_) {}
+      }
+
+      const { authUrl, state } = googleDriveService.generateAuthUrl(
+        req.user._id.toString(),
+        redirectUri,
+        origin ? { origin } : {}
+      );
       return res.status(200).json({
         success: true,
         data: { authUrl, state }
@@ -56,13 +105,26 @@ class StorageController {
    * OAuth redirect callback invoked by Google
    */
   async googleCallback(req, res, next) {
-    // Resolve frontend destination URL
-    const isProd = environment.isProduction;
-    const frontendBaseUrl = isProd
-      ? (process.env.FRONTEND_URL || 'https://notenest5410.vercel.app')
-      : (process.env.CLIENT_URL || 'http://localhost:5173');
-
     const { code, state, error } = req.query;
+
+    // First attempt to decode origin from state so we know where to send the user back
+    let returnOrigin = null;
+    if (state) {
+      try {
+        const peeked = googleDriveService.peekStateOrigin(state);
+        if (peeked?.origin && isAllowedReturnOrigin(peeked.origin)) {
+          returnOrigin = sanitizeFrontendUrl(peeked.origin);
+        }
+      } catch (_) {}
+    }
+
+    const defaultFrontend = sanitizeFrontendUrl(
+      environment.isProduction
+        ? (process.env.FRONTEND_URL || 'https://notenest5410.vercel.app')
+        : (process.env.CLIENT_URL || 'http://localhost:5173')
+    );
+
+    const frontendBaseUrl = returnOrigin || defaultFrontend;
 
     if (error) {
       return res.redirect(`${frontendBaseUrl}/dashboard?storage_error=${encodeURIComponent(error)}`);

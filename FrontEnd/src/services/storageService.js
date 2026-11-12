@@ -22,7 +22,9 @@ export const storageService = {
    * Generate Google Drive OAuth authorization URL
    */
   async getGoogleConnectUrl() {
-    const response = await api.get('/storage/google/connect');
+    const origin = typeof window !== 'undefined' && window.location?.origin ? window.location.origin : '';
+    const query = origin ? `?origin=${encodeURIComponent(origin)}` : '';
+    const response = await api.get(`/storage/google/connect${query}`);
     return response.data;
   },
 

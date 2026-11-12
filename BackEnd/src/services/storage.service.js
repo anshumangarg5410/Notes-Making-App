@@ -7,6 +7,100 @@ const googleDriveService = require('./googleDrive.service');
 
 class StorageService {
   /**
+   * Strips HTML tags and decodes entities into clean readable plain text
+   * @param {string} html
+   * @returns {string}
+   */
+  stripHtmlToText(html) {
+    if (!html || typeof html !== 'string') return '';
+    return html
+      .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, '')
+      .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, '')
+      .replace(/<br\s*\/?>/gi, '\n')
+      .replace(/<\/(p|h1|h2|h3|h4|h5|h6|li|tr|div|blockquote)>/gi, '\n')
+      .replace(/<hr\s*\/?>/gi, '\n----------------------------------------\n')
+      .replace(/<img[^>]*alt=["']([^"']*)["'][^>]*>/gi, '[Image: $1]')
+      .replace(/<img[^>]*>/gi, '[Image]')
+      .replace(/<[^>]+>/g, '')
+      .replace(/&nbsp;/gi, ' ')
+      .replace(/&amp;/gi, '&')
+      .replace(/&lt;/gi, '<')
+      .replace(/&gt;/gi, '>')
+      .replace(/&quot;/gi, '"')
+      .replace(/&#39;/gi, "'")
+      .replace(/\r\n/g, '\n')
+      .replace(/\n{3,}/g, '\n\n')
+      .trim();
+  }
+
+  /**
+   * Generates a clean, safe filename ending with .txt for Google Drive storage
+   * @param {Object} note
+   * @param {string} [fallbackId]
+   * @returns {string}
+   */
+  formatNoteFileName(note, fallbackId = '') {
+    let title = (note?.title || '').trim();
+    if (!title) {
+      title = fallbackId ? `Note-${fallbackId.slice(-6)}` : 'Untitled Note';
+    }
+    // Sanitize illegal filesystem / Google Drive characters
+    const safe = title.replace(/[\\/:*?"<>|\r\n\t]/g, '').trim() || 'Untitled Note';
+    const base = safe.replace(/\.txt$/i, '').trim();
+    return `${base || 'Untitled Note'}.txt`;
+  }
+
+  /**
+   * Formats a note object into clean, human-readable plain text (.txt format)
+   * @param {Object} note
+   * @param {string} noteId
+   * @returns {string}
+   */
+  formatNoteToText(note, noteId) {
+    const title = (note?.title || 'Untitled Note').trim();
+    const notebook = note?.notebook || '';
+    const section = note?.section || '';
+    const tags = Array.isArray(note?.tags)
+      ? note.tags.filter(Boolean).join(', ')
+      : (note?.tags || '');
+    const updatedAt = note?.updatedAt
+      ? new Date(note.updatedAt).toISOString()
+      : new Date().toISOString();
+
+    // Extract clean plain text body
+    let body = '';
+    if (note?.plainText && !note.plainText.includes('<p>') && !note.plainText.includes('<div>')) {
+      body = note.plainText.trim();
+    } else if (note?.content) {
+      body = this.stripHtmlToText(note.content);
+    } else if (note?.plainText) {
+      body = this.stripHtmlToText(note.plainText);
+    }
+
+    if (Array.isArray(note?.drawings) && note.drawings.length > 0) {
+      const strokeCount = note.drawings.reduce((sum, d) => sum + (d?.strokes?.length || 0), 0);
+      if (strokeCount > 0) {
+        body += `\n\n[NoteNest Drawing: ${note.drawings.length} sketch(es), ${strokeCount} strokes]`;
+      }
+    }
+
+    // Build structured human-readable text document
+    const headerLines = [
+      title,
+      '='.repeat(Math.max(title.length, 20)),
+      notebook ? `Notebook: ${notebook}` : null,
+      section ? `Section: ${section}` : null,
+      tags ? `Tags: ${tags}` : null,
+      `Last Updated: ${updatedAt}`,
+      `Note ID: ${noteId}`,
+      '----------------------------------------',
+      ''
+    ].filter((line) => line !== null);
+
+    return `${headerLines.join('\n')}\n${body}\n`;
+  }
+
+  /**
    * Retrieves or initializes storage preferences for a user
    * @param {string} userId
    * @returns {Promise<Object>}
@@ -302,37 +396,21 @@ class StorageService {
         );
         syncedCount += sections.length;
 
-        // 3. Sync Individual Notes
+        // 3. Sync Individual Notes as human-readable .txt files
         for (const note of notes) {
           try {
             const noteId = (note._id || note.id).toString();
             let noteMapping = await DriveFileMapping.findOne({ userId, recordType: 'note', recordId: noteId });
 
-            const notePayload = {
-              id: noteId,
-              title: note.title || 'Untitled Note',
-              content: note.content || '',
-              plainText: note.plainText || '',
-              tags: note.tags || [],
-              notebookId: note.notebookId,
-              sectionId: note.sectionId,
-              notebook: note.notebook,
-              section: note.section,
-              drawings: note.drawings || [],
-              isPinned: Boolean(note.isPinned),
-              isFavorite: Boolean(note.isFavorite),
-              isDeleted: Boolean(note.isDeleted),
-              revision: note.revision || 1,
-              updatedAt: note.updatedAt || new Date().toISOString()
-            };
+            const fileName = this.formatNoteFileName(note, noteId);
+            const textContent = this.formatNoteToText(note, noteId);
 
-            const fileName = `${noteId}.json`;
             const noteUpload = await googleDriveService.uploadFile(accessToken, {
               fileId: noteMapping?.driveFileId,
               parentId: folders.notesFolderId,
               fileName,
-              mimeType: 'application/json',
-              content: notePayload
+              mimeType: 'text/plain; charset=UTF-8',
+              content: textContent
             });
 
             await DriveFileMapping.findOneAndUpdate(
@@ -374,18 +452,35 @@ class StorageService {
             } else {
               // Upsert note / notebook / section
               let parentFolderId = folders.notesFolderId;
-              if (recordType === 'notebook') parentFolderId = folders.notebooksFolderId;
-              if (recordType === 'section') parentFolderId = folders.sectionsFolderId;
+              let mimeType = 'application/json';
+              let fileName = `${recIdStr}.json`;
+              let uploadContent = data;
+
+              if (recordType === 'notebook') {
+                parentFolderId = folders.notebooksFolderId;
+                fileName = `${recIdStr}.json`;
+                mimeType = 'application/json';
+                uploadContent = data;
+              } else if (recordType === 'section') {
+                parentFolderId = folders.sectionsFolderId;
+                fileName = `${recIdStr}.json`;
+                mimeType = 'application/json';
+                uploadContent = data;
+              } else if (recordType === 'note') {
+                parentFolderId = folders.notesFolderId;
+                fileName = this.formatNoteFileName(data, recIdStr);
+                mimeType = 'text/plain; charset=UTF-8';
+                uploadContent = this.formatNoteToText(data, recIdStr);
+              }
 
               const mapping = await DriveFileMapping.findOne({ userId, recordType, recordId: recIdStr });
-              const fileName = `${recIdStr}.json`;
 
               const uploadRes = await googleDriveService.uploadFile(accessToken, {
                 fileId: mapping?.driveFileId,
                 parentId: parentFolderId,
                 fileName,
-                mimeType: 'application/json',
-                content: data
+                mimeType,
+                content: uploadContent
               });
 
               await DriveFileMapping.findOneAndUpdate(

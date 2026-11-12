@@ -147,6 +147,45 @@ describe('Storage & Google Drive Architecture API', () => {
     });
   });
 
+  describe('Note File Formatting for Google Drive (.txt format)', () => {
+    const storageService = require('../src/services/storage.service');
+
+    it('should format note filename as .txt with clean sanitized title', () => {
+      const note = { title: 'Chapter 1: Graphs & BFS/DFS Trees?' };
+      const fileName = storageService.formatNoteFileName(note, '123456');
+      expect(fileName).toBe('Chapter 1 Graphs & BFSDFS Trees.txt');
+      expect(fileName.endsWith('.txt')).toBe(true);
+    });
+
+    it('should fallback to Untitled Note.txt when title is missing', () => {
+      const fileName = storageService.formatNoteFileName({}, '6af33b06a820d9becbcba4df');
+      expect(fileName).toBe('Note-cba4df.txt');
+    });
+
+    it('should convert note content with HTML and metadata into clean plain text', () => {
+      const note = {
+        title: 'Algorithms Overview',
+        notebook: 'DSA',
+        section: 'Core',
+        tags: ['#dsa', '#interview'],
+        content: '<h2>Big O Notation</h2><p>Time complexity is <strong>O(n log n)</strong>.</p><ul><li>Merge Sort</li><li>Heap Sort</li></ul>'
+      };
+
+      const text = storageService.formatNoteToText(note, 'rec_999');
+      expect(text).toContain('Algorithms Overview');
+      expect(text).toContain('Notebook: DSA');
+      expect(text).toContain('Section: Core');
+      expect(text).toContain('Tags: #dsa, #interview');
+      expect(text).toContain('Note ID: rec_999');
+      expect(text).toContain('Big O Notation');
+      expect(text).toContain('Time complexity is O(n log n).');
+      expect(text).toContain('Merge Sort');
+      expect(text).not.toContain('<h2>');
+      expect(text).not.toContain('<strong>');
+      expect(text).not.toContain('<p>');
+    });
+  });
+
   describe('User Isolation and Data Integrity', () => {
     it('should enforce strict user isolation (User B cannot see or overwrite User A preferences)', async () => {
       // User B updates preference

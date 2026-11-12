@@ -6,7 +6,7 @@ export const UpgradeProModal = ({ isOpen, onClose }) => {
   if (!isOpen) return null;
 
   const features = [
-    { icon: Cloud, text: '50 GB Secure Cloud Storage (vs 2 GB Free)' },
+    { icon: Cloud, text: '50 GB Secure Cloud Storage (vs 512 MB Free Atlas)' },
     { icon: Smartphone, text: 'Unlimited Devices & Instant Offline Sync' },
     { icon: Zap, text: 'Full-text Search with OCR for images & PDFs' },
     { icon: Shield, text: 'Version History with 90-day restore point' }

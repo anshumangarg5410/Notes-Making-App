@@ -15,7 +15,7 @@ export const StorageSettings = ({ user, notes = [] }) => {
     });
   }
 
-  const totalQuotaBytes = 2 * 1024 * 1024 * 1024;
+  const totalQuotaBytes = 512 * 1024 * 1024; // Real MongoDB Atlas M0 cluster capacity (512 MB)
   const usedFormatted = totalBytes < 1024 * 1024
     ? `${Math.max(1, Math.round(totalBytes / 1024))} KB`
     : `${(totalBytes / (1024 * 1024)).toFixed(2)} MB`;
@@ -38,7 +38,7 @@ export const StorageSettings = ({ user, notes = [] }) => {
         {/* Progress Bar & Meter */}
         <div className="p-4 rounded-[6px] bg-[#1a1a26] border border-[#2e2e44] mb-5">
           <div className="flex items-center justify-between text-xs mb-2">
-            <span className="font-semibold text-white">{usedFormatted} of 2 GB used</span>
+            <span className="font-semibold text-white">{usedFormatted} of 512 MB used</span>
             <span className="text-purple-400 font-bold">{percentage}</span>
           </div>
           <div className="w-full h-2 bg-[#252538] rounded-full overflow-hidden">

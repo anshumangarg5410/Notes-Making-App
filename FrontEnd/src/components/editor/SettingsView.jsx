@@ -97,7 +97,7 @@ export const SettingsView = ({
       });
     }
 
-    const totalQuotaBytes = 2 * 1024 * 1024 * 1024; // 2 GB Workspace Quota
+    const totalQuotaBytes = 512 * 1024 * 1024; // Real MongoDB Atlas M0 cluster capacity (512 MB)
     let usedFormatted = '0 KB';
     if (totalBytes < 1024 * 1024) {
       usedFormatted = `${Math.max(1, Math.round(totalBytes / 1024))} KB`;
@@ -801,7 +801,7 @@ export const SettingsView = ({
               <div className="flex items-center justify-between text-xs">
                 <span className={`font-medium ${isDark ? 'text-gray-300' : 'text-[#374151]'}`}>Workspace Cloud Storage</span>
                 <span className={`font-semibold ${isDark ? 'text-purple-400' : 'text-[#7C3AED]'}`}>
-                  {storageInfo.usedFormatted} of 2 GB used ({storageInfo.percentage})
+                  {storageInfo.usedFormatted} of 512 MB used ({storageInfo.percentage})
                 </span>
               </div>
               <div className={`w-full h-2 rounded-full overflow-hidden ${isDark ? 'bg-[#212234]' : 'bg-[#E5E1F0]'}`}>

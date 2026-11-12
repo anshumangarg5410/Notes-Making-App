@@ -118,15 +118,15 @@ class DashboardService {
       };
     });
 
-    // 7. Real Storage metrics calculated from document bytes
+    // 7. Real Storage metrics calculated from document bytes (MongoDB Atlas Free M0 cluster capacity is 512 MB)
     const totalBytes = notes.reduce((sum, n) => {
       const contentStr = typeof n.content === 'string' ? n.content : JSON.stringify(n.content || '');
       return sum + Buffer.byteLength(n.title || '', 'utf8') + Buffer.byteLength(contentStr, 'utf8');
     }, 0);
 
     const usedMb = Math.round((totalBytes / (1024 * 1024)) * 100) / 100;
-    const totalGb = 2;
-    const percentage = Math.min(100, Math.max(0.1, Number(((usedMb / (totalGb * 1024)) * 100).toFixed(1))));
+    const totalMb = 512;
+    const percentage = Math.min(100, Math.max(0.1, Number(((usedMb / totalMb) * 100).toFixed(1))));
 
     return {
       stats: {
@@ -141,8 +141,11 @@ class DashboardService {
       activities: formattedActivities,
       storage: {
         usedMb,
-        totalGb,
-        percentage
+        totalMb,
+        totalGb: 0.5,
+        percentage,
+        provider: 'MongoDB Atlas (512 MB M0)'
+      },
       },
       syncStatus: {
         synced: true,

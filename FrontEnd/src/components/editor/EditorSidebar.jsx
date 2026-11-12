@@ -134,7 +134,7 @@ export const EditorSidebar = ({
       });
     }
 
-    const totalQuotaBytes = 2 * 1024 * 1024 * 1024; // 2 GB Workspace Quota
+    const totalQuotaBytes = 512 * 1024 * 1024; // Real MongoDB Atlas M0 cluster capacity (512 MB)
     let usedFormatted = '0 KB';
     if (totalBytes < 1024 * 1024) {
       usedFormatted = `${Math.max(1, Math.round(totalBytes / 1024))} KB`;
@@ -150,7 +150,8 @@ export const EditorSidebar = ({
       usedFormatted,
       percentage,
       progressWidth: `${progressWidth}%`,
-      totalBytes
+      totalBytes,
+      quotaFormatted: '512 MB'
     };
   }, [notes]);
 
@@ -959,7 +960,7 @@ export const EditorSidebar = ({
               </span>
             </div>
             <div className={`text-[10px] ${isDark ? 'text-gray-400' : 'text-[#6B7280]'}`}>
-              {storageInfo.usedFormatted} of 2 GB used
+              {storageInfo.usedFormatted} of 512 MB used
             </div>
             <div className={`w-full h-1.5 rounded-full overflow-hidden ${
               isDark ? 'bg-[#252536]' : 'bg-[#E5E1F0]'

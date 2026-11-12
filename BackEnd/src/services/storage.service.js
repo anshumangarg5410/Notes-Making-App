@@ -101,6 +101,41 @@ class StorageService {
   }
 
   /**
+   * Immediately trashes or permanently deletes a note file from Google Drive
+   * @param {string} userId
+   * @param {string} noteId
+   * @param {boolean} [permanent=false]
+   */
+  async trashOrDeleteNoteFromDrive(userId, noteId, permanent = false) {
+    try {
+      if (!mongoose.Types.ObjectId.isValid(userId) || !mongoose.Types.ObjectId.isValid(noteId)) return false;
+      const pref = await StoragePreference.findOne({ userId }).select('+googleDrive.refreshTokenEncrypted');
+      if (!pref || !pref.googleDrive?.connected || !pref.googleDrive.refreshTokenEncrypted) return false;
+
+      const mapping = await DriveFileMapping.findOne({
+        userId,
+        recordType: 'note',
+        recordId: noteId.toString()
+      });
+      if (!mapping || !mapping.driveFileId) return false;
+
+      const { accessToken } = await googleDriveService.getAccessToken(pref.googleDrive.refreshTokenEncrypted);
+      if (permanent) {
+        await googleDriveService.deleteFile(accessToken, mapping.driveFileId);
+        await DriveFileMapping.deleteOne({ _id: mapping._id });
+      } else {
+        await googleDriveService.trashFile(accessToken, mapping.driveFileId);
+        mapping.isDeleted = true;
+        await mapping.save();
+      }
+      return true;
+    } catch (err) {
+      console.warn(`[StorageService] Failed to trash/delete note ${noteId} from Google Drive:`, err.message);
+      return false;
+    }
+  }
+
+  /**
    * Retrieves or initializes storage preferences for a user
    * @param {string} userId
    * @returns {Promise<Object>}
@@ -323,6 +358,25 @@ class StorageService {
     await pref.save();
 
     try {
+      // Process explicit deletions from sync payload
+      const deletedIds = (Array.isArray(payload.deletedIds) ? payload.deletedIds : [])
+        .concat(Array.isArray(payload.deletedNoteIds) ? payload.deletedNoteIds : []);
+
+      for (const delId of deletedIds) {
+        try {
+          const recIdStr = delId.toString();
+          const mapping = await DriveFileMapping.findOne({ userId, recordId: recIdStr });
+          if (mapping && mapping.driveFileId && !mapping.isDeleted) {
+            await googleDriveService.trashFile(accessToken, mapping.driveFileId);
+            mapping.isDeleted = true;
+            await mapping.save();
+            syncedCount++;
+          }
+        } catch (delErr) {
+          errors.push({ recordId: delId, error: delErr.message });
+        }
+      }
+
       // CASE A: Full Synchronization (e.g. on first connect or full sync request)
       if (payload.fullSync || (!payload.changes || payload.changes.length === 0)) {
         // Retrieve records either from client payload or server database
@@ -402,6 +456,17 @@ class StorageService {
             const noteId = (note._id || note.id).toString();
             let noteMapping = await DriveFileMapping.findOne({ userId, recordType: 'note', recordId: noteId });
 
+            // If note is deleted or marked deleted, trash it on Google Drive
+            if (note.isDeleted || deletedIds.includes(noteId)) {
+              if (noteMapping && noteMapping.driveFileId && !noteMapping.isDeleted) {
+                await googleDriveService.trashFile(accessToken, noteMapping.driveFileId);
+                noteMapping.isDeleted = true;
+                await noteMapping.save();
+                syncedCount++;
+              }
+              continue;
+            }
+
             const fileName = this.formatNoteFileName(note, noteId);
             const textContent = this.formatNoteToText(note, noteId);
 
@@ -441,12 +506,17 @@ class StorageService {
             const { recordType, recordId, action, data } = change;
             const recIdStr = recordId.toString();
 
-            if (action === 'delete') {
+            if (action === 'delete' || action === 'permanentDelete') {
               const mapping = await DriveFileMapping.findOne({ userId, recordType, recordId: recIdStr });
               if (mapping && mapping.driveFileId) {
-                await googleDriveService.trashFile(accessToken, mapping.driveFileId);
-                mapping.isDeleted = true;
-                await mapping.save();
+                if (action === 'permanentDelete') {
+                  await googleDriveService.deleteFile(accessToken, mapping.driveFileId);
+                  await DriveFileMapping.deleteOne({ _id: mapping._id });
+                } else {
+                  await googleDriveService.trashFile(accessToken, mapping.driveFileId);
+                  mapping.isDeleted = true;
+                  await mapping.save();
+                }
               }
               syncedCount++;
             } else {

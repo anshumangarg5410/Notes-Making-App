@@ -1196,6 +1196,9 @@ export const EditorLayout = ({
         await noteService.deleteNote(noteId);
       }
 
+      // Sync deletion with Google Drive if connected
+      driveSyncEngine.triggerAutoSync();
+
       await refreshStats();
       info(`"${title}" moved to trash`);
     } catch (err) {
@@ -1217,6 +1220,9 @@ export const EditorLayout = ({
       if (navigator.onLine && isValidServerId) {
         await noteService.restoreNote(noteId);
       }
+
+      // Sync restore with Google Drive if connected
+      driveSyncEngine.triggerAutoSync();
 
       await refreshStats();
       success(`"${title}" restored to All Notes`);
@@ -1240,6 +1246,9 @@ export const EditorLayout = ({
         await noteService.permanentDeleteNote(noteId);
       }
 
+      // Sync permanent deletion with Google Drive if connected
+      driveSyncEngine.triggerAutoSync();
+
       await refreshStats();
       success(`"${title}" permanently deleted`);
     } catch (err) {
@@ -1262,6 +1271,9 @@ export const EditorLayout = ({
       if (navigator.onLine) {
         await noteService.emptyTrash();
       }
+
+      // Sync empty trash with Google Drive if connected
+      driveSyncEngine.triggerAutoSync();
 
       await refreshStats();
       success('Trash emptied');

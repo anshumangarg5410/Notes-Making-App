@@ -345,7 +345,7 @@ class GoogleDriveService {
   }
 
   /**
-   * Trashes a file on Google Drive
+   * Trashes a file on Google Drive (moves to Google Drive trash)
    * @param {string} accessToken
    * @param {string} fileId
    */
@@ -361,7 +361,51 @@ class GoogleDriveService {
 
     if (!res.ok && res.status !== 404) {
       const errText = await res.text();
-      throw new Error(`Failed to delete file ${fileId} on Google Drive: ${errText}`);
+      throw new Error(`Failed to trash file ${fileId} on Google Drive: ${errText}`);
+    }
+
+    return true;
+  }
+
+  /**
+   * Untrashes a file on Google Drive (restores from Google Drive trash)
+   * @param {string} accessToken
+   * @param {string} fileId
+   */
+  async untrashFile(accessToken, fileId) {
+    const res = await fetch(`https://www.googleapis.com/drive/v3/files/${fileId}`, {
+      method: 'PATCH',
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ trashed: false })
+    });
+
+    if (!res.ok && res.status !== 404) {
+      const errText = await res.text();
+      throw new Error(`Failed to restore file ${fileId} on Google Drive: ${errText}`);
+    }
+
+    return true;
+  }
+
+  /**
+   * Permanently deletes a file from Google Drive (cannot be recovered)
+   * @param {string} accessToken
+   * @param {string} fileId
+   */
+  async deleteFile(accessToken, fileId) {
+    const res = await fetch(`https://www.googleapis.com/drive/v3/files/${fileId}`, {
+      method: 'DELETE',
+      headers: {
+        Authorization: `Bearer ${accessToken}`
+      }
+    });
+
+    if (!res.ok && res.status !== 404) {
+      const errText = await res.text();
+      throw new Error(`Failed to permanently delete file ${fileId} on Google Drive: ${errText}`);
     }
 
     return true;

@@ -37,6 +37,8 @@ export const NotesExplorer = ({
       result = result.filter((n) => n.isFavorite && !n.isDeleted);
     } else if (activeFilter === 'trash') {
       result = result.filter((n) => n.isDeleted);
+    } else if (activeFilter === 'drawing') {
+      result = result.filter((n) => !n.isDeleted && ((n.drawings && n.drawings.length > 0) || (n.tags && n.tags.includes('sketch'))));
     } else {
       result = result.filter((n) => !n.isDeleted);
     }
@@ -95,6 +97,7 @@ export const NotesExplorer = ({
     if (selectedTag) return `#${selectedTag}`;
     if (activeFilter === 'favorites') return 'Favorites';
     if (activeFilter === 'trash') return 'Trash';
+    if (activeFilter === 'drawing') return 'Drawings & Sketches';
     return 'All Notes';
   };
 

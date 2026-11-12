@@ -81,7 +81,8 @@ export const DrawingToolbar = ({
   onToggleSmartInk,
   onAlignWriting,
   onAiCleanup,
-  isAiCleaning = false
+  isAiCleaning = false,
+  rightSlot = null
 }) => {
   const { isDark } = useTheme();
   const [showColorPicker, setShowColorPicker] = useState(false);
@@ -706,6 +707,8 @@ export const DrawingToolbar = ({
             <span>{saveLabel}</span>
           </button>
         )}
+
+        {rightSlot}
       </div>
     </div>
   );

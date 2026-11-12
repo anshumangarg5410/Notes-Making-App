@@ -6,7 +6,6 @@ import { RichTextEditor } from './RichTextEditor';
 import { DocumentInspector } from './DocumentInspector';
 import { EditorStatusBar } from './EditorStatusBar';
 import { SettingsView } from './SettingsView';
-import { DrawingWorkspace } from '../drawing/DrawingWorkspace';
 import { noteService } from '../../services/noteService';
 import { folderService } from '../../services/folderService';
 import { offlineService, db } from '../../services/db';
@@ -424,6 +423,13 @@ export const EditorLayout = ({
         setActiveTabId(null);
         return;
       }
+      if (activeNav === 'drawing') {
+        const isDrawingNote = (current.drawings && current.drawings.length > 0) || (current.tags && current.tags.includes('sketch'));
+        if (!isDrawingNote) {
+          setActiveTabId(null);
+          return;
+        }
+      }
       if (selectedFolder && current.folder !== selectedFolder && current.category !== selectedFolder) {
         setActiveTabId(null);
         return;
@@ -435,12 +441,33 @@ export const EditorLayout = ({
     }
   }, [activeNav, selectedFolder, selectedTag, activeTabId, notes]);
 
-  // Create new note respecting defaultFormat preference
+  // When switching to 'drawing' nav, auto-select first sketch note if no drawing is currently open
+  useEffect(() => {
+    if (activeNav === 'drawing') {
+      const drawingNotes = notes.filter((n) => !n.isDeleted && ((n.drawings && n.drawings.length > 0) || (n.tags && n.tags.includes('sketch'))));
+      if (drawingNotes.length > 0 && (!activeTabId || !drawingNotes.some((n) => (n._id || n.id) === activeTabId))) {
+        handleSelectNote(drawingNotes[0]);
+      }
+    }
+  }, [activeNav, notes, activeTabId]);
+
+  // Create new note respecting defaultFormat preference or active drawing filter
   const handleNewNote = async () => {
     let createdNote = null;
+    const isDrawing = activeNav === 'drawing';
     const formatExt = defaultFormat === 'markdown' ? '.md' : defaultFormat === 'plaintext' ? '.txt' : '';
-    const initialTitle = formatExt ? `Untitled Note${formatExt}` : 'Untitled Note';
+    const initialTitle = isDrawing ? 'Untitled Sketch' : (formatExt ? `Untitled Note${formatExt}` : 'Untitled Note');
     const initialContent = '';
+    const initialTags = isDrawing ? ['sketch'] : (selectedTag ? [selectedTag] : []);
+    const initialDrawings = isDrawing ? [{
+      id: `draw_${Date.now()}`,
+      title: initialTitle,
+      strokes: [],
+      background: 'lines',
+      width: 1200,
+      height: 1800,
+      createdAt: new Date().toISOString()
+    }] : [];
 
     // 1. If online, attempt to create directly on backend for permanent ObjectId
     if (navigator.onLine) {
@@ -449,7 +476,8 @@ export const EditorLayout = ({
           title: initialTitle,
           content: initialContent,
           plainText: '',
-          tags: selectedTag ? [selectedTag] : [],
+          tags: initialTags,
+          drawings: initialDrawings,
           folder: selectedFolder || 'Personal',
           category: selectedFolder || 'Personal',
           isPinned: false,
@@ -472,7 +500,8 @@ export const EditorLayout = ({
         title: initialTitle,
         plainText: '',
         content: initialContent,
-        tags: selectedTag ? [selectedTag] : [],
+        tags: initialTags,
+        drawings: initialDrawings,
         category: selectedFolder || 'Personal',
         folder: selectedFolder || 'Personal',
         isPinned: false,
@@ -981,19 +1010,13 @@ export const EditorLayout = ({
         />
       )}
 
-      {/* Main Workspace: Settings View OR Dedicated Drawing Canvas OR Notes Explorer + Writing Area */}
+      {/* Main Workspace: Settings View OR Notes Explorer + Writing Area */}
       {activeNav === 'settings' ? (
         <SettingsView
           onClose={() => setActiveNav('all')}
           notes={notes}
           folders={folders}
           stats={stats}
-        />
-      ) : activeNav === 'drawing' ? (
-        <DrawingWorkspace
-          onBack={() => setActiveNav('all')}
-          activeNote={activeNote}
-          onSaveToNotes={handleSaveDrawingFromWorkspace}
         />
       ) : (
         <>

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import Underline from '@tiptap/extension-underline';
@@ -17,13 +17,25 @@ import {
   FileText,
   Type,
   Copy,
-  Check
+  Check,
+  Keyboard,
+  PenTool,
+  Columns,
+  Sparkles,
+  Layers,
+  ChevronRight,
+  Maximize2
 } from 'lucide-react';
 import { useEditorSettings } from '../../context/EditorSettingsContext';
 import { useTheme } from '../../context/ThemeContext';
+import { useToast } from '../../context/ToastContext';
 import { EditorToolbar } from './EditorToolbar';
-import { markdownToHtml, htmlToMarkdown, stripHtmlToPlainText } from '../../utils/markdownUtils';
+import { DrawingCanvas } from '../drawing/DrawingCanvas';
+import { DrawingToolbar } from '../drawing/DrawingToolbar';
+import { DrawingAiCleanupModal } from '../drawing/DrawingAiCleanupModal';
 import { DrawingModal } from '../drawing/DrawingModal';
+import { cleanupDrawingWithAi } from '../../services/drawingAiService';
+import { markdownToHtml, htmlToMarkdown, stripHtmlToPlainText } from '../../utils/markdownUtils';
 
 // Enhanced Image extension preserving drawing vector metadata
 const CustomImage = Image.extend({
@@ -59,8 +71,21 @@ export const RichTextEditor = ({
 }) => {
   const { fontSize, lineNumbers, spellCheck } = useEditorSettings();
   const { isDark } = useTheme();
+  const { success, error: toastError, info } = useToast();
+
   const [title, setTitle] = useState(note?.title || 'Untitled Note');
   const fileInputRef = useRef(null);
+
+  // View state: 'type' | 'draw' | 'split'
+  const [noteView, setNoteView] = useState(() => {
+    const isSketch = note?.tags?.includes('sketch') || note?.title?.toLowerCase().includes('sketch');
+    const hasStrokes = Array.isArray(note?.drawings) && note.drawings.length > 0 && note.drawings[0]?.strokes?.length > 0;
+    const hasText = note?.content && note.content !== '<p></p>' && note.content.trim();
+    if (isSketch || (hasStrokes && !hasText)) {
+      return 'draw';
+    }
+    return 'type';
+  });
 
   // Markdown Mode State: 'wysiwyg' | 'source'
   const [markdownView, setMarkdownView] = useState('wysiwyg');
@@ -83,23 +108,175 @@ export const RichTextEditor = ({
 
   const rawTextareaRef = useRef(null);
 
-  // Drawing & Scribble Modal State
+  // Drawing & Scribble Modal State (for inserting inline sketch images)
   const [isDrawingModalOpen, setIsDrawingModalOpen] = useState(false);
   const [isQuickScribble, setIsQuickScribble] = useState(false);
   const [editingDrawing, setEditingDrawing] = useState(null);
 
-  const handleOpenInsertDrawing = () => {
-    setEditingDrawing(null);
-    setIsQuickScribble(false);
-    setIsDrawingModalOpen(true);
+  // =========================================================================
+  // NATIVE INLINE DRAWING & SMART INK STATE
+  // =========================================================================
+  const canvasRef = useRef(null);
+  const [drawingTool, setDrawingTool] = useState('pen');
+  const [drawingColor, setDrawingColor] = useState(() => (isDark ? '#c084fc' : '#7c3aed'));
+  const [drawingThickness, setDrawingThickness] = useState(3);
+  const [drawingBg, setDrawingBg] = useState(() => note?.drawings?.[0]?.background || 'lines');
+  const [drawingZoom, setDrawingZoom] = useState(1);
+  const [drawingHistory, setDrawingHistory] = useState({ canUndo: false, canRedo: false });
+  const [drawingStrokeCount, setDrawingStrokeCount] = useState(() => note?.drawings?.[0]?.strokes?.length || 0);
+  const [smartInkEnabled, setSmartInkEnabled] = useState(true);
+
+  // Gemini AI Handwriting Recognition State
+  const [isAiCleaning, setIsAiCleaning] = useState(false);
+  const [aiCleanupData, setAiCleanupData] = useState(null);
+  const [aiPreviewImage, setAiPreviewImage] = useState(null);
+  const [isAiModalOpen, setIsAiModalOpen] = useState(false);
+
+  const initialDrawingData = Array.isArray(note?.drawings) && note.drawings.length > 0
+    ? note.drawings[0]
+    : {
+        id: `draw_${Date.now()}`,
+        title: note?.title || 'Handwritten Notes',
+        strokes: [],
+        background: 'lines',
+        width: 1200,
+        height: 1800,
+        createdAt: new Date().toISOString()
+      };
+
+  // Synchronize state when selected note changes
+  useEffect(() => {
+    if (note) {
+      setTitle(note.title || 'Untitled Note');
+
+      const nextContent = note.content || (note.plainText ? `<p>${note.plainText}</p>` : '');
+      if (editor && editor.getHTML() !== nextContent) {
+        editor.commands.setContent(nextContent);
+      }
+
+      const md = note.plainText && typeof note.plainText === 'string' && note.plainText.trim()
+        ? note.plainText
+        : htmlToMarkdown(note.content || '');
+      setMarkdownSource(md);
+
+      const pt = note.plainText && typeof note.plainText === 'string' && note.plainText.trim()
+        ? note.plainText
+        : stripHtmlToPlainText(note.content || '');
+      setPlainTextValue(pt);
+
+      const strokeCount = note?.drawings?.[0]?.strokes?.length || 0;
+      setDrawingStrokeCount(strokeCount);
+
+      const isSketch = note?.tags?.includes('sketch') || note?.title?.toLowerCase().includes('sketch');
+      const hasText = note?.content && note.content !== '<p></p>' && note.content.trim();
+      if (isSketch || (strokeCount > 0 && !hasText)) {
+        setNoteView('draw');
+      } else {
+        setNoteView('type');
+      }
+    }
+  }, [note?._id, note?.id]);
+
+  // Handle stroke changes and auto-save
+  const handleCanvasStrokesChange = useCallback((newStrokes) => {
+    setDrawingStrokeCount(newStrokes.length);
+    if (!canvasRef.current) return;
+    const currentData = canvasRef.current.getDrawingData();
+    currentData.title = title || 'Handwritten Notes';
+    currentData.background = drawingBg;
+
+    const existingDrawings = Array.isArray(note?.drawings) ? [...note.drawings] : [];
+    let updatedDrawings;
+    if (existingDrawings.length > 0) {
+      updatedDrawings = [currentData, ...existingDrawings.slice(1)];
+    } else {
+      updatedDrawings = [currentData];
+    }
+
+    onUpdateNote?.({
+      drawings: updatedDrawings,
+      updatedAt: new Date().toISOString()
+    });
+  }, [note?.drawings, title, drawingBg, onUpdateNote]);
+
+  // Align Handwriting geometric baseline alignment
+  const handleAlignWriting = () => {
+    if (!canvasRef.current) return;
+    const res = canvasRef.current.alignHandwriting();
+    if (res && res.success) {
+      success(`Smart Ink: Aligned ${res.linesAligned} line${res.linesAligned === 1 ? '' : 's'} of handwriting!`);
+    } else {
+      info('No handwriting lines detected to align');
+    }
   };
 
-  const handleOpenQuickScribble = () => {
-    setEditingDrawing(null);
-    setIsQuickScribble(true);
-    setIsDrawingModalOpen(true);
+  // AI Cleanup using Google Gemini
+  const handleAiCleanup = async () => {
+    if (!canvasRef.current) return;
+    if (drawingStrokeCount === 0) {
+      info('Please write or draw something on the canvas before running AI cleanup');
+      return;
+    }
+
+    setIsAiCleaning(true);
+    try {
+      const pngDataUri = canvasRef.current.getPngDataUri();
+      setAiPreviewImage(pngDataUri);
+
+      const res = await cleanupDrawingWithAi({
+        image: pngDataUri,
+        promptHint: title && title !== 'Untitled Note' && title !== 'Untitled Sketch' ? title : ''
+      });
+
+      if (res && res.data) {
+        setAiCleanupData(res.data);
+        setIsAiModalOpen(true);
+        success('Smart Ink AI handwriting recognition completed!');
+      } else {
+        toastError('Failed to recognize handwriting. Please try again.');
+      }
+    } catch (err) {
+      const msg = err.response?.data?.message || err.message || 'AI handwriting cleanup failed. Check your connection or API key.';
+      toastError(msg);
+    } finally {
+      setIsAiCleaning(false);
+    }
   };
 
+  // Insert recognized AI handwriting text into the note
+  const handleInsertAiContent = (markdownText, recognizedTitle) => {
+    const formattedHtml = markdownToHtml(markdownText);
+    const existingContent = note?.content || (note?.plainText ? `<p>${note.plainText}</p>` : '');
+    const newContent = existingContent && existingContent !== '<p></p>' && existingContent.trim()
+      ? `${existingContent}<hr />${formattedHtml}`
+      : formattedHtml;
+    const newPlainText = (note?.plainText ? `${note.plainText}\n\n` : '') + markdownText;
+
+    const nextTitle = (title === 'Untitled Note' || title === 'Untitled Sketch') && recognizedTitle
+      ? recognizedTitle
+      : title;
+
+    if (nextTitle !== title) {
+      setTitle(nextTitle);
+    }
+
+    if (editor) {
+      editor.commands.setContent(newContent);
+    }
+    setMarkdownSource(newPlainText);
+    setPlainTextValue(newPlainText);
+
+    onUpdateNote?.({
+      title: nextTitle,
+      content: newContent,
+      plainText: newPlainText
+    });
+
+    setNoteView('split');
+    success('Recognized handwriting inserted into your note!');
+  };
+
+  // Handle modal drawing insertion for legacy embedded images
   const handleSaveDrawing = (drawingData, svgDataUri) => {
     const existingDrawings = Array.isArray(note?.drawings) ? [...note.drawings] : [];
     const existingIndex = existingDrawings.findIndex((d) => d.id === drawingData.id);
@@ -112,47 +289,16 @@ export const RichTextEditor = ({
     }
 
     if (editor) {
-      if (editingDrawing) {
-        let updated = false;
-        editor.state.doc.descendants((node, pos) => {
-          if (updated) return false;
-          if (node.type.name === 'image' && node.attrs['data-drawing-id'] === drawingData.id) {
-            updated = true;
-            editor.commands.setNodeSelection(pos);
-            editor.commands.updateAttributes('image', {
-              src: svgDataUri,
-              alt: drawingData.title || 'Drawing',
-              'data-drawing-id': drawingData.id,
-              'data-drawing-title': drawingData.title,
-              'data-drawing-data': JSON.stringify(drawingData)
-            });
-          }
-        });
-
-        if (!updated) {
-          editor.chain().focus().insertContent({
-            type: 'image',
-            attrs: {
-              src: svgDataUri,
-              alt: drawingData.title || 'Drawing',
-              'data-drawing-id': drawingData.id,
-              'data-drawing-title': drawingData.title,
-              'data-drawing-data': JSON.stringify(drawingData)
-            }
-          }).run();
+      editor.chain().focus().insertContent({
+        type: 'image',
+        attrs: {
+          src: svgDataUri,
+          alt: drawingData.title || 'Drawing',
+          'data-drawing-id': drawingData.id,
+          'data-drawing-title': drawingData.title,
+          'data-drawing-data': JSON.stringify(drawingData)
         }
-      } else {
-        editor.chain().focus().insertContent({
-          type: 'image',
-          attrs: {
-            src: svgDataUri,
-            alt: drawingData.title || 'Drawing',
-            'data-drawing-id': drawingData.id,
-            'data-drawing-title': drawingData.title,
-            'data-drawing-data': JSON.stringify(drawingData)
-          }
-        }).run();
-      }
+      }).run();
     }
 
     onUpdateNote?.({
@@ -316,28 +462,6 @@ export const RichTextEditor = ({
     }
   }, [editor, mode, markdownView]);
 
-  // Synchronize state when selected note changes
-  useEffect(() => {
-    if (note) {
-      setTitle(note.title || 'Untitled Note');
-
-      const nextContent = note.content || (note.plainText ? `<p>${note.plainText}</p>` : '');
-      if (editor && editor.getHTML() !== nextContent) {
-        editor.commands.setContent(nextContent);
-      }
-
-      const md = note.plainText && typeof note.plainText === 'string' && note.plainText.trim()
-        ? note.plainText
-        : htmlToMarkdown(note.content || '');
-      setMarkdownSource(md);
-
-      const pt = note.plainText && typeof note.plainText === 'string' && note.plainText.trim()
-        ? note.plainText
-        : stripHtmlToPlainText(note.content || '');
-      setPlainTextValue(pt);
-    }
-  }, [note?._id, note?.id]);
-
   // Synchronize spellcheck on editor DOM dynamically
   useEffect(() => {
     if (editor?.view?.dom) {
@@ -474,226 +598,321 @@ export const RichTextEditor = ({
     }
   };
 
-  return (
-    <div className={`flex-1 flex flex-col h-full overflow-hidden select-text transition-colors duration-150 ${
-      isDark ? 'bg-[#0e0e14] text-gray-200' : 'bg-white text-[#181326]'
-    }`}>
-      {/* Hidden file input for inserting images */}
-      <input
-        type="file"
-        ref={fileInputRef}
-        onChange={handleImageFileChange}
-        accept="image/*"
-        className="hidden"
+  // =========================================================================
+  // VIEW SWITCHER PILL (Type | Draw | Split)
+  // =========================================================================
+  const renderViewSwitcher = () => (
+    <div className="flex items-center gap-0.5 p-0.5 rounded-lg border border-purple-500/20 bg-purple-500/5 shrink-0">
+      <button
+        type="button"
+        onClick={() => setNoteView('type')}
+        className={`flex items-center gap-1.5 px-2.5 py-1 rounded text-xs font-medium transition-all cursor-pointer ${
+          noteView === 'type'
+            ? isDark
+              ? 'bg-purple-600 text-white shadow-xs font-semibold'
+              : 'bg-white text-purple-700 shadow-xs border border-purple-200 font-semibold'
+            : isDark
+              ? 'text-gray-400 hover:text-white'
+              : 'text-slate-600 hover:text-slate-900'
+        }`}
+        title="Type notes with keyboard"
+      >
+        <Keyboard className="w-3.5 h-3.5" />
+        <span>Type</span>
+      </button>
+
+      <button
+        type="button"
+        onClick={() => setNoteView('draw')}
+        className={`flex items-center gap-1.5 px-2.5 py-1 rounded text-xs font-medium transition-all cursor-pointer ${
+          noteView === 'draw'
+            ? isDark
+              ? 'bg-purple-600 text-white shadow-xs font-semibold'
+              : 'bg-white text-purple-700 shadow-xs border border-purple-200 font-semibold'
+            : isDark
+              ? 'text-gray-400 hover:text-white'
+              : 'text-slate-600 hover:text-slate-900'
+        }`}
+        title="Draw & write handwritten notes with Smart Ink AI"
+      >
+        <PenTool className="w-3.5 h-3.5" />
+        <span>Draw</span>
+        {drawingStrokeCount > 0 && (
+          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+        )}
+      </button>
+
+      <button
+        type="button"
+        onClick={() => setNoteView('split')}
+        className={`flex items-center gap-1.5 px-2.5 py-1 rounded text-xs font-medium transition-all cursor-pointer ${
+          noteView === 'split'
+            ? isDark
+              ? 'bg-purple-600 text-white shadow-xs font-semibold'
+              : 'bg-white text-purple-700 shadow-xs border border-purple-200 font-semibold'
+            : isDark
+              ? 'text-gray-400 hover:text-white'
+              : 'text-slate-600 hover:text-slate-900'
+        }`}
+        title="Split view: Type text and draw handwriting side-by-side"
+      >
+        <Columns className="w-3.5 h-3.5" />
+        <span>Split</span>
+      </button>
+    </div>
+  );
+
+  // =========================================================================
+  // DRAWING CANVAS COMPONENT SECTION
+  // =========================================================================
+  const renderDrawingView = (compact = false) => (
+    <div className="flex-1 flex flex-col h-full overflow-hidden relative">
+      <DrawingToolbar
+        activeTool={drawingTool}
+        onSelectTool={setDrawingTool}
+        color={drawingColor}
+        onChangeColor={setDrawingColor}
+        thickness={drawingThickness}
+        onChangeThickness={setDrawingThickness}
+        background={drawingBg}
+        onChangeBackground={(bg) => {
+          setDrawingBg(bg);
+          if (canvasRef.current) {
+            const data = canvasRef.current.getDrawingData();
+            data.background = bg;
+            onUpdateNote?.({ drawings: [data] });
+          }
+        }}
+        canUndo={drawingHistory.canUndo}
+        canRedo={drawingHistory.canRedo}
+        onUndo={() => canvasRef.current?.undo()}
+        onRedo={() => canvasRef.current?.redo()}
+        onClear={() => canvasRef.current?.clear()}
+        zoom={drawingZoom}
+        onZoomIn={() => setDrawingZoom((z) => Math.min(2.5, +(z + 0.1).toFixed(1)))}
+        onZoomOut={() => setDrawingZoom((z) => Math.max(0.5, +(z - 0.1).toFixed(1)))}
+        onFitScreen={() => setDrawingZoom(1)}
+        onExportPNG={() => {
+          canvasRef.current?.exportPNG(`${title || 'notes'}.png`);
+          info('Exported sketch as PNG');
+        }}
+        onExportSVG={() => {
+          canvasRef.current?.exportSVG(`${title || 'notes'}.svg`);
+          info('Exported sketch as SVG');
+        }}
+        smartInkEnabled={smartInkEnabled}
+        onToggleSmartInk={() => setSmartInkEnabled((prev) => !prev)}
+        onAlignWriting={handleAlignWriting}
+        onAiCleanup={handleAiCleanup}
+        isAiCleaning={isAiCleaning}
+        isCompact={compact}
+        rightSlot={!compact ? renderViewSwitcher() : null}
       />
 
-      {/* ============================================================== */}
-      {/* 1. TOOLBAR AREA (Adapts to Mode)                               */}
-      {/* ============================================================== */}
-      {mode === 'Plain Text' ? (
-        /* Plain Text Minimal Header Bar */
-        <div
-          className={`h-9 border-b px-4 flex items-center justify-between text-xs select-none transition-colors duration-150 ${
-            isDark ? 'bg-[#12121c] border-[#222232] text-gray-400' : 'bg-[#FAFAFD] border-[#EAE6F4] text-[#6B7280]'
-          }`}
-        >
-          <div className="flex items-center gap-2">
-            <span
-              className="font-mono text-[10px] px-1.5 py-0.5 rounded font-bold"
-              style={{
-                backgroundColor: 'var(--accent-bg, rgba(168, 85, 247, 0.15))',
-                color: 'var(--accent-text, #c084fc)'
-              }}
-            >
-              TXT
-            </span>
-            <span className="font-semibold text-xs">Plain Text Editor</span>
-            <span className="text-[11px] opacity-60">• Clean, unformatted text</span>
-          </div>
+      <div className="flex-1 overflow-hidden relative">
+        <DrawingCanvas
+          ref={canvasRef}
+          initialData={initialDrawingData}
+          activeTool={drawingTool}
+          color={drawingColor}
+          thickness={drawingThickness}
+          background={drawingBg}
+          zoom={drawingZoom}
+          smartInkEnabled={smartInkEnabled}
+          onStrokesChange={handleCanvasStrokesChange}
+          onHistoryChange={setDrawingHistory}
+          className="h-full"
+        />
+      </div>
+    </div>
+  );
 
-          <div className="flex items-center gap-2">
-            <button
-              type="button"
-              onClick={() => setIsMonospace(!isMonospace)}
-              className={`flex items-center gap-1.5 px-2 py-1 rounded text-xs transition-colors cursor-pointer ${
-                isMonospace
-                  ? isDark ? 'bg-purple-900/30 text-purple-300 border border-purple-500/30' : 'bg-purple-100 text-purple-700 border border-purple-300'
-                  : isDark ? 'text-gray-400 hover:text-white' : 'text-slate-600 hover:text-slate-900'
+  // =========================================================================
+  // TEXT EDITOR COMPONENT SECTION
+  // =========================================================================
+  const renderTextEditor = (hideToolbar = false) => (
+    <div className="flex-1 flex flex-col h-full overflow-hidden relative">
+      {!hideToolbar && (
+        <>
+          {mode === 'Plain Text' ? (
+            <div
+              className={`h-9 border-b px-4 flex items-center justify-between text-xs select-none transition-colors duration-150 ${
+                isDark ? 'bg-[#12121c] border-[#222232] text-gray-400' : 'bg-[#FAFAFD] border-[#EAE6F4] text-[#6B7280]'
               }`}
             >
-              <Type className="w-3.5 h-3.5" />
-              <span>{isMonospace ? 'Monospace Font' : 'Proportional Font'}</span>
-            </button>
-
-            <button
-              type="button"
-              onClick={handleCopyPlainText}
-              className={`flex items-center gap-1.5 px-2 py-1 rounded text-xs transition-colors cursor-pointer ${
-                isDark ? 'text-gray-300 hover:bg-white/5 hover:text-white' : 'text-slate-600 hover:bg-purple-50 hover:text-purple-700'
-              }`}
-            >
-              {copied ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
-              <span>{copied ? 'Copied' : 'Copy All'}</span>
-            </button>
-          </div>
-        </div>
-      ) : mode === 'Markdown' ? (
-        /* Markdown Mode Header Bar with Source / Live View Toggle */
-        <div
-          className={`h-9 border-b px-4 flex items-center justify-between text-xs select-none transition-colors duration-150 ${
-            isDark ? 'bg-[#12121c] border-[#222232] text-gray-400' : 'bg-[#FAFAFD] border-[#EAE6F4] text-[#6B7280]'
-          }`}
-        >
-          {/* Left: Format Label & Syntax Helpers */}
-          <div className="flex items-center gap-2">
-            <span
-              className="font-mono text-[10px] px-1.5 py-0.5 rounded font-bold"
-              style={{
-                backgroundColor: 'var(--accent-bg, rgba(168, 85, 247, 0.15))',
-                color: 'var(--accent-text, #c084fc)'
-              }}
-            >
-              MD
-            </span>
-
-            {/* Quick Syntax Insertion Buttons (Visible in Source Mode) */}
-            {markdownView === 'source' ? (
-              <div className="flex items-center gap-1 pl-2 border-l border-purple-500/20">
-                <button
-                  type="button"
-                  onClick={() => handleInsertMarkdownSyntax('# ')}
-                  title="Heading 1"
-                  className="px-1.5 py-0.5 rounded text-[11px] font-mono hover:bg-purple-500/15 hover:text-purple-400 cursor-pointer"
+              <div className="flex items-center gap-2">
+                <span
+                  className="font-mono text-[10px] px-1.5 py-0.5 rounded font-bold"
+                  style={{
+                    backgroundColor: 'var(--accent-bg, rgba(168, 85, 247, 0.15))',
+                    color: 'var(--accent-text, #c084fc)'
+                  }}
                 >
-                  H1
-                </button>
-                <button
-                  type="button"
-                  onClick={() => handleInsertMarkdownSyntax('## ')}
-                  title="Heading 2"
-                  className="px-1.5 py-0.5 rounded text-[11px] font-mono hover:bg-purple-500/15 hover:text-purple-400 cursor-pointer"
-                >
-                  H2
-                </button>
-                <button
-                  type="button"
-                  onClick={() => handleInsertMarkdownSyntax('**', '**')}
-                  title="Bold"
-                  className="px-1.5 py-0.5 rounded text-[11px] font-bold hover:bg-purple-500/15 hover:text-purple-400 cursor-pointer"
-                >
-                  B
-                </button>
-                <button
-                  type="button"
-                  onClick={() => handleInsertMarkdownSyntax('*', '*')}
-                  title="Italic"
-                  className="px-1.5 py-0.5 rounded text-[11px] italic hover:bg-purple-500/15 hover:text-purple-400 cursor-pointer"
-                >
-                  I
-                </button>
-                <button
-                  type="button"
-                  onClick={() => handleInsertMarkdownSyntax('`', '`')}
-                  title="Code snippet"
-                  className="px-1.5 py-0.5 rounded text-[11px] font-mono hover:bg-purple-500/15 hover:text-purple-400 cursor-pointer"
-                >
-                  &lt;/&gt;
-                </button>
-                <button
-                  type="button"
-                  onClick={() => handleInsertMarkdownSyntax('> ')}
-                  title="Blockquote"
-                  className="px-1.5 py-0.5 rounded text-[11px] hover:bg-purple-500/15 hover:text-purple-400 cursor-pointer"
-                >
-                  Quote
-                </button>
-                <button
-                  type="button"
-                  onClick={() => handleInsertMarkdownSyntax('- ')}
-                  title="List item"
-                  className="px-1.5 py-0.5 rounded text-[11px] hover:bg-purple-500/15 hover:text-purple-400 cursor-pointer"
-                >
-                  List
-                </button>
-                <button
-                  type="button"
-                  onClick={() => handleInsertMarkdownSyntax('[', '](https://)')}
-                  title="Link"
-                  className="px-1.5 py-0.5 rounded text-[11px] hover:bg-purple-500/15 hover:text-purple-400 cursor-pointer"
-                >
-                  Link
-                </button>
+                  TXT
+                </span>
+                <span className="font-semibold text-xs">Plain Text Editor</span>
               </div>
-            ) : null}
-          </div>
 
-          {/* Right: Segmented Switcher for [Live View] vs [Raw Markdown Source] */}
-          <div
-            className={`flex items-center p-0.5 rounded-lg border ${
-              isDark ? 'bg-[#181624] border-[#2c2c3e]' : 'bg-[#f4effc] border-purple-200'
-            }`}
-          >
-            <button
-              type="button"
-              onClick={() => handleToggleMarkdownView('wysiwyg')}
-              className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium transition-all cursor-pointer ${
-                markdownView === 'wysiwyg'
-                  ? isDark
-                    ? 'bg-purple-600 text-white shadow-sm'
-                    : 'bg-white text-purple-700 shadow-xs border border-purple-200'
-                  : isDark
-                    ? 'text-gray-400 hover:text-white'
-                    : 'text-slate-600 hover:text-slate-900'
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => setIsMonospace(!isMonospace)}
+                  className={`flex items-center gap-1.5 px-2 py-1 rounded text-xs transition-colors cursor-pointer ${
+                    isMonospace
+                      ? isDark ? 'bg-purple-900/30 text-purple-300 border border-purple-500/30' : 'bg-purple-100 text-purple-700 border border-purple-300'
+                      : isDark ? 'text-gray-400 hover:text-white' : 'text-slate-600 hover:text-slate-900'
+                  }`}
+                >
+                  <Type className="w-3.5 h-3.5" />
+                  <span>{isMonospace ? 'Monospace' : 'Proportional'}</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={handleCopyPlainText}
+                  className={`flex items-center gap-1.5 px-2 py-1 rounded text-xs transition-colors cursor-pointer ${
+                    isDark ? 'text-gray-300 hover:bg-white/5 hover:text-white' : 'text-slate-600 hover:bg-purple-50 hover:text-purple-700'
+                  }`}
+                >
+                  {copied ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
+                  <span>{copied ? 'Copied' : 'Copy'}</span>
+                </button>
+
+                {renderViewSwitcher()}
+              </div>
+            </div>
+          ) : mode === 'Markdown' ? (
+            <div
+              className={`h-9 border-b px-4 flex items-center justify-between text-xs select-none transition-colors duration-150 ${
+                isDark ? 'bg-[#12121c] border-[#222232] text-gray-400' : 'bg-[#FAFAFD] border-[#EAE6F4] text-[#6B7280]'
               }`}
             >
-              <Eye className="w-3.5 h-3.5" />
-              <span>Live Preview</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => handleToggleMarkdownView('source')}
-              className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium transition-all cursor-pointer ${
-                markdownView === 'source'
-                  ? isDark
-                    ? 'bg-purple-600 text-white shadow-sm'
-                    : 'bg-white text-purple-700 shadow-xs border border-purple-200'
-                  : isDark
-                    ? 'text-gray-400 hover:text-white'
-                    : 'text-slate-600 hover:text-slate-900'
-              }`}
-            >
-              <Code className="w-3.5 h-3.5" />
-              <span>Markdown Source</span>
-            </button>
-          </div>
-        </div>
-      ) : (
-        /* Rich Text Formatting Toolbar */
-        <EditorToolbar
-          editor={editor}
-          onInsertImage={() => fileInputRef.current?.click()}
-          onInsertImageUrl={handleInsertImageUrl}
-          onOpenDrawingModal={handleOpenInsertDrawing}
-          onOpenQuickScribble={handleOpenQuickScribble}
-        />
+              <div className="flex items-center gap-2">
+                <span
+                  className="font-mono text-[10px] px-1.5 py-0.5 rounded font-bold"
+                  style={{
+                    backgroundColor: 'var(--accent-bg, rgba(168, 85, 247, 0.15))',
+                    color: 'var(--accent-text, #c084fc)'
+                  }}
+                >
+                  MD
+                </span>
+
+                {markdownView === 'source' ? (
+                  <div className="flex items-center gap-1 pl-2 border-l border-purple-500/20">
+                    <button
+                      type="button"
+                      onClick={() => handleInsertMarkdownSyntax('# ')}
+                      className="px-1.5 py-0.5 rounded text-[11px] font-mono hover:bg-purple-500/15 hover:text-purple-400 cursor-pointer"
+                    >
+                      H1
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleInsertMarkdownSyntax('## ')}
+                      className="px-1.5 py-0.5 rounded text-[11px] font-mono hover:bg-purple-500/15 hover:text-purple-400 cursor-pointer"
+                    >
+                      H2
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleInsertMarkdownSyntax('**', '**')}
+                      className="px-1.5 py-0.5 rounded text-[11px] font-bold hover:bg-purple-500/15 hover:text-purple-400 cursor-pointer"
+                    >
+                      B
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleInsertMarkdownSyntax('*', '*')}
+                      className="px-1.5 py-0.5 rounded text-[11px] italic hover:bg-purple-500/15 hover:text-purple-400 cursor-pointer"
+                    >
+                      I
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleInsertMarkdownSyntax('`', '`')}
+                      className="px-1.5 py-0.5 rounded text-[11px] font-mono hover:bg-purple-500/15 hover:text-purple-400 cursor-pointer"
+                    >
+                      &lt;/&gt;
+                    </button>
+                  </div>
+                ) : null}
+              </div>
+
+              <div className="flex items-center gap-2">
+                <div
+                  className={`flex items-center p-0.5 rounded-lg border ${
+                    isDark ? 'bg-[#181624] border-[#2c2c3e]' : 'bg-[#f4effc] border-purple-200'
+                  }`}
+                >
+                  <button
+                    type="button"
+                    onClick={() => handleToggleMarkdownView('wysiwyg')}
+                    className={`flex items-center gap-1.5 px-2 py-0.5 rounded-md text-xs font-medium transition-all cursor-pointer ${
+                      markdownView === 'wysiwyg'
+                        ? isDark
+                          ? 'bg-purple-600 text-white shadow-sm'
+                          : 'bg-white text-purple-700 shadow-xs border border-purple-200'
+                        : isDark
+                          ? 'text-gray-400 hover:text-white'
+                          : 'text-slate-600 hover:text-slate-900'
+                    }`}
+                  >
+                    <Eye className="w-3.5 h-3.5" />
+                    <span>Live</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleToggleMarkdownView('source')}
+                    className={`flex items-center gap-1.5 px-2 py-0.5 rounded-md text-xs font-medium transition-all cursor-pointer ${
+                      markdownView === 'source'
+                        ? isDark
+                          ? 'bg-purple-600 text-white shadow-sm'
+                          : 'bg-white text-purple-700 shadow-xs border border-purple-200'
+                        : isDark
+                          ? 'text-gray-400 hover:text-white'
+                          : 'text-slate-600 hover:text-slate-900'
+                    }`}
+                  >
+                    <Code className="w-3.5 h-3.5" />
+                    <span>Source</span>
+                  </button>
+                </div>
+
+                {renderViewSwitcher()}
+              </div>
+            </div>
+          ) : (
+            <EditorToolbar
+              editor={editor}
+              onInsertImage={() => fileInputRef.current?.click()}
+              onInsertImageUrl={handleInsertImageUrl}
+              onOpenDrawingModal={handleOpenInsertDrawing}
+              onOpenQuickScribble={() => setNoteView('draw')}
+              noteView={noteView}
+              onSwitchView={setNoteView}
+              hasDrawings={drawingStrokeCount > 0}
+            />
+          )}
+
+          {mode === 'Markdown' && markdownView === 'wysiwyg' && (
+            <EditorToolbar
+              editor={editor}
+              onInsertImage={() => fileInputRef.current?.click()}
+              onInsertImageUrl={handleInsertImageUrl}
+              onOpenDrawingModal={handleOpenInsertDrawing}
+              onOpenQuickScribble={() => setNoteView('draw')}
+              noteView={noteView}
+              onSwitchView={setNoteView}
+              hasDrawings={drawingStrokeCount > 0}
+            />
+          )}
+        </>
       )}
 
-      {/* In Markdown Live View, also show the formatting toolbar if desired */}
-      {mode === 'Markdown' && markdownView === 'wysiwyg' && (
-        <EditorToolbar
-          editor={editor}
-          onInsertImage={() => fileInputRef.current?.click()}
-          onInsertImageUrl={handleInsertImageUrl}
-          onOpenDrawingModal={handleOpenInsertDrawing}
-          onOpenQuickScribble={handleOpenQuickScribble}
-        />
-      )}
-
-      {/* ============================================================== */}
-      {/* 2. MAIN DOCUMENT CANVAS SCROLL AREA                            */}
-      {/* ============================================================== */}
+      {/* Main Document Text Scroll Area */}
       <div className="flex-1 overflow-y-auto obsidian-scrollbar px-6 sm:px-12 py-8 max-w-4xl mx-auto w-full space-y-4">
-        {/* Document Title Header with themed caret */}
+        {/* Document Title Header */}
         <div
           className={`flex items-center gap-1 group relative pb-2 border-b ${
             isDark ? 'border-purple-500/20' : 'border-[#EAE6F4]'
@@ -711,9 +930,54 @@ export const RichTextEditor = ({
           />
         </div>
 
+        {/* Drawing Notice Banner if Note Contains Handwritten Strokes */}
+        {drawingStrokeCount > 0 && noteView === 'type' && (
+          <div
+            className={`p-3 rounded-xl border flex items-center justify-between transition-colors ${
+              isDark ? 'bg-purple-950/20 border-purple-500/30 text-purple-200' : 'bg-purple-50/80 border-purple-200 text-purple-900'
+            }`}
+          >
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-lg bg-purple-500/20 text-purple-400">
+                <PenTool className="w-4 h-4" />
+              </div>
+              <div>
+                <div className="text-xs font-bold flex items-center gap-1.5">
+                  <span>Handwritten Canvas Attached</span>
+                  <span className="text-[10px] px-1.5 py-0.2 rounded-full bg-emerald-500/20 text-emerald-300 font-mono">
+                    {drawingStrokeCount} strokes
+                  </span>
+                </div>
+                <p className={`text-[11px] mt-0.5 ${isDark ? 'text-gray-400' : 'text-slate-500'}`}>
+                  This note contains handwritten ink and drawings.
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => setNoteView('draw')}
+                className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-purple-600 hover:bg-purple-500 text-white transition-all shadow-xs cursor-pointer flex items-center gap-1.5"
+              >
+                <PenTool className="w-3.5 h-3.5" />
+                <span>Open Canvas</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setNoteView('split')}
+                className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors cursor-pointer flex items-center gap-1.5 ${
+                  isDark ? 'border-purple-500/30 text-purple-300 hover:bg-purple-500/15' : 'border-purple-200 text-purple-700 hover:bg-purple-100'
+                }`}
+              >
+                <Columns className="w-3.5 h-3.5" />
+                <span>Split View</span>
+              </button>
+            </div>
+          </div>
+        )}
+
         {/* Dynamic Editor Content View */}
         {mode === 'Plain Text' ? (
-          /* PLAIN TEXT MODE */
           <div className="flex-1 pt-2 min-h-[380px]">
             <textarea
               value={plainTextValue}
@@ -727,7 +991,6 @@ export const RichTextEditor = ({
             />
           </div>
         ) : mode === 'Markdown' && markdownView === 'source' ? (
-          /* MARKDOWN SOURCE MODE */
           <div className="flex-1 pt-2 min-h-[380px]">
             <textarea
               ref={rawTextareaRef}
@@ -742,7 +1005,6 @@ export const RichTextEditor = ({
             />
           </div>
         ) : (
-          /* WYSIWYG / RICH-TEXT MODE (Tiptap Canvas) */
           <div
             onClick={handleEditorClick}
             onDoubleClick={handleEditorClick}
@@ -753,8 +1015,92 @@ export const RichTextEditor = ({
           </div>
         )}
       </div>
+    </div>
+  );
 
-      {/* Interactive Drawing & Scribble Modal */}
+  return (
+    <div className={`flex-1 flex flex-col h-full overflow-hidden select-text transition-colors duration-150 ${
+      isDark ? 'bg-[#0e0e14] text-gray-200' : 'bg-white text-[#181326]'
+    }`}>
+      {/* Hidden file input for inserting images */}
+      <input
+        type="file"
+        ref={fileInputRef}
+        onChange={handleImageFileChange}
+        accept="image/*"
+        className="hidden"
+      />
+
+      {/* Main Mode Viewport Routing */}
+      {noteView === 'split' ? (
+        <div className="flex-1 flex flex-col h-full overflow-hidden">
+          {/* Split Mode Header */}
+          <div className={`h-9 border-b px-4 flex items-center justify-between text-xs select-none shrink-0 ${
+            isDark ? 'bg-[#12121c] border-[#222232] text-gray-400' : 'bg-[#FAFAFD] border-[#EAE6F4] text-[#6B7280]'
+          }`}>
+            <div className="flex items-center gap-2">
+              <span className="font-semibold text-xs text-purple-400 flex items-center gap-1.5">
+                <Columns className="w-3.5 h-3.5" />
+                <span>Split Mode: Text + Handwriting Canvas</span>
+              </span>
+            </div>
+            {renderViewSwitcher()}
+          </div>
+
+          <div className="flex-1 flex flex-col md:flex-row h-[calc(100%-36px)] overflow-hidden">
+            {/* Left: Text Editor */}
+            <div className={`flex-1 flex flex-col border-b md:border-b-0 md:border-r overflow-hidden ${
+              isDark ? 'border-[#222232]' : 'border-[#EAE6F4]'
+            }`}>
+              {renderTextEditor(false)}
+            </div>
+
+            {/* Right: Drawing Canvas */}
+            <div className="flex-1 flex flex-col overflow-hidden">
+              {renderDrawingView(true)}
+            </div>
+          </div>
+        </div>
+      ) : noteView === 'draw' ? (
+        <div className="flex-1 flex flex-col h-full overflow-hidden">
+          {/* Document Title Header in Draw Mode */}
+          <div className={`px-6 sm:px-10 py-3 border-b flex items-center justify-between shrink-0 ${
+            isDark ? 'bg-[#101018] border-[#20202e]' : 'bg-white border-[#EAE6F4]'
+          }`}>
+            <input
+              type="text"
+              value={title}
+              onChange={handleTitleChange}
+              placeholder="Untitled Sketch"
+              className={`text-xl sm:text-2xl font-bold bg-transparent border-none focus:outline-none w-full tracking-tight caret-purple-500 ${
+                isDark ? 'text-white placeholder-gray-500' : 'text-[#111827] placeholder-slate-400'
+              }`}
+            />
+            <div className="hidden sm:flex items-center gap-2 pl-4">
+              <span className="text-[11px] text-purple-400 font-medium px-2 py-0.5 rounded-full bg-purple-500/10 border border-purple-500/20 whitespace-nowrap">
+                ✍️ Smart Ink Canvas
+              </span>
+            </div>
+          </div>
+
+          {/* Drawing Toolbar and Canvas */}
+          {renderDrawingView(false)}
+        </div>
+      ) : (
+        /* Regular Type Mode */
+        renderTextEditor(false)
+      )}
+
+      {/* Gemini AI Handwriting Recognition Modal */}
+      <DrawingAiCleanupModal
+        isOpen={isAiModalOpen}
+        onClose={() => setIsAiModalOpen(false)}
+        data={aiCleanupData}
+        previewImage={aiPreviewImage}
+        onInsertIntoNote={handleInsertAiContent}
+      />
+
+      {/* Interactive Drawing & Scribble Modal for Inline Insertion */}
       <DrawingModal
         isOpen={isDrawingModalOpen}
         onClose={() => setIsDrawingModalOpen(false)}

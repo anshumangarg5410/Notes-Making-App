@@ -21,7 +21,9 @@ import {
   Upload,
   Globe,
   Pencil,
-  PenTool
+  PenTool,
+  Keyboard,
+  Columns
 } from 'lucide-react';
 
 export const EditorToolbar = ({
@@ -29,7 +31,10 @@ export const EditorToolbar = ({
   onInsertImage,
   onInsertImageUrl,
   onOpenDrawingModal,
-  onOpenQuickScribble
+  onOpenQuickScribble,
+  noteView = 'type',
+  onSwitchView,
+  hasDrawings = false
 }) => {
   const { isDark } = useTheme();
   const [headingDropdownOpen, setHeadingDropdownOpen] = useState(false);
@@ -579,6 +584,64 @@ export const EditorToolbar = ({
         >
           <Redo2 className="w-3.5 h-3.5" />
         </button>
+
+        {/* View Switcher: Type / Draw / Split */}
+        {onSwitchView && (
+          <div className="flex items-center gap-0.5 p-0.5 rounded-lg border border-purple-500/20 bg-purple-500/5 ml-1.5">
+            <button
+              type="button"
+              onClick={() => onSwitchView('type')}
+              className={`flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-medium transition-all cursor-pointer ${
+                noteView === 'type'
+                  ? isDark
+                    ? 'bg-purple-600 text-white shadow-xs font-semibold'
+                    : 'bg-white text-purple-700 shadow-xs border border-purple-200 font-semibold'
+                  : isDark
+                    ? 'text-gray-400 hover:text-white'
+                    : 'text-slate-600 hover:text-slate-900'
+              }`}
+              title="Type with keyboard (Rich Text / Markdown)"
+            >
+              <Keyboard className="w-3 h-3" />
+              <span>Type</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => onSwitchView('draw')}
+              className={`flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-medium transition-all cursor-pointer ${
+                noteView === 'draw'
+                  ? isDark
+                    ? 'bg-purple-600 text-white shadow-xs font-semibold'
+                    : 'bg-white text-purple-700 shadow-xs border border-purple-200 font-semibold'
+                  : isDark
+                    ? 'text-gray-400 hover:text-white'
+                    : 'text-slate-600 hover:text-slate-900'
+              }`}
+              title="Draw & write handwritten notes with Smart Ink AI"
+            >
+              <PenTool className="w-3 h-3" />
+              <span>Draw</span>
+              {hasDrawings && <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />}
+            </button>
+            <button
+              type="button"
+              onClick={() => onSwitchView('split')}
+              className={`flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-medium transition-all cursor-pointer ${
+                noteView === 'split'
+                  ? isDark
+                    ? 'bg-purple-600 text-white shadow-xs font-semibold'
+                    : 'bg-white text-purple-700 shadow-xs border border-purple-200 font-semibold'
+                  : isDark
+                    ? 'text-gray-400 hover:text-white'
+                    : 'text-slate-600 hover:text-slate-900'
+              }`}
+              title="Split view: Type and draw simultaneously"
+            >
+              <Columns className="w-3 h-3" />
+              <span>Split</span>
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );

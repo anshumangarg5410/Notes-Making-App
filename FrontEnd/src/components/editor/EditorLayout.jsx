@@ -939,6 +939,7 @@ export const EditorLayout = ({
     // Open in tab
     handleSelectNote(createdNote);
     success(`New ${defaultFormat === 'markdown' ? 'Markdown' : defaultFormat === 'plaintext' ? 'Plain Text' : 'Rich Text'} note created`);
+    driveSyncEngine.triggerAutoSync();
   };
 
   const pendingUpdatesRef = useRef({});
@@ -1031,6 +1032,7 @@ export const EditorLayout = ({
     pendingUpdatesRef.current = {};
     await performSave(toSave);
     success('Note saved');
+    driveSyncEngine.triggerAutoSync();
   }, [performSave, success]);
 
   // Active note formatting mode ('Markdown' | 'Rich Text' | 'Plain Text')

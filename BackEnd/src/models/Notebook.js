@@ -70,3 +70,4 @@ notebookSchema.index({ userId: 1, name: 1 });
 const Notebook = mongoose.model('Notebook', notebookSchema);
 
 module.exports = Notebook;
+

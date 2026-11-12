@@ -44,6 +44,23 @@ const environment = {
     clientId: (process.env.GOOGLE_CLIENT_ID || '').replace(/["'\s]/g, '').trim()
   },
 
+  googleDrive: {
+    clientId: (process.env.GOOGLE_DRIVE_CLIENT_ID || process.env.GOOGLE_CLIENT_ID || '').replace(/["'\s]/g, '').trim(),
+    clientSecret: (process.env.GOOGLE_DRIVE_CLIENT_SECRET || '').replace(/["'\s]/g, '').trim(),
+    redirectUri: (
+      process.env.GOOGLE_DRIVE_REDIRECT_URI ||
+      (process.env.NODE_ENV === 'production'
+        ? 'https://notes-making-app-uos3.onrender.com/api/storage/google/callback'
+        : 'http://localhost:5001/api/storage/google/callback')
+    ).replace(/["'\s]/g, '').trim()
+  },
+
+  storage: {
+    encryptionKey: (process.env.STORAGE_ENCRYPTION_KEY || process.env.JWT_SECRET || 'notenest_storage_encryption_key_secure_2026')
+      .replace(/["'\s]/g, '')
+      .trim()
+  },
+
   gemini: {
     get apiKey() {
       return (process.env.GEMINI_API_KEY || '').replace(/["'\s]/g, '').trim();

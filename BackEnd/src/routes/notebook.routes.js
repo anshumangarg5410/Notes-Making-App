@@ -24,3 +24,4 @@ router.route('/:id/sections')
   .post(notebookController.createNotebookSection);
 
 module.exports = router;
+

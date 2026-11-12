@@ -18,3 +18,4 @@ router.put('/:id/move', sectionController.moveSection);
 router.get('/:id/notes', sectionController.getSectionNotes);
 
 module.exports = router;
+

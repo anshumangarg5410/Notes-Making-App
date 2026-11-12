@@ -19,6 +19,7 @@ const exportRoutes = require('./routes/export.routes');
 const syncRoutes = require('./routes/sync.routes');
 const contactRoutes = require('./routes/contact.routes');
 const aiDrawingRoutes = require('./routes/aiDrawing.routes');
+const storageRoutes = require('./routes/storage.routes');
 const errorHandler = require('./middleware/errorHandler');
 
 const app = express();
@@ -82,6 +83,7 @@ app.use('/api/export', exportRoutes);
 app.use('/api/sync', syncRoutes);
 app.use('/api/contact', contactRoutes);
 app.use('/api/drawing', aiDrawingRoutes);
+app.use('/api/storage', storageRoutes);
 
 // Fallback for 404 Not Found on undefined API routes
 app.use('/api/*', (req, res) => {

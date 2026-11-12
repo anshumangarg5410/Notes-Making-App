@@ -12,12 +12,16 @@ import { notebookService } from '../../services/notebookService';
 import { offlineService, db } from '../../services/db';
 import { useToast } from '../../context/ToastContext';
 import { useTheme } from '../../context/ThemeContext';
+import { useAuth } from '../../context/AuthContext';
 import { useEditorSettings } from '../../context/EditorSettingsContext';
 import { RotateCcw, Trash2, FileText, Plus, Book, Bookmark, Layers } from 'lucide-react';
 import { NotebookModal } from '../notebooks/NotebookModal';
 import { SectionModal } from '../notebooks/SectionModal';
 import { MoveSectionModal } from '../notebooks/MoveSectionModal';
 import { MoveNoteModal } from '../notebooks/MoveNoteModal';
+import StorageOnboardingModal from '../storage/StorageOnboardingModal';
+import storageService from '../../services/storageService';
+import driveSyncEngine from '../../services/driveSyncEngine';
 import websiteLogo from '../../assets/shared/logo/websiteLogo.png';
 import './editorTheme.css';
 
@@ -29,6 +33,7 @@ export const EditorLayout = ({
   onNavigateDashboard,
   onOpenSettings
 }) => {
+  const { user } = useAuth();
   const { success, error: toastError, info } = useToast();
   const { isDark } = useTheme();
   const { defaultFormat, setDefaultFormat, autoSaveEnabled, autoSaveIntervalMs } = useEditorSettings();
@@ -84,6 +89,68 @@ export const EditorLayout = ({
   // Debounce save ref
   const saveTimeoutRef = useRef(null);
   const editorInstanceRef = useRef(null);
+
+  // Storage Onboarding State
+  const [showStorageOnboarding, setShowStorageOnboarding] = useState(false);
+
+  // Check URL for Google OAuth callback parameters
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const urlParams = new URLSearchParams(window.location.search);
+    const storageConnected = urlParams.get('storage_connected');
+    const storageError = urlParams.get('storage_error');
+
+    if (storageConnected === 'true') {
+      window.history.replaceState({}, document.title, window.location.pathname);
+      offlineService.setStorageMeta('storage_provider', 'google-drive');
+      offlineService.setStorageMeta('onboarding_completed', true);
+      success('Google Drive connected! Initializing cloud synchronization...');
+      driveSyncEngine.syncNow().then((res) => {
+        if (res.success) {
+          success(`Google Drive synchronized successfully (${res.syncedCount || 0} items updated).`);
+        }
+      });
+    } else if (storageError) {
+      window.history.replaceState({}, document.title, window.location.pathname);
+      toastError(`Google Drive connection failed: ${storageError}`);
+    }
+  }, [success, toastError]);
+
+  // Check storage onboarding completion for authenticated users
+  useEffect(() => {
+    const checkOnboarding = async () => {
+      if (!user) return;
+      try {
+        const localDone = await offlineService.getStorageMeta('onboarding_completed');
+        if (localDone === true) return;
+
+        if (navigator.onLine) {
+          const res = await storageService.getPreferences();
+          if (res.success && res.data) {
+            if (res.data.onboardingCompleted) {
+              await offlineService.setStorageMeta('onboarding_completed', true);
+              await offlineService.setStorageMeta('storage_provider', res.data.provider || 'local');
+              return;
+            }
+          }
+        }
+
+        setShowStorageOnboarding(true);
+      } catch (err) {
+        console.warn('Storage onboarding check error:', err);
+      }
+    };
+
+    checkOnboarding();
+  }, [user]);
+
+  // Start background auto-sync engine
+  useEffect(() => {
+    driveSyncEngine.startAutoSync(60000);
+    return () => {
+      driveSyncEngine.stopAutoSync();
+    };
+  }, []);
 
   // Monitor network connectivity
   useEffect(() => {
@@ -1335,7 +1402,13 @@ export const EditorLayout = ({
           onClose={() => setActiveNav('all')}
           notes={notes}
           folders={folders}
+          notebooks={notebooks}
+          sections={sections}
           stats={stats}
+          onDataChanged={async () => {
+            await loadNotebooks();
+            await loadNotes();
+          }}
         />
       ) : (
         <>
@@ -1624,6 +1697,22 @@ export const EditorLayout = ({
         note={moveNoteModalState.note}
         notebooks={notebooks}
         onMove={handleMoveNoteSubmit}
+      />
+
+      {/* First-Time Storage Onboarding Modal */}
+      <StorageOnboardingModal
+        isOpen={showStorageOnboarding}
+        user={user}
+        onComplete={async ({ provider }) => {
+          setShowStorageOnboarding(false);
+          success(
+            provider === 'google-drive'
+              ? 'Google Drive synchronization configured.'
+              : 'NoteNest Local Storage active. Your notebooks remain private on this device.'
+          );
+          await loadNotebooks();
+          await loadNotes();
+        }}
       />
     </div>
   );

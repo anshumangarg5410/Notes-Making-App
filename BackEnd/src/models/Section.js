@@ -66,3 +66,4 @@ sectionSchema.index({ userId: 1, notebookId: 1, name: 1 });
 const Section = mongoose.model('Section', sectionSchema);
 
 module.exports = Section;
+

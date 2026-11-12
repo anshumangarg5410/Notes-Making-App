@@ -812,9 +812,13 @@ export const EditorSidebar = ({
       }`}>
         {/* Storage Widget matching reference */}
         {!isCollapsed && (
-          <div className={`rounded-[4px] p-2.5 space-y-2 border ${
-            isDark ? 'bg-[#171722] border-[#242436]' : 'bg-[#F7F5FC] border-[#EAE6F3]'
-          }`}>
+          <div
+            onClick={() => onOpenSettings?.()}
+            title="Click to view Storage and Sync Settings"
+            className={`cursor-pointer rounded-[4px] p-2.5 space-y-2 border transition-colors ${
+              isDark ? 'bg-[#171722] border-[#242436] hover:border-[#383a52]' : 'bg-[#F7F5FC] border-[#EAE6F3] hover:border-[#D1C9E8]'
+            }`}
+          >
             <div className="flex items-center justify-between">
               <div className={`flex items-center gap-1.5 font-medium text-[11px] ${
                 isDark ? 'text-gray-300' : 'text-[#374151]'

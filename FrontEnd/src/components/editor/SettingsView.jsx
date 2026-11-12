@@ -22,21 +22,31 @@ import {
   Key,
   Database,
   Trash2,
-  FileText
+  FileText,
+  HardDrive,
+  CheckCircle2,
+  AlertCircle,
+  Upload,
+  ExternalLink
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useTheme } from '../../context/ThemeContext';
 import { useToast } from '../../context/ToastContext';
 import { useEditorSettings } from '../../context/EditorSettingsContext';
 import { authService } from '../../services/authService';
-import { offlineService } from '../../services/db';
+import { offlineService, db } from '../../services/db';
+import storageService from '../../services/storageService';
+import driveSyncEngine from '../../services/driveSyncEngine';
 import api from '../../services/api';
 
 export const SettingsView = ({
   onClose,
   notes = [],
   folders = [],
-  stats = {}
+  notebooks = [],
+  sections = [],
+  stats = {},
+  onDataChanged
 }) => {
   const { user, updateUser, logout } = useAuth();
   const { theme, setTheme, isDark, accentColor, setAccentColor } = useTheme();
@@ -58,6 +68,15 @@ export const SettingsView = ({
   } = useEditorSettings();
 
   const [activeSection, setActiveSection] = useState('account');
+
+  // Storage Architecture & Google Drive State
+  const [storageProvider, setStorageProvider] = useState('local');
+  const [driveStatus, setDriveStatus] = useState({ connected: false, email: '', lastSyncedAt: null });
+  const [pendingSyncCount, setPendingSyncCount] = useState(0);
+  const [showDisconnectConfirm, setShowDisconnectConfirm] = useState(false);
+  const [isDisconnecting, setIsDisconnecting] = useState(false);
+  const [isImporting, setIsImporting] = useState(false);
+  const importInputRef = useRef(null);
 
   // Profile Edit State
   const [isEditingProfile, setIsEditingProfile] = useState(false);
@@ -143,6 +162,35 @@ export const SettingsView = ({
     checkStorage();
     return () => { isMounted = false; };
   }, [storageInfo.usedFormatted]);
+
+  // Load storage preferences & Google Drive status
+  useEffect(() => {
+    let isMounted = true;
+    const loadStorageState = async () => {
+      try {
+        const localProv = await offlineService.getStorageMeta('storage_provider', 'local');
+        if (isMounted) setStorageProvider(localProv);
+
+        const count = await db.syncQueue.count();
+        if (isMounted) setPendingSyncCount(count);
+
+        if (navigator.onLine) {
+          const res = await storageService.getPreferences();
+          if (isMounted && res.success && res.data) {
+            setStorageProvider(res.data.provider || localProv);
+            if (res.data.googleDrive) {
+              setDriveStatus(res.data.googleDrive);
+            }
+          }
+        }
+      } catch (err) {
+        console.warn('loadStorageState error:', err);
+      }
+    };
+
+    loadStorageState();
+    return () => { isMounted = false; };
+  }, []);
 
   // Section Refs for smooth scrolling
   const sectionRefs = {
@@ -239,42 +287,122 @@ export const SettingsView = ({
     }
   };
 
-  // Sync Now handler
+  // Sync Now handler (Google Drive or Local IndexedDB Queue)
   const handleSyncNow = async () => {
     setIsSyncing(true);
     try {
-      await offlineService.processSyncQueue(api);
-      success('All changes synchronized with MongoDB Atlas');
+      if (storageProvider === 'google-drive') {
+        const res = await driveSyncEngine.syncNow();
+        if (res.success) {
+          success(`Google Drive synchronized (${res.syncedCount || 0} items updated)`);
+          const count = await db.syncQueue.count();
+          setPendingSyncCount(count);
+          setDriveStatus((prev) => ({
+            ...prev,
+            lastSyncedAt: new Date().toISOString()
+          }));
+        } else {
+          toastError(res.message || res.error || 'Failed to sync with Google Drive');
+        }
+      } else {
+        const res = await offlineService.processSyncQueue(api);
+        success('Local storage queue synchronized');
+        setPendingSyncCount(res.pending || 0);
+      }
     } catch (err) {
-      toastError('Sync completed with local database');
+      toastError(err.message || 'Sync failed');
     } finally {
       setIsSyncing(false);
     }
   };
 
-  // Download JSON Backup
-  const handleDownloadBackup = () => {
-    const backupData = {
-      app: 'NoteNest',
-      version: '1.2.0',
-      exportedAt: new Date().toISOString(),
-      user: { name: displayName, email: user?.email },
-      notesCount: notes.length,
-      foldersCount: folders.length,
-      notes,
-      folders
-    };
+  // Connect Google Drive
+  const handleConnectDrive = async () => {
+    try {
+      const res = await storageService.getGoogleConnectUrl();
+      if (res.success && res.data?.authUrl) {
+        window.location.href = res.data.authUrl;
+      } else {
+        toastError('Unable to generate Google authorization link');
+      }
+    } catch (err) {
+      toastError(err.message || 'Failed to connect Google Drive');
+    }
+  };
 
-    const blob = new Blob([JSON.stringify(backupData, null, 2)], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `notenest-backup-${new Date().toISOString().slice(0, 10)}.json`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-    success('Workspace backup exported successfully');
+  // Disconnect Google Drive
+  const handleDisconnectDrive = async () => {
+    setIsDisconnecting(true);
+    try {
+      await storageService.disconnectGoogle();
+      await offlineService.setStorageMeta('storage_provider', 'local');
+      setStorageProvider('local');
+      setDriveStatus({ connected: false, email: '', lastSyncedAt: null });
+      setShowDisconnectConfirm(false);
+      success('Google Drive disconnected. Storage mode set to NoteNest Local Storage.');
+    } catch (err) {
+      toastError(err.message || 'Failed to disconnect Google Drive');
+    } finally {
+      setIsDisconnecting(false);
+    }
+  };
+
+  // Switch storage mode
+  const handleSwitchStorageMode = async (target) => {
+    if (target === storageProvider) return;
+    if (target === 'google-drive' && !driveStatus.connected) {
+      handleConnectDrive();
+      return;
+    }
+    try {
+      await storageService.updatePreferences({ provider: target });
+      await offlineService.setStorageMeta('storage_provider', target);
+      setStorageProvider(target);
+      success(`Switched storage mode to ${target === 'google-drive' ? 'Google Drive' : 'NoteNest Local Storage'}`);
+    } catch (err) {
+      toastError(err.message || 'Failed to switch storage mode');
+    }
+  };
+
+  // Download complete .notenest.json backup
+  const handleDownloadFullBackup = async () => {
+    try {
+      const backupObj = await offlineService.exportFullBackup();
+      const blob = new Blob([JSON.stringify(backupObj, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `notenest-backup-${new Date().toISOString().slice(0, 10)}.notenest.json`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      success('Full workspace backup exported successfully (.notenest.json)');
+    } catch (err) {
+      toastError('Failed to export backup: ' + err.message);
+    }
+  };
+
+  // Import backup file (.json or .notenest.json)
+  const handleImportBackup = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setIsImporting(true);
+    try {
+      const text = await file.text();
+      const parsed = JSON.parse(text);
+      const result = await offlineService.importFullBackup(parsed);
+      success(`Backup restored: ${result.importedNotes} notes, ${result.importedNotebooks} notebooks, ${result.importedSections} sections.`);
+      if (onDataChanged) {
+        await onDataChanged();
+      }
+    } catch (err) {
+      console.error('Import backup error:', err);
+      toastError('Import failed: ' + (err.message || 'Invalid backup file structure'));
+    } finally {
+      setIsImporting(false);
+      if (e.target) e.target.value = '';
+    }
   };
 
   // Navigation menu items matching reference
@@ -780,53 +908,95 @@ export const SettingsView = ({
             </div>
           </div>
 
-          {/* CARD 4: Storage */}
+          {/* CARD 4: Storage Architecture */}
           <div
             ref={sectionRefs.storage}
             className={`rounded-2xl p-6 shadow-sm space-y-5 border ${isDark ? 'bg-[#141522] border-[#222336]' : 'bg-white border-[#EAE6F4]'
               }`}
           >
             <div className={`flex items-center gap-2.5 pb-4 border-b ${isDark ? 'border-[#1f2032]' : 'border-[#F0ECF8]'}`}>
-              <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${isDark ? 'bg-purple-900/30 text-purple-400' : 'bg-[#EDE9FE] text-[#7C3AED]'
+              <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${isDark ? 'bg-pink-500/20 text-pink-400' : 'bg-pink-50 text-pink-600'
                 }`}>
-                <Cloud className="w-4 h-4" />
+                <HardDrive className="w-4 h-4" />
               </div>
               <div>
-                <h2 className={`text-sm font-semibold ${isDark ? 'text-gray-100' : 'text-[#181326]'}`}>Storage & Cloud Usage</h2>
-                <p className={`text-[11px] ${isDark ? 'text-gray-400' : 'text-[#6B7280]'}`}>Manage local IndexedDB and Cloudinary CDN storage.</p>
+                <h2 className={`text-sm font-semibold ${isDark ? 'text-gray-100' : 'text-[#181326]'}`}>Storage Architecture</h2>
+                <p className={`text-[11px] ${isDark ? 'text-gray-400' : 'text-[#6B7280]'}`}>User-selectable local-first storage with optional Google Drive cloud sync.</p>
               </div>
             </div>
 
-            <div className="space-y-2">
-              <div className="flex items-center justify-between text-xs">
-                <span className={`font-medium ${isDark ? 'text-gray-300' : 'text-[#374151]'}`}>Workspace Cloud Storage</span>
-                <span className={`font-semibold ${isDark ? 'text-purple-400' : 'text-[#7C3AED]'}`}>
-                  {storageInfo.usedFormatted} of 512 MB used ({storageInfo.percentage})
-                </span>
+            {/* Storage Mode Badge & Details */}
+            <div className={`p-4 rounded-xl border flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 ${
+              storageProvider === 'google-drive'
+                ? isDark ? 'bg-emerald-950/20 border-emerald-500/30' : 'bg-emerald-50/50 border-emerald-200'
+                : isDark ? 'bg-pink-950/15 border-pink-500/30' : 'bg-pink-50/50 border-pink-200'
+            }`}>
+              <div className="space-y-1">
+                <div className="flex items-center gap-2">
+                  <span className={`w-2 h-2 rounded-full ${storageProvider === 'google-drive' ? 'bg-emerald-400 animate-pulse' : 'bg-pink-400'}`} />
+                  <span className="text-xs font-bold text-white">
+                    {storageProvider === 'google-drive' ? 'Google Drive Cloud Sync Active' : 'NoteNest Local Storage (IndexedDB)'}
+                  </span>
+                </div>
+                <p className={`text-[11px] leading-relaxed ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>
+                  {storageProvider === 'google-drive' ? (
+                    <>Connected as <span className="font-medium text-emerald-400">{driveStatus.email || user?.email || 'Google Account'}</span>. Syncs to your dedicated <code className="px-1 py-0.5 rounded bg-black/30 text-white font-mono text-[10px]">NoteNest</code> folder.</>
+                  ) : (
+                    <>All notebooks and notes are stored strictly on this device inside IndexedDB. Fast offline editing with zero cloud transmission.</>
+                  )}
+                </p>
               </div>
-              <div className={`w-full h-2 rounded-full overflow-hidden ${isDark ? 'bg-[#212234]' : 'bg-[#E5E1F0]'}`}>
-                <div
-                  className="h-full rounded-full transition-all duration-300"
-                  style={{
-                    width: storageInfo.progressWidth,
-                    background: 'linear-gradient(to right, var(--accent, #a855f7), #6366f1)'
-                  }}
-                />
+
+              <div className="flex items-center gap-2 flex-shrink-0">
+                {storageProvider === 'google-drive' ? (
+                  <>
+                    <button
+                      type="button"
+                      onClick={() => handleSwitchStorageMode('local')}
+                      className={`px-3 py-1.5 rounded-lg border text-xs font-medium transition-colors ${
+                        isDark ? 'border-[#2f3148] hover:bg-[#202235] text-gray-300' : 'border-gray-300 hover:bg-gray-100 text-gray-700'
+                      }`}
+                    >
+                      Use Local Only
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setShowDisconnectConfirm(true)}
+                      className="px-3 py-1.5 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/30 text-xs font-medium transition-colors"
+                    >
+                      Disconnect
+                    </button>
+                  </>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={handleConnectDrive}
+                    className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-medium shadow-sm transition-colors"
+                  >
+                    <Cloud className="w-3.5 h-3.5" />
+                    <span>Connect Google Drive</span>
+                  </button>
+                )}
               </div>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2">
+            {/* Storage metrics breakdown */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-1">
               <div className={`p-3 rounded-xl border ${isDark ? 'bg-[#1a1b2c] border-[#26273c]' : 'bg-[#F8F7FD] border-[#EAE6F4]'}`}>
-                <div className={`text-[10px] ${isDark ? 'text-gray-400' : 'text-[#6B7280]'}`}>Cloud Database</div>
-                <div className={`text-sm font-bold mt-1 ${isDark ? 'text-gray-100' : 'text-[#181326]'}`}>{notes.length} Notes</div>
-              </div>
-              <div className={`p-3 rounded-xl border ${isDark ? 'bg-[#1a1b2c] border-[#26273c]' : 'bg-[#F8F7FD] border-[#EAE6F4]'}`}>
-                <div className={`text-[10px] ${isDark ? 'text-gray-400' : 'text-[#6B7280]'}`}>IndexedDB Cache</div>
+                <div className={`text-[10px] ${isDark ? 'text-gray-400' : 'text-[#6B7280]'}`}>IndexedDB Storage</div>
                 <div className={`text-sm font-bold mt-1 ${isDark ? 'text-gray-100' : 'text-[#181326]'}`}>{localCacheSize}</div>
               </div>
               <div className={`p-3 rounded-xl border ${isDark ? 'bg-[#1a1b2c] border-[#26273c]' : 'bg-[#F8F7FD] border-[#EAE6F4]'}`}>
-                <div className={`text-[10px] ${isDark ? 'text-gray-400' : 'text-[#6B7280]'}`}>Media CDN</div>
-                <div className={`text-sm font-bold mt-1 ${isDark ? 'text-gray-100' : 'text-[#181326]'}`}>Cloudinary Active</div>
+                <div className={`text-[10px] ${isDark ? 'text-gray-400' : 'text-[#6B7280]'}`}>Notebooks</div>
+                <div className={`text-sm font-bold mt-1 ${isDark ? 'text-gray-100' : 'text-[#181326]'}`}>{notebooks.length} Notebooks</div>
+              </div>
+              <div className={`p-3 rounded-xl border ${isDark ? 'bg-[#1a1b2c] border-[#26273c]' : 'bg-[#F8F7FD] border-[#EAE6F4]'}`}>
+                <div className={`text-[10px] ${isDark ? 'text-gray-400' : 'text-[#6B7280]'}`}>Sections</div>
+                <div className={`text-sm font-bold mt-1 ${isDark ? 'text-gray-100' : 'text-[#181326]'}`}>{sections.length} Sections</div>
+              </div>
+              <div className={`p-3 rounded-xl border ${isDark ? 'bg-[#1a1b2c] border-[#26273c]' : 'bg-[#F8F7FD] border-[#EAE6F4]'}`}>
+                <div className={`text-[10px] ${isDark ? 'text-gray-400' : 'text-[#6B7280]'}`}>Total Notes</div>
+                <div className={`text-sm font-bold mt-1 ${isDark ? 'text-gray-100' : 'text-[#181326]'}`}>{notes.length} Notes</div>
               </div>
             </div>
           </div>
@@ -843,19 +1013,22 @@ export const SettingsView = ({
                 <RefreshCw className="w-4 h-4" />
               </div>
               <div>
-                <h2 className={`text-sm font-semibold ${isDark ? 'text-gray-100' : 'text-[#181326]'}`}>Sync & Backup</h2>
-                <p className={`text-[11px] ${isDark ? 'text-gray-400' : 'text-[#6B7280]'}`}>Synchronize workspace state with MongoDB Atlas.</p>
+                <h2 className={`text-sm font-semibold ${isDark ? 'text-gray-100' : 'text-[#181326]'}`}>Sync & Cloud Status</h2>
+                <p className={`text-[11px] ${isDark ? 'text-gray-400' : 'text-[#6B7280]'}`}>Synchronize workspace state across your devices.</p>
               </div>
             </div>
 
             <div className="flex items-center justify-between flex-wrap gap-4">
               <div>
                 <div className={`text-xs font-semibold flex items-center gap-2 ${isDark ? 'text-gray-200' : 'text-[#181326]'}`}>
-                  <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-                  <span>Online & Synchronized</span>
+                  <span className={`w-2 h-2 rounded-full ${navigator.onLine ? 'bg-emerald-400 animate-pulse' : 'bg-amber-400'}`} />
+                  <span>{navigator.onLine ? 'Online & Ready' : 'Offline Mode (Local Storage Active)'}</span>
                 </div>
                 <div className={`text-[11px] mt-0.5 ${isDark ? 'text-gray-400' : 'text-[#6B7280]'}`}>
-                  Last synchronized: Just now • 0 pending offline operations
+                  {driveStatus.lastSyncedAt
+                    ? `Last synchronized: ${new Date(driveStatus.lastSyncedAt).toLocaleString()}`
+                    : 'Last synchronized: Just now'}{' '}
+                  • {pendingSyncCount} pending change{pendingSyncCount === 1 ? '' : 's'}
                 </div>
               </div>
 
@@ -864,7 +1037,7 @@ export const SettingsView = ({
                   type="button"
                   onClick={handleSyncNow}
                   disabled={isSyncing}
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-purple-600 hover:bg-purple-500 text-white text-xs font-medium transition-colors disabled:opacity-50"
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-pink-600 hover:bg-pink-500 text-white text-xs font-medium transition-colors disabled:opacity-50"
                 >
                   <RefreshCw className={`w-3.5 h-3.5 ${isSyncing ? 'animate-spin' : ''}`} />
                   <span>{isSyncing ? 'Syncing...' : 'Sync Now'}</span>
@@ -872,13 +1045,13 @@ export const SettingsView = ({
 
                 <button
                   type="button"
-                  onClick={handleDownloadBackup}
+                  onClick={handleDownloadFullBackup}
                   className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-xs font-medium transition-colors ${isDark
                     ? 'border-[#2d2e44] bg-[#1b1c2c] hover:bg-[#232438] text-gray-200'
                     : 'border-[#E2DEEE] bg-white hover:bg-[#F9F8FD] text-[#374151]'
                     }`}
                 >
-                  <Download className={`w-3.5 h-3.5 ${isDark ? 'text-purple-400' : 'text-[#7C3AED]'}`} />
+                  <Download className={`w-3.5 h-3.5 ${isDark ? 'text-pink-400' : 'text-[#7C3AED]'}`} />
                   <span>Export Backup</span>
                 </button>
               </div>
@@ -903,8 +1076,7 @@ export const SettingsView = ({
             </div>
 
             <p className={`text-xs leading-relaxed ${isDark ? 'text-gray-300' : 'text-[#374151]'}`}>
-              NoteNest stores your active documents locally in IndexedDB. You can create, edit, search, and delete
-              notes with zero internet connection. When connection is restored, pending changes are auto-merged.
+              NoteNest stores all notebooks, sections, notes, and rich-text canvas drawings directly in IndexedDB. You can create, edit, reorder, and search documents with zero internet connection. When connection is available, pending operations synchronize automatically.
             </p>
           </div>
 
@@ -921,11 +1093,45 @@ export const SettingsView = ({
               </div>
               <div>
                 <h2 className={`text-sm font-semibold ${isDark ? 'text-gray-100' : 'text-[#181326]'}`}>Import & Export</h2>
-                <p className={`text-[11px] ${isDark ? 'text-gray-400' : 'text-[#6B7280]'}`}>Portability for all your notes and markdown files.</p>
+                <p className={`text-[11px] ${isDark ? 'text-gray-400' : 'text-[#6B7280]'}`}>Full portability for all your notebooks, sections, and notes.</p>
               </div>
             </div>
 
             <div className="flex items-center gap-3 flex-wrap">
+              {/* Hidden file input for backup restore */}
+              <input
+                type="file"
+                ref={importInputRef}
+                onChange={handleImportBackup}
+                accept=".json,.notenest.json"
+                className="hidden"
+              />
+
+              <button
+                type="button"
+                onClick={handleDownloadFullBackup}
+                className={`flex items-center gap-2 px-4 py-2 rounded-xl border text-xs font-medium transition-colors ${isDark
+                  ? 'bg-pink-600/20 hover:bg-pink-600/30 border-pink-500/40 text-pink-300'
+                  : 'bg-pink-50 hover:bg-pink-100 border-pink-200 text-pink-700'
+                  }`}
+              >
+                <Download className="w-4 h-4 text-pink-400" />
+                <span>Export Complete Backup (.notenest.json)</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => importInputRef.current?.click()}
+                disabled={isImporting}
+                className={`flex items-center gap-2 px-4 py-2 rounded-xl border text-xs font-medium transition-colors disabled:opacity-50 ${isDark
+                  ? 'bg-[#1b1c2c] hover:bg-[#25263c] border-[#2d2e44] text-gray-200'
+                  : 'bg-white hover:bg-[#F9F8FD] border-[#E2DEEE] text-[#374151]'
+                  }`}
+              >
+                <Upload className="w-4 h-4 text-emerald-400" />
+                <span>{isImporting ? 'Restoring Backup...' : 'Import Backup (.notenest.json)'}</span>
+              </button>
+
               <button
                 type="button"
                 onClick={handleDownloadBackup}
@@ -1093,6 +1299,46 @@ export const SettingsView = ({
           </div>
         </div>
       </div>
+
+      {/* Disconnect Google Drive Confirmation Modal */}
+      {showDisconnectConfirm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
+          <div className="w-full max-w-md bg-[#161726] border border-[#2b2d42] rounded-2xl p-6 text-white shadow-2xl space-y-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-red-500/15 border border-red-500/30 flex items-center justify-center text-red-400">
+                <AlertCircle className="w-5 h-5" />
+              </div>
+              <div>
+                <h3 className="text-base font-semibold">Disconnect Google Drive?</h3>
+                <p className="text-xs text-gray-400">Your existing Drive notes will remain safe.</p>
+              </div>
+            </div>
+
+            <p className="text-xs text-gray-300 leading-relaxed">
+              Disconnecting Google Drive will switch NoteNest to <strong>Local Storage</strong>. Your notes will remain stored locally on this device in IndexedDB, but future changes will no longer synchronize with your Google Drive account.
+            </p>
+
+            <div className="flex items-center justify-end gap-2.5 pt-2">
+              <button
+                type="button"
+                onClick={() => setShowDisconnectConfirm(false)}
+                disabled={isDisconnecting}
+                className="px-4 py-2 rounded-xl border border-[#2f3148] hover:bg-[#202235] text-xs font-medium text-gray-300 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleDisconnectDrive}
+                disabled={isDisconnecting}
+                className="px-4 py-2 rounded-xl bg-red-600 hover:bg-red-500 text-white text-xs font-semibold shadow-sm transition-colors disabled:opacity-50"
+              >
+                {isDisconnecting ? 'Disconnecting...' : 'Yes, Disconnect'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

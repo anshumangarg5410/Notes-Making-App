@@ -2,7 +2,7 @@ import Dexie from 'dexie';
 
 export const db = new Dexie('NoteNestDB');
 
-// Define database schema
+// Define database schema history
 db.version(1).stores({
   notes: '_id, id, title, isPinned, isFavorite, isDeleted, isArchived, updatedAt, syncStatus',
   folders: 'id, name',
@@ -17,7 +17,52 @@ db.version(2).stores({
   syncQueue: '++id, noteId, action, timestamp'
 });
 
+// Version 3: Full Local-First Architecture with Cloud Sync Metadata & Storage Preferences
+db.version(3).stores({
+  notes: '_id, id, title, notebookId, sectionId, isPinned, isFavorite, isDeleted, isArchived, updatedAt, lastSyncedAt, providerFileId, syncStatus',
+  folders: 'id, name',
+  notebooks: '_id, id, name, order, isDeleted, updatedAt, lastSyncedAt, providerFileId',
+  sections: '_id, id, notebookId, name, order, isDeleted, updatedAt, lastSyncedAt, providerFileId',
+  syncQueue: '++id, recordType, recordId, action, timestamp',
+  storageMeta: 'key, value'
+});
+
 export const offlineService = {
+  // Storage Meta helpers
+  async getStorageMeta(key, defaultValue = null) {
+    try {
+      const record = await db.storageMeta.get(key);
+      return record ? record.value : defaultValue;
+    } catch (err) {
+      console.warn('Dexie getStorageMeta error:', err);
+      return defaultValue;
+    }
+  },
+
+  async setStorageMeta(key, value) {
+    try {
+      await db.storageMeta.put({ key, value, updatedAt: new Date().toISOString() });
+      return value;
+    } catch (err) {
+      console.warn('Dexie setStorageMeta error:', err);
+      return null;
+    }
+  },
+
+  async getAllStorageMeta() {
+    try {
+      const items = await db.storageMeta.toArray();
+      const meta = {};
+      items.forEach((item) => {
+        meta[item.key] = item.value;
+      });
+      return meta;
+    } catch (err) {
+      console.warn('Dexie getAllStorageMeta error:', err);
+      return {};
+    }
+  },
+
   // Get all cached notes from local Dexie database
   async getLocalNotes(params = {}) {
     try {
@@ -49,7 +94,7 @@ export const offlineService = {
   // Save or update a note locally
   async saveLocalNote(noteData, isPendingSync = true) {
     try {
-      const id = noteData._id || noteData.id || `local_${Date.now()}`;
+      const id = noteData._id || noteData.id || `local_note_${Date.now()}`;
       const record = {
         ...noteData,
         _id: id,
@@ -62,7 +107,9 @@ export const offlineService = {
 
       if (isPendingSync) {
         await db.syncQueue.add({
-          noteId: id,
+          recordType: 'note',
+          recordId: id,
+          noteId: id, // backwards compatibility
           action: 'upsert',
           payload: record,
           timestamp: Date.now()
@@ -76,15 +123,16 @@ export const offlineService = {
     }
   },
 
-  // Bulk cache server notes into local Dexie
+  // Bulk cache notes into local Dexie
   async cacheServerNotes(notes = []) {
     try {
       if (!Array.isArray(notes) || notes.length === 0) return;
       await db.notes.bulkPut(
         notes.map((n) => ({
           ...n,
-          id: n._id,
-          syncStatus: 'synced'
+          id: n._id || n.id,
+          _id: n._id || n.id,
+          syncStatus: n.syncStatus || 'synced'
         }))
       );
     } catch (err) {
@@ -108,6 +156,8 @@ export const offlineService = {
       }
 
       await db.syncQueue.add({
+        recordType: 'note',
+        recordId: id,
         noteId: id,
         action: permanent ? 'permanentDelete' : 'delete',
         payload: { id },
@@ -130,6 +180,8 @@ export const offlineService = {
       }
 
       await db.syncQueue.add({
+        recordType: 'note',
+        recordId: id,
         noteId: id,
         action: 'restore',
         payload: { id },
@@ -153,7 +205,7 @@ export const offlineService = {
     }
   },
 
-  // Sync queued changes with backend
+  // Process sync queue for notes
   async processSyncQueue(apiClient) {
     if (!navigator.onLine) return { synced: 0, pending: await db.syncQueue.count() };
 
@@ -164,22 +216,23 @@ export const offlineService = {
       let syncedCount = 0;
       for (const item of items) {
         try {
-          if (item.action === 'upsert') {
-            if (item.payload._id && !item.payload._id.startsWith('local_')) {
-              await apiClient.updateNote(item.payload._id, item.payload);
+          if (item.action === 'upsert' && item.payload) {
+            const recordId = item.payload._id || item.payload.id;
+            if (recordId && !recordId.startsWith('local_')) {
+              await apiClient.updateNote(recordId, item.payload);
             } else {
               const res = await apiClient.createNote(item.payload);
               if (res.data?._id) {
-                await db.notes.delete(item.payload._id);
+                await db.notes.delete(recordId);
                 await db.notes.put({ ...res.data, syncStatus: 'synced' });
               }
             }
           } else if (item.action === 'delete') {
-            await apiClient.deleteNote(item.noteId);
+            await apiClient.deleteNote(item.recordId || item.noteId);
           } else if (item.action === 'restore') {
-            await apiClient.restoreNote(item.noteId);
+            await apiClient.restoreNote(item.recordId || item.noteId);
           } else if (item.action === 'permanentDelete') {
-            await apiClient.permanentDeleteNote(item.noteId);
+            await apiClient.permanentDeleteNote(item.recordId || item.noteId);
           }
           await db.syncQueue.delete(item.id);
           syncedCount++;
@@ -195,7 +248,7 @@ export const offlineService = {
     }
   },
 
-  // Folder offline caching helpers
+  // Folders helpers
   async getLocalFolders() {
     try {
       return await db.folders.toArray();
@@ -250,7 +303,7 @@ export const offlineService = {
     }
   },
 
-  // Get cached notebooks from local Dexie
+  // Notebooks helpers
   async getLocalNotebooks() {
     try {
       const all = await db.notebooks.filter((nb) => !nb.isDeleted).toArray();
@@ -276,11 +329,27 @@ export const offlineService = {
     }
   },
 
-  async saveLocalNotebook(notebookData) {
+  async saveLocalNotebook(notebookData, isPendingSync = true) {
     try {
-      const id = notebookData._id || notebookData.id || `nb_${Date.now()}`;
-      const record = { ...notebookData, _id: id, id };
+      const id = notebookData._id || notebookData.id || `local_nb_${Date.now()}`;
+      const record = {
+        ...notebookData,
+        _id: id,
+        id,
+        updatedAt: notebookData.updatedAt || new Date().toISOString()
+      };
       await db.notebooks.put(record);
+
+      if (isPendingSync) {
+        await db.syncQueue.add({
+          recordType: 'notebook',
+          recordId: id,
+          action: 'upsert',
+          payload: record,
+          timestamp: Date.now()
+        });
+      }
+
       return record;
     } catch (err) {
       console.warn('Dexie saveLocalNotebook error:', err);
@@ -288,17 +357,34 @@ export const offlineService = {
     }
   },
 
-  async deleteLocalNotebook(id) {
+  async deleteLocalNotebook(id, isPendingSync = true) {
     try {
       if (id) {
-        await db.notebooks.delete(id);
+        const nb = await db.notebooks.get(id);
+        if (nb) {
+          nb.isDeleted = true;
+          nb.updatedAt = new Date().toISOString();
+          await db.notebooks.put(nb);
+        } else {
+          await db.notebooks.delete(id);
+        }
+
+        if (isPendingSync) {
+          await db.syncQueue.add({
+            recordType: 'notebook',
+            recordId: id,
+            action: 'delete',
+            payload: { id },
+            timestamp: Date.now()
+          });
+        }
       }
     } catch (err) {
       console.warn('Dexie deleteLocalNotebook error:', err);
     }
   },
 
-  // Get cached sections for a notebook
+  // Sections helpers
   async getLocalSections(notebookId) {
     try {
       if (!notebookId) return [];
@@ -327,11 +413,27 @@ export const offlineService = {
     }
   },
 
-  async saveLocalSection(sectionData) {
+  async saveLocalSection(sectionData, isPendingSync = true) {
     try {
-      const id = sectionData._id || sectionData.id || `sec_${Date.now()}`;
-      const record = { ...sectionData, _id: id, id };
+      const id = sectionData._id || sectionData.id || `local_sec_${Date.now()}`;
+      const record = {
+        ...sectionData,
+        _id: id,
+        id,
+        updatedAt: sectionData.updatedAt || new Date().toISOString()
+      };
       await db.sections.put(record);
+
+      if (isPendingSync) {
+        await db.syncQueue.add({
+          recordType: 'section',
+          recordId: id,
+          action: 'upsert',
+          payload: record,
+          timestamp: Date.now()
+        });
+      }
+
       return record;
     } catch (err) {
       console.warn('Dexie saveLocalSection error:', err);
@@ -339,14 +441,114 @@ export const offlineService = {
     }
   },
 
-  async deleteLocalSection(id) {
+  async deleteLocalSection(id, isPendingSync = true) {
     try {
       if (id) {
-        await db.sections.delete(id);
+        const sec = await db.sections.get(id);
+        if (sec) {
+          sec.isDeleted = true;
+          sec.updatedAt = new Date().toISOString();
+          await db.sections.put(sec);
+        } else {
+          await db.sections.delete(id);
+        }
+
+        if (isPendingSync) {
+          await db.syncQueue.add({
+            recordType: 'section',
+            recordId: id,
+            action: 'delete',
+            payload: { id },
+            timestamp: Date.now()
+          });
+        }
       }
     } catch (err) {
       console.warn('Dexie deleteLocalSection error:', err);
     }
+  },
+
+  // Export full backup of local database
+  async exportFullBackup() {
+    try {
+      const [notebooks, sections, notes, folders, storageMeta] = await Promise.all([
+        db.notebooks.toArray(),
+        db.sections.toArray(),
+        db.notes.toArray(),
+        db.folders.toArray(),
+        db.storageMeta.toArray()
+      ]);
+
+      const backup = {
+        version: 1,
+        exportedAt: new Date().toISOString(),
+        appName: 'NoteNest',
+        environment: 'Local-First Dexie Backup',
+        data: {
+          notebooks,
+          sections,
+          notes,
+          folders,
+          storageMeta
+        }
+      };
+
+      return backup;
+    } catch (err) {
+      console.error('Dexie exportFullBackup error:', err);
+      throw err;
+    }
+  },
+
+  // Import full backup into local database
+  async importFullBackup(backupObj) {
+    try {
+      if (!backupObj || !backupObj.data) {
+        throw new Error('Invalid backup file format: missing data container.');
+      }
+
+      const { notebooks = [], sections = [], notes = [], folders = [] } = backupObj.data;
+
+      if (notebooks.length > 0) {
+        await db.notebooks.bulkPut(notebooks);
+      }
+      if (sections.length > 0) {
+        await db.sections.bulkPut(sections);
+      }
+      if (notes.length > 0) {
+        await db.notes.bulkPut(notes);
+      }
+      if (folders.length > 0) {
+        await db.folders.bulkPut(folders);
+      }
+
+      return {
+        importedNotebooks: notebooks.length,
+        importedSections: sections.length,
+        importedNotes: notes.length,
+        importedFolders: folders.length
+      };
+    } catch (err) {
+      console.error('Dexie importFullBackup error:', err);
+      throw err;
+    }
+  },
+
+  // Clear all local data (for reset or logout)
+  async clearAllData() {
+    try {
+      await Promise.all([
+        db.notes.clear(),
+        db.folders.clear(),
+        db.notebooks.clear(),
+        db.sections.clear(),
+        db.syncQueue.clear(),
+        db.storageMeta.clear()
+      ]);
+    } catch (err) {
+      console.warn('Dexie clearAllData error:', err);
+    }
   }
 };
+
 

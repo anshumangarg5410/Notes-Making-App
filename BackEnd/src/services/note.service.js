@@ -4,7 +4,23 @@ const { logActivity } = require('../utils/activityLogger');
 
 class NoteService {
   async create(userId, noteData) {
-    const { title, content, plainText, tags, color, icon, isPinned, isFavorite, folderId, folder, drawings } = noteData;
+    const {
+      title,
+      content,
+      plainText,
+      tags,
+      color,
+      icon,
+      isPinned,
+      isFavorite,
+      notebookId,
+      sectionId,
+      notebook,
+      section,
+      folderId,
+      folder,
+      drawings
+    } = noteData;
 
     const text = plainText || (typeof content === 'string' ? content : '');
     const wordCount = text.trim() ? text.trim().split(/\s+/).length : 0;
@@ -16,8 +32,12 @@ class NoteService {
       content: content || '',
       plainText: text,
       tags: Array.isArray(tags) ? tags : [],
+      notebookId: notebookId || null,
+      sectionId: sectionId || null,
+      notebook: notebook?.trim() || '',
+      section: section?.trim() || '',
       folderId: folderId || null,
-      folder: folder?.trim() || '',
+      folder: folder?.trim() || (notebook?.trim() || ''),
       color: color || 'default',
       icon: icon || 'document',
       isPinned: Boolean(isPinned),
@@ -47,11 +67,21 @@ class NoteService {
       category,
       tag,
       color,
+      notebookId,
+      sectionId,
       filter = 'all',
       sortBy = 'updated_desc'
     } = query;
 
     const dbQuery = { userId };
+
+    if (notebookId) {
+      dbQuery.notebookId = notebookId;
+    }
+
+    if (sectionId) {
+      dbQuery.sectionId = sectionId;
+    }
 
     if (filter === 'trash') {
       dbQuery.isDeleted = true;
@@ -127,6 +157,10 @@ class NoteService {
       'content',
       'plainText',
       'tags',
+      'notebookId',
+      'sectionId',
+      'notebook',
+      'section',
       'folderId',
       'folder',
       'color',

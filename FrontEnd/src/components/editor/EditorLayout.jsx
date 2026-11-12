@@ -8,11 +8,16 @@ import { EditorStatusBar } from './EditorStatusBar';
 import { SettingsView } from './SettingsView';
 import { noteService } from '../../services/noteService';
 import { folderService } from '../../services/folderService';
+import { notebookService } from '../../services/notebookService';
 import { offlineService, db } from '../../services/db';
 import { useToast } from '../../context/ToastContext';
 import { useTheme } from '../../context/ThemeContext';
 import { useEditorSettings } from '../../context/EditorSettingsContext';
-import { RotateCcw, Trash2, FileText, Plus } from 'lucide-react';
+import { RotateCcw, Trash2, FileText, Plus, Book, Bookmark, Layers } from 'lucide-react';
+import { NotebookModal } from '../notebooks/NotebookModal';
+import { SectionModal } from '../notebooks/SectionModal';
+import { MoveSectionModal } from '../notebooks/MoveSectionModal';
+import { MoveNoteModal } from '../notebooks/MoveNoteModal';
 import websiteLogo from '../../assets/shared/logo/websiteLogo.png';
 import './editorTheme.css';
 
@@ -54,6 +59,19 @@ export const EditorLayout = ({
   const [folders, setFolders] = useState([]);
   const [stats, setStats] = useState({ totalNotes: 4, favorites: 1, trash: 0 });
   const [isLoading, setIsLoading] = useState(true);
+
+  // Notebook & Section hierarchy state
+  const [notebooks, setNotebooks] = useState([]);
+  const [selectedNotebookId, setSelectedNotebookId] = useState(null);
+  const [sections, setSections] = useState([]);
+  const [selectedSectionId, setSelectedSectionId] = useState(null);
+  const [notebookViewMode, setNotebookViewMode] = useState('sections'); // 'sections' or 'notes'
+
+  // Modal dialog states
+  const [notebookModalState, setNotebookModalState] = useState({ isOpen: false, isEdit: false, notebook: null });
+  const [sectionModalState, setSectionModalState] = useState({ isOpen: false, isEdit: false, section: null, notebookId: null });
+  const [moveSectionModalState, setMoveSectionModalState] = useState({ isOpen: false, section: null });
+  const [moveNoteModalState, setMoveNoteModalState] = useState({ isOpen: false, note: null });
 
   // Multi-Tab workspace state
   const [tabs, setTabs] = useState([]);
@@ -361,10 +379,283 @@ export const EditorLayout = ({
     }
   };
 
+  // Memoized active notebook and section objects
+  const selectedNotebook = useMemo(() => {
+    if (!selectedNotebookId) return null;
+    return notebooks.find((nb) => (nb._id || nb.id) === selectedNotebookId) || null;
+  }, [notebooks, selectedNotebookId]);
+
+  const activeSection = useMemo(() => {
+    if (!selectedSectionId) return null;
+    return sections.find((sec) => (sec._id || sec.id) === selectedSectionId) || null;
+  }, [sections, selectedSectionId]);
+
+  // Load notebooks (Dexie cache first + server sync)
+  const loadNotebooks = useCallback(async () => {
+    try {
+      const local = await offlineService.getLocalNotebooks();
+      if (local && local.length > 0) {
+        setNotebooks(local);
+      }
+      if (navigator.onLine) {
+        try {
+          const res = await notebookService.getNotebooks();
+          if (res.success && Array.isArray(res.data)) {
+            setNotebooks(res.data);
+            await offlineService.cacheServerNotebooks(res.data);
+          }
+        } catch (apiErr) {
+          console.warn('Backend getNotebooks failed:', apiErr.message);
+        }
+      }
+    } catch (err) {
+      console.warn('loadNotebooks error:', err);
+    }
+  }, []);
+
+  // Load sections for active notebook
+  const loadSections = useCallback(async (notebookId) => {
+    if (!notebookId) {
+      setSections([]);
+      return;
+    }
+    try {
+      const local = await offlineService.getLocalSections(notebookId);
+      if (local && local.length > 0) {
+        setSections(local);
+      }
+      if (navigator.onLine) {
+        try {
+          const res = await notebookService.getSections(notebookId);
+          if (res.success && Array.isArray(res.data)) {
+            setSections(res.data);
+            await offlineService.cacheServerSections(res.data);
+          }
+        } catch (apiErr) {
+          console.warn('Backend getSections failed:', apiErr.message);
+        }
+      }
+    } catch (err) {
+      console.warn('loadSections error:', err);
+    }
+  }, []);
+
   useEffect(() => {
     loadNotes();
     loadFolders();
-  }, [loadNotes, loadFolders]);
+    loadNotebooks();
+  }, [loadNotes, loadFolders, loadNotebooks]);
+
+  useEffect(() => {
+    if (selectedNotebookId) {
+      loadSections(selectedNotebookId);
+    } else {
+      setSections([]);
+    }
+  }, [selectedNotebookId, loadSections]);
+
+  // Notebook Handlers
+  const handleSelectNotebook = (nb) => {
+    if (!nb) {
+      setSelectedNotebookId(null);
+      setSelectedSectionId(null);
+      return;
+    }
+    const nbId = nb._id || nb.id;
+    setSelectedNotebookId(nbId);
+    setSelectedSectionId(null);
+    setNotebookViewMode('sections');
+    setSelectedFolder(null);
+    setSelectedTag(null);
+    setActiveNav('all');
+  };
+
+  const handleSelectSection = (sec) => {
+    if (!sec) {
+      setSelectedSectionId(null);
+      return;
+    }
+    const secId = sec._id || sec.id;
+    setSelectedSectionId(secId);
+    setNotebookViewMode('notes');
+  };
+
+  const handleOpenCreateNotebook = () => {
+    setNotebookModalState({ isOpen: true, isEdit: false, notebook: null });
+  };
+
+  const handleOpenEditNotebook = (nb) => {
+    setNotebookModalState({ isOpen: true, isEdit: true, notebook: nb });
+  };
+
+  const handleNotebookModalSubmit = async (data) => {
+    try {
+      if (notebookModalState.isEdit && notebookModalState.notebook) {
+        const id = notebookModalState.notebook._id || notebookModalState.notebook.id;
+        const res = await notebookService.updateNotebook(id, data);
+        if (res.success) {
+          success('Notebook updated');
+          await loadNotebooks();
+        }
+      } else {
+        const res = await notebookService.createNotebook(data);
+        if (res.success) {
+          success('Notebook created');
+          await loadNotebooks();
+          if (res.data) {
+            handleSelectNotebook(res.data);
+          }
+        }
+      }
+    } catch (err) {
+      toastError(err?.response?.data?.message || err?.message || 'Failed to save notebook');
+      throw err;
+    }
+  };
+
+  const handleDeleteNotebook = async (id) => {
+    try {
+      await notebookService.deleteNotebook(id);
+      success('Notebook deleted');
+      if (selectedNotebookId === id) {
+        setSelectedNotebookId(null);
+        setSelectedSectionId(null);
+      }
+      await loadNotebooks();
+      await loadNotes();
+    } catch (err) {
+      toastError(err?.response?.data?.message || err?.message || 'Failed to delete notebook');
+    }
+  };
+
+  const handleReorderNotebooks = async (orderedList) => {
+    setNotebooks(orderedList);
+    try {
+      const ids = orderedList.map((nb) => nb._id || nb.id);
+      await notebookService.reorderNotebooks(ids);
+    } catch (err) {
+      console.warn('Reorder notebooks error:', err);
+    }
+  };
+
+  // Section Handlers
+  const handleOpenAddSection = (nb = selectedNotebook) => {
+    const targetNb = nb || selectedNotebook;
+    if (!targetNb) return;
+    setSectionModalState({
+      isOpen: true,
+      isEdit: false,
+      section: null,
+      notebookId: targetNb._id || targetNb.id
+    });
+  };
+
+  const handleOpenEditSection = (sec) => {
+    setSectionModalState({
+      isOpen: true,
+      isEdit: true,
+      section: sec,
+      notebookId: sec.notebookId || selectedNotebookId
+    });
+  };
+
+  const handleSectionModalSubmit = async (data) => {
+    try {
+      if (sectionModalState.isEdit && sectionModalState.section) {
+        const id = sectionModalState.section._id || sectionModalState.section.id;
+        const res = await notebookService.updateSection(id, data);
+        if (res.success) {
+          success('Section updated');
+          if (selectedNotebookId) await loadSections(selectedNotebookId);
+          await loadNotebooks();
+        }
+      } else {
+        const nbId = sectionModalState.notebookId || selectedNotebookId;
+        const res = await notebookService.createSection(nbId, data);
+        if (res.success) {
+          success('Section created');
+          if (selectedNotebookId) await loadSections(selectedNotebookId);
+          await loadNotebooks();
+          if (res.data) {
+            setSelectedSectionId(res.data._id || res.data.id);
+          }
+        }
+      }
+    } catch (err) {
+      toastError(err?.response?.data?.message || err?.message || 'Failed to save section');
+      throw err;
+    }
+  };
+
+  const handleOpenMoveSection = (sec) => {
+    setMoveSectionModalState({ isOpen: true, section: sec });
+  };
+
+  const handleMoveSectionSubmit = async (sectionId, targetNotebookId) => {
+    try {
+      const res = await notebookService.moveSection(sectionId, targetNotebookId);
+      if (res.success) {
+        success('Section moved to another notebook');
+        if (selectedNotebookId) await loadSections(selectedNotebookId);
+        await loadNotebooks();
+      }
+    } catch (err) {
+      toastError(err?.response?.data?.message || err?.message || 'Failed to move section');
+      throw err;
+    }
+  };
+
+  const handleDeleteSection = async (sectionId) => {
+    try {
+      await notebookService.deleteSection(sectionId);
+      success('Section deleted');
+      if (selectedSectionId === sectionId) {
+        setSelectedSectionId(null);
+      }
+      if (selectedNotebookId) await loadSections(selectedNotebookId);
+      await loadNotebooks();
+      await loadNotes();
+    } catch (err) {
+      toastError(err?.response?.data?.message || err?.message || 'Failed to delete section');
+    }
+  };
+
+  const handleReorderSections = async (orderedList) => {
+    setSections(orderedList);
+    try {
+      if (!selectedNotebookId) return;
+      const ids = orderedList.map((s) => s._id || s.id);
+      await notebookService.reorderSections(selectedNotebookId, ids);
+    } catch (err) {
+      console.warn('Reorder sections error:', err);
+    }
+  };
+
+  // Move Note Handlers
+  const handleOpenMoveNote = (note) => {
+    setMoveNoteModalState({ isOpen: true, note });
+  };
+
+  const handleMoveNoteSubmit = async (noteId, { notebookId, sectionId, notebookName, sectionName }) => {
+    try {
+      const payload = {
+        notebookId,
+        sectionId: sectionId || null,
+        notebook: notebookName,
+        section: sectionName || ''
+      };
+      const res = await noteService.updateNote(noteId, payload);
+      if (res.success) {
+        success(`Note moved to ${notebookName}${sectionName ? ` / ${sectionName}` : ''}`);
+        await loadNotes();
+        await loadNotebooks();
+        if (selectedNotebookId) await loadSections(selectedNotebookId);
+      }
+    } catch (err) {
+      toastError(err?.response?.data?.message || err?.message || 'Failed to move note');
+      throw err;
+    }
+  };
 
   // Current active note object
   const activeNote = notes.find((n) => (n._id || n.id) === activeTabId) || (tabs.find((t) => t.id === activeTabId)?.note);
@@ -469,6 +760,12 @@ export const EditorLayout = ({
       createdAt: new Date().toISOString()
     }] : [];
 
+    let targetFolder = selectedNotebook?.name || selectedFolder || 'Personal';
+    let targetNotebookId = selectedNotebookId || null;
+    let targetSectionId = selectedSectionId || null;
+    let targetNotebookName = selectedNotebook?.name || '';
+    let targetSectionName = activeSection?.name || '';
+
     // 1. If online, attempt to create directly on backend for permanent ObjectId
     if (navigator.onLine) {
       try {
@@ -478,8 +775,12 @@ export const EditorLayout = ({
           plainText: '',
           tags: initialTags,
           drawings: initialDrawings,
-          folder: selectedFolder || 'Personal',
-          category: selectedFolder || 'Personal',
+          folder: targetFolder,
+          category: targetFolder,
+          notebookId: targetNotebookId,
+          sectionId: targetSectionId,
+          notebook: targetNotebookName,
+          section: targetSectionName,
           isPinned: false,
           isFavorite: false
         });
@@ -502,8 +803,12 @@ export const EditorLayout = ({
         content: initialContent,
         tags: initialTags,
         drawings: initialDrawings,
-        category: selectedFolder || 'Personal',
-        folder: selectedFolder || 'Personal',
+        category: targetFolder,
+        folder: targetFolder,
+        notebookId: targetNotebookId,
+        sectionId: targetSectionId,
+        notebook: targetNotebookName,
+        section: targetSectionName,
         isPinned: false,
         isFavorite: false,
         createdAt: new Date().toISOString(),
@@ -994,7 +1299,21 @@ export const EditorLayout = ({
       {!isFocusMode && (
         <EditorSidebar
           activeNav={activeNav}
-          onSelectNav={setActiveNav}
+          onSelectNav={(nav) => {
+            setActiveNav(nav);
+            setSelectedNotebookId(null);
+            setSelectedSectionId(null);
+            setSelectedFolder(null);
+            setSelectedTag(null);
+          }}
+          selectedNotebookId={selectedNotebookId}
+          onSelectNotebook={handleSelectNotebook}
+          notebooks={notebooks}
+          onCreateNotebook={handleOpenCreateNotebook}
+          onEditNotebook={handleOpenEditNotebook}
+          onDeleteNotebook={handleDeleteNotebook}
+          onReorderNotebooks={handleReorderNotebooks}
+          onAddSection={handleOpenAddSection}
           selectedFolder={selectedFolder}
           onSelectFolder={setSelectedFolder}
           selectedTag={selectedTag}
@@ -1032,6 +1351,20 @@ export const EditorLayout = ({
               activeFilter={activeNav}
               selectedFolder={selectedFolder}
               selectedTag={selectedTag}
+              selectedNotebook={selectedNotebook}
+              sections={sections}
+              selectedSectionId={selectedSectionId}
+              onSelectSection={handleSelectSection}
+              notebookViewMode={notebookViewMode}
+              onSwitchNotebookViewMode={setNotebookViewMode}
+              onEditNotebook={handleOpenEditNotebook}
+              onDeleteNotebook={handleDeleteNotebook}
+              onAddSection={handleOpenAddSection}
+              onEditSection={handleOpenEditSection}
+              onMoveSection={handleOpenMoveSection}
+              onDeleteSection={handleDeleteSection}
+              onReorderSections={handleReorderSections}
+              onMoveNote={handleOpenMoveNote}
               onTogglePin={handleTogglePin}
               onToggleFavorite={handleToggleFavorite}
               onDeleteNote={handleDeleteNote}
@@ -1104,14 +1437,77 @@ export const EditorLayout = ({
                   onManualSave={handleManualSave}
                 />
               </div>
+            ) : selectedSectionId ? (
+              /* Contextual Section Empty State */
+              <div className="flex-1 flex flex-col items-center justify-center p-8 text-center select-none max-w-md mx-auto">
+                <div className="w-14 h-14 rounded-2xl bg-pink-500/10 border border-pink-500/30 text-pink-400 flex items-center justify-center mb-4 shadow-sm shadow-pink-500/10">
+                  <Bookmark className="w-7 h-7" />
+                </div>
+
+                <h3 className={`text-xl font-bold tracking-tight mb-2 ${isDark ? 'text-gray-100' : 'text-slate-800'}`}>
+                  Start writing in {activeSection?.name || 'this Section'}
+                </h3>
+
+                <p className={`text-sm mb-6 leading-relaxed ${isDark ? 'text-gray-400' : 'text-slate-500'}`}>
+                  This section doesn't have any notes yet. Create a new note to get started.
+                </p>
+
+                <button
+                  type="button"
+                  onClick={handleNewNote}
+                  className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-pink-600 hover:bg-pink-500 text-white text-sm font-semibold shadow-md shadow-pink-500/20 transition-all hover:scale-105 active:scale-95 cursor-pointer"
+                >
+                  <Plus className="w-4 h-4" />
+                  <span>Create New Note</span>
+                </button>
+              </div>
+            ) : selectedNotebook ? (
+              /* Contextual Notebook Overview State */
+              <div className="flex-1 flex flex-col items-center justify-center p-8 text-center select-none max-w-lg mx-auto">
+                <div className="w-16 h-16 rounded-2xl bg-pink-500/10 border border-pink-500/30 text-pink-400 flex items-center justify-center mb-4 shadow-sm shadow-pink-500/10">
+                  <Book className="w-8 h-8" />
+                </div>
+
+                <h3 className={`text-xl font-bold tracking-tight mb-1.5 ${isDark ? 'text-gray-100' : 'text-slate-800'}`}>
+                  {selectedNotebook.name}
+                </h3>
+
+                <p className={`text-xs mb-4 font-mono ${isDark ? 'text-pink-300/80' : 'text-pink-600'}`}>
+                  {sections.length} {sections.length === 1 ? 'section' : 'sections'} • {notes.filter(n => !n.isDeleted && (n.notebookId === (selectedNotebook._id || selectedNotebook.id) || n.notebook === selectedNotebook.name)).length} notes
+                </p>
+
+                <p className={`text-sm mb-6 leading-relaxed ${isDark ? 'text-gray-400' : 'text-slate-500'}`}>
+                  Select a section or note from the left, or create a new section to organize your notes.
+                </p>
+
+                <div className="flex items-center gap-3">
+                  <button
+                    type="button"
+                    onClick={() => handleOpenAddSection(selectedNotebook)}
+                    className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-pink-600/20 hover:bg-pink-600/30 border border-pink-500/40 text-pink-300 text-sm font-semibold transition-all cursor-pointer"
+                  >
+                    <Plus className="w-4 h-4" />
+                    <span>Add Section</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleNewNote}
+                    className="inline-flex items-center gap-2 px-5 py-2 rounded-lg bg-pink-600 hover:bg-pink-500 text-white text-sm font-semibold shadow-md shadow-pink-500/20 transition-all cursor-pointer"
+                  >
+                    <Plus className="w-4 h-4" />
+                    <span>New Note</span>
+                  </button>
+                </div>
+              </div>
             ) : (
+              /* Default Global Empty State */
               <div className="flex-1 flex flex-col items-center justify-center p-8 text-center select-none">
                 <div className="relative w-20 h-20 flex items-center justify-center mb-4 shrink-0">
-                  <div className="absolute inset-0 rounded-full blur-xl bg-purple-500/25 pointer-events-none" />
+                  <div className="absolute inset-0 rounded-full blur-xl bg-pink-500/25 pointer-events-none" />
                   <img
                     src={websiteLogo}
                     alt="NoteNest Logo"
-                    className="relative z-10 w-full h-full object-contain filter drop-shadow-[0_0_12px_rgba(168,85,247,0.4)]"
+                    className="relative z-10 w-full h-full object-contain filter drop-shadow-[0_0_12px_rgba(236,72,153,0.4)]"
                   />
                 </div>
 
@@ -1130,7 +1526,7 @@ export const EditorLayout = ({
                 <button
                   type="button"
                   onClick={handleNewNote}
-                  className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white text-sm font-semibold shadow-md shadow-purple-500/20 hover:shadow-purple-500/35 transition-all hover:scale-105 active:scale-95 cursor-pointer"
+                  className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-gradient-to-r from-pink-600 to-rose-600 hover:from-pink-500 hover:to-rose-500 text-white text-sm font-semibold shadow-md shadow-pink-500/20 hover:shadow-pink-500/35 transition-all hover:scale-105 active:scale-95 cursor-pointer"
                 >
                   <Plus className="w-4 h-4" />
                   <span>Create New Note</span>
@@ -1193,6 +1589,42 @@ export const EditorLayout = ({
           )}
         </>
       )}
+
+      {/* Notebook Creation / Edit Modal */}
+      <NotebookModal
+        isOpen={notebookModalState.isOpen}
+        onClose={() => setNotebookModalState({ isOpen: false, isEdit: false, notebook: null })}
+        onSubmit={handleNotebookModalSubmit}
+        initialData={notebookModalState.notebook}
+        isEdit={notebookModalState.isEdit}
+      />
+
+      {/* Section Creation / Edit Modal */}
+      <SectionModal
+        isOpen={sectionModalState.isOpen}
+        onClose={() => setSectionModalState({ isOpen: false, isEdit: false, section: null, notebookId: null })}
+        onSubmit={handleSectionModalSubmit}
+        initialData={sectionModalState.section}
+        isEdit={sectionModalState.isEdit}
+      />
+
+      {/* Move Section Modal */}
+      <MoveSectionModal
+        isOpen={moveSectionModalState.isOpen}
+        onClose={() => setMoveSectionModalState({ isOpen: false, section: null })}
+        section={moveSectionModalState.section}
+        notebooks={notebooks}
+        onMove={handleMoveSectionSubmit}
+      />
+
+      {/* Move Note Modal */}
+      <MoveNoteModal
+        isOpen={moveNoteModalState.isOpen}
+        onClose={() => setMoveNoteModalState({ isOpen: false, note: null })}
+        note={moveNoteModalState.note}
+        notebooks={notebooks}
+        onMove={handleMoveNoteSubmit}
+      />
     </div>
   );
 };

@@ -92,10 +92,11 @@ IMPORTANT: Return ONLY the JSON object. Do not wrap in markdown fences (\`\`\`js
     // Candidate models in preference order (fastest multimodal flash models first)
     const candidateModels = [
       process.env.GEMINI_MODEL,
+      'gemini-flash-lite-latest',
+      'gemini-flash-latest',
       'gemini-3.5-flash-lite',
-      'gemini-3.5-flash',
-      'gemini-3.1-flash-lite',
-      'gemini-2.5-flash-image'
+      'gemini-3.8-flash',
+      'gemini-3.1-flash-lite'
     ].filter(Boolean);
 
     let result = null;
@@ -121,13 +122,16 @@ IMPORTANT: Return ONLY the JSON object. Do not wrap in markdown fences (\`\`\`js
         if (result) break;
       } catch (err) {
         lastError = err;
-        // If model is not found / deprecated / timed out, try next candidate
+        // If model is not found / deprecated / high demand / timed out, try next candidate
         const msg = err.message || '';
         if (
           msg.includes('404') ||
           msg.includes('not found') ||
           msg.includes('no longer available') ||
           msg.includes('is not supported') ||
+          msg.includes('503') ||
+          msg.includes('Service Unavailable') ||
+          msg.includes('high demand') ||
           msg.includes('Timeout after')
         ) {
           continue;

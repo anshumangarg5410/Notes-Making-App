@@ -27,6 +27,28 @@ const noteSchema = new mongoose.Schema(
       type: [String],
       default: []
     },
+    notebookId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Notebook',
+      default: null,
+      index: true
+    },
+    sectionId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Section',
+      default: null,
+      index: true
+    },
+    notebook: {
+      type: String,
+      default: '',
+      trim: true
+    },
+    section: {
+      type: String,
+      default: '',
+      trim: true
+    },
     folderId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Folder',
@@ -112,6 +134,8 @@ const noteSchema = new mongoose.Schema(
 );
 
 noteSchema.index({ userId: 1, isDeleted: 1, isArchived: 1, updatedAt: -1 });
+noteSchema.index({ userId: 1, notebookId: 1, isDeleted: 1 });
+noteSchema.index({ userId: 1, sectionId: 1, isDeleted: 1 });
 noteSchema.index({ userId: 1, title: 'text', plainText: 'text' });
 
 const Note = mongoose.model('Note', noteSchema);

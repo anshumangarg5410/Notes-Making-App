@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useTheme } from '../../context/ThemeContext';
@@ -19,19 +19,63 @@ import {
   Check,
   X,
   LogOut,
-  PenTool
+  PenTool,
+  Book,
+  BookOpen,
+  Code,
+  Lightbulb,
+  GraduationCap,
+  Briefcase,
+  Heart,
+  Compass,
+  Bookmark,
+  MoreVertical,
+  Edit2,
+  Palette,
+  GripVertical
 } from 'lucide-react';
+
+const NOTEBOOK_ICONS_MAP = {
+  book: Book,
+  'book-open': BookOpen,
+  code: Code,
+  lightbulb: Lightbulb,
+  'graduation-cap': GraduationCap,
+  briefcase: Briefcase,
+  heart: Heart,
+  compass: Compass,
+  bookmark: Bookmark
+};
+
+const NOTEBOOK_COLOR_MAP = {
+  pink: '#ec4899',
+  purple: '#a855f7',
+  blue: '#3b82f6',
+  emerald: '#10b981',
+  amber: '#f59e0b',
+  rose: '#f43f5e',
+  indigo: '#6366f1',
+  cyan: '#06b6d4',
+  charcoal: '#9ca3af'
+};
 
 export const EditorSidebar = ({
   activeNav = 'all',
   onSelectNav,
+  selectedNotebookId = null,
+  onSelectNotebook,
+  notebooks = [],
+  onCreateNotebook,
+  onEditNotebook,
+  onDeleteNotebook,
+  onReorderNotebooks,
+  onAddSection,
+  // Backwards compatibility props
   selectedFolder,
   onSelectFolder,
   selectedTag,
   onSelectTag,
   folders = [],
-  onCreateFolder,
-  onDeleteFolder,
   notes = [],
   onOpenSettings,
   stats = {},
@@ -42,17 +86,26 @@ export const EditorSidebar = ({
   const { user, logout } = useAuth();
   const { isDark } = useTheme();
 
-  const [foldersOpen, setFoldersOpen] = useState(true);
-  const [expandedFolders, setExpandedFolders] = useState({});
-  const [activeAddSubfolderParentId, setActiveAddSubfolderParentId] = useState(null);
-  const [newSubfolderName, setNewSubfolderName] = useState('');
-  const [isCreatingFolder, setIsCreatingFolder] = useState(false);
-  const [newFolderName, setNewFolderName] = useState('');
-  const [confirmDeleteId, setConfirmDeleteId] = useState(null);
+  const [notebooksOpen, setNotebooksOpen] = useState(true);
+  const [activeNotebookMenuId, setActiveNotebookMenuId] = useState(null);
+  const [confirmDeleteNbId, setConfirmDeleteNbId] = useState(null);
+  const [draggedNbIdx, setDraggedNbIdx] = useState(null);
+  const nbMenuRef = useRef(null);
+
   const [tagsOpen, setTagsOpen] = useState(true);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const [avatarLoadFailed, setAvatarLoadFailed] = useState(false);
   const avatarSrc = user?.avatar || user?.avatarUrl;
+
+  useEffect(() => {
+    const handleOutside = (e) => {
+      if (nbMenuRef.current && !nbMenuRef.current.contains(e.target)) {
+        setActiveNotebookMenuId(null);
+      }
+    };
+    document.addEventListener('mousedown', handleOutside);
+    return () => document.removeEventListener('mousedown', handleOutside);
+  }, []);
 
   useEffect(() => {
     setAvatarLoadFailed(false);
@@ -66,36 +119,48 @@ export const EditorSidebar = ({
     return `http://localhost:5001${url.startsWith('/') ? '' : '/'}${url}`;
   };
 
-  const defaultFolders = [
-    { id: 'projects', _id: 'projects', name: 'Projects', subfolders: [{ id: 'notenest', _id: 'notenest', name: 'NoteNest' }] },
-    { id: 'college', _id: 'college', name: 'College' },
-    { id: 'personal', _id: 'personal', name: 'Personal' },
-    { id: 'dsa', _id: 'dsa', name: 'DSA' }
+  const defaultNotebooksList = [
+    { _id: 'dsa', id: 'dsa', name: 'DSA', icon: 'code', color: 'purple' },
+    { _id: 'personal', id: 'personal', name: 'Personal', icon: 'heart', color: 'pink' },
+    { _id: 'college', id: 'college', name: 'College', icon: 'graduation-cap', color: 'blue' },
+    { _id: 'projects', id: 'projects', name: 'Projects', icon: 'briefcase', color: 'emerald' }
   ];
 
-  const rawFolders = folders && folders.length > 0 ? folders : defaultFolders;
+  const displayNotebooks = notebooks && notebooks.length > 0 ? notebooks : defaultNotebooksList;
 
-  // Split into root folders and child folders
-  const rootFolders = rawFolders.filter((f) => !f.parentId);
+  // Calculate note count for a notebook
+  const getNotebookNoteCount = (nb) => {
+    if (typeof nb.notesCount === 'number') return nb.notesCount;
+    const nbId = nb._id || nb.id;
+    const nbName = (nb.name || '').toLowerCase();
+    return notes.filter((n) => {
+      if (n.isDeleted) return false;
+      if (n.notebookId && (n.notebookId === nbId || n.notebookId?._id === nbId)) return true;
+      if (n.notebook && n.notebook.toLowerCase() === nbName) return true;
+      if (n.category && n.category.toLowerCase() === nbName) return true;
+      if (n.folder && n.folder.toLowerCase() === nbName) return true;
+      return false;
+    }).length;
+  };
 
-  // Helper to get subfolders for any folder
-  const getSubfoldersFor = (parent) => {
-    const parentId = parent._id || parent.id;
-    const directChildren = rawFolders.filter(
-      (f) => f.parentId && (f.parentId === parentId || f.parentId?._id === parentId || f.parentId?.id === parentId)
-    );
-    if (directChildren.length > 0) return directChildren;
+  const handleNbDragStart = (e, index) => {
+    setDraggedNbIdx(index);
+    e.dataTransfer.effectAllowed = 'move';
+  };
 
-    if (Array.isArray(parent.subfolders) && parent.subfolders.length > 0) {
-      return parent.subfolders.map((sub, idx) => {
-        if (typeof sub === 'string') {
-          return { id: `${parentId}_${idx}`, _id: `${parentId}_${idx}`, name: sub, parentId };
-        }
-        return sub;
-      });
-    }
+  const handleNbDragOver = (e, index) => {
+    e.preventDefault();
+    if (draggedNbIdx === null || draggedNbIdx === index) return;
+    const updated = [...displayNotebooks];
+    const draggedItem = updated[draggedNbIdx];
+    updated.splice(draggedNbIdx, 1);
+    updated.splice(index, 0, draggedItem);
+    setDraggedNbIdx(index);
+    onReorderNotebooks?.(updated);
+  };
 
-    return [];
+  const handleNbDragEnd = () => {
+    setDraggedNbIdx(null);
   };
 
   // Calculate live note count for a folder or subfolder
@@ -450,152 +515,94 @@ export const EditorSidebar = ({
           </button>
         </div>
 
-        {/* Folders Section */}
+        {/* Notebooks Section */}
         {!isCollapsed && (
           <div className={`pt-2 border-t ${isDark ? 'border-[#1e1e2c]' : 'border-[#EAE6F4]'}`}>
-            {/* Folders Header */}
+            {/* Notebooks Header */}
             <div
-              onClick={() => setFoldersOpen(!foldersOpen)}
+              onClick={() => setNotebooksOpen(!notebooksOpen)}
               className={`flex items-center justify-between px-2.5 py-1 cursor-pointer text-[11px] font-medium uppercase tracking-wider ${
                 isDark ? 'text-gray-400 hover:text-gray-200' : 'text-[#6B7280] hover:text-[#181326]'
               }`}
             >
               <div className="flex items-center gap-2">
-                <Folder className="w-3.5 h-3.5 text-purple-500" />
-                <span>Folders</span>
+                <Book className="w-3.5 h-3.5 text-pink-400" />
+                <span>Notebooks</span>
               </div>
               <div className="flex items-center gap-1">
                 <button
                   type="button"
                   onClick={(e) => {
                     e.stopPropagation();
-                    setIsCreatingFolder(!isCreatingFolder);
+                    onCreateNotebook?.();
                   }}
                   className={`p-1 rounded transition-colors ${
-                    isDark ? 'hover:bg-[#252536] text-gray-400 hover:text-purple-300' : 'hover:bg-[#EAE6F4] text-[#6B7280] hover:text-purple-600'
+                    isDark ? 'hover:bg-[#252536] text-gray-400 hover:text-pink-300' : 'hover:bg-[#EAE6F4] text-[#6B7280] hover:text-pink-600'
                   }`}
-                  title="Add new folder"
+                  title="Create new notebook"
                 >
                   <Plus className="w-3.5 h-3.5" />
                 </button>
-                {foldersOpen ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
+                {notebooksOpen ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
               </div>
             </div>
 
-            {/* Inline Root Folder Creation Input */}
-            {isCreatingFolder && (
-              <form onSubmit={handleCreateRootFolderSubmit} className="mt-1.5 px-2 flex items-center gap-1.5">
-                <Folder className="w-3.5 h-3.5 text-purple-400 shrink-0" />
-                <input
-                  type="text"
-                  autoFocus
-                  value={newFolderName}
-                  onChange={(e) => setNewFolderName(e.target.value)}
-                  placeholder="New folder name..."
-                  className={`flex-1 rounded-[3px] px-2 py-1 text-xs focus:outline-none border ${
-                    isDark
-                      ? 'bg-[#1b1b26] border-purple-500/50 text-gray-200'
-                      : 'bg-white border-[#DDD6FE] text-[#181326]'
-                  }`}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Escape') setIsCreatingFolder(false);
-                  }}
-                />
-                <button type="submit" className="p-1 text-purple-400 hover:text-purple-300" title="Create">
-                  <Check className="w-3.5 h-3.5" />
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setIsCreatingFolder(false)}
-                  className={`p-1 ${isDark ? 'text-gray-400 hover:text-gray-200' : 'text-[#6B7280] hover:text-[#181326]'}`}
-                  title="Cancel"
-                >
-                  <X className="w-3.5 h-3.5" />
-                </button>
-              </form>
-            )}
-
-            {/* Folders Hierarchy Tree */}
-            {foldersOpen && (
+            {/* Notebooks List */}
+            {notebooksOpen && (
               <div className="mt-1 space-y-0.5 text-xs">
-                {rootFolders.map((folder) => {
-                  const folderId = folder._id || folder.id;
-                  const isSelected = selectedFolder?.toLowerCase() === folder.name?.toLowerCase();
-                  const subfolders = getSubfoldersFor(folder);
-                  const hasSubfolders = subfolders.length > 0;
-                  const expanded = isFolderExpanded(folder, hasSubfolders);
-                  const noteCount = getNoteCount(folder);
-                  const isAddingSub = activeAddSubfolderParentId === folderId;
+                {displayNotebooks.map((nb, idx) => {
+                  const nbId = nb._id || nb.id;
+                  const isSelected = selectedNotebookId === nbId;
+                  const noteCount = getNotebookNoteCount(nb);
+                  const IconComp = NOTEBOOK_ICONS_MAP[nb.icon] || Book;
+                  const colorHex = NOTEBOOK_COLOR_MAP[nb.color] || '#ec4899';
+                  const isMenuOpen = activeNotebookMenuId === nbId;
+                  const isDeleting = confirmDeleteNbId === nbId;
 
                   return (
-                    <div key={folderId} className="space-y-0.5">
-                      {/* Folder Item Row */}
+                    <div
+                      key={nbId}
+                      draggable
+                      onDragStart={(e) => handleNbDragStart(e, idx)}
+                      onDragOver={(e) => handleNbDragOver(e, idx)}
+                      onDragEnd={handleNbDragEnd}
+                      className="relative"
+                    >
                       <div
-                        className={`group relative flex items-center justify-between px-2 py-1 rounded-[3px] transition-colors ${
+                        className={`group relative flex items-center justify-between px-2.5 py-1.5 rounded-[4px] transition-colors cursor-pointer ${
                           isSelected
-                            ? isDark
-                              ? 'bg-purple-900/30 text-purple-200 font-medium'
-                              : 'bg-[#EDE9FE] text-[#7C3AED] font-semibold'
+                            ? 'bg-pink-500/10 border-l-2 border-pink-500 text-pink-300 font-medium'
                             : isDark
                               ? 'text-gray-300 hover:text-gray-100 hover:bg-[#1a1a24]'
                               : 'text-[#4B5563] hover:text-[#111827] hover:bg-[#F4F2FA]'
                         }`}
+                        onClick={() => onSelectNotebook?.(nb)}
                       >
-                        <div className="flex items-center gap-1.5 flex-1 min-w-0 mr-1">
-                          {/* Subfolder expand/collapse toggle chevron */}
-                          {hasSubfolders ? (
-                            <button
-                              type="button"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                toggleFolderExpanded(folderId);
-                              }}
-                              className={`p-0.5 rounded transition-colors ${
-                                isDark ? 'hover:bg-[#252538] text-gray-400 hover:text-gray-200' : 'hover:bg-[#EAE6F4] text-[#6B7280] hover:text-[#181326]'
-                              }`}
-                              title={expanded ? 'Collapse subfolders' : 'Expand subfolders'}
-                            >
-                              <ChevronRight
-                                className={`w-3 h-3 transition-transform duration-150 ${expanded ? 'rotate-90 text-purple-400' : ''}`}
-                              />
-                            </button>
-                          ) : (
-                            <span className="w-4" />
-                          )}
-
-                          {/* Select Folder Button */}
-                          <button
-                            type="button"
-                            onClick={() => onSelectFolder(isSelected ? null : folder.name)}
-                            className="flex items-center gap-2 flex-1 min-w-0 text-left truncate"
-                            title={folder.name}
+                        <div className="flex items-center gap-2 flex-1 min-w-0 mr-1">
+                          <span
+                            className="w-4 h-4 rounded flex items-center justify-center shrink-0 transition-colors"
+                            style={{ color: colorHex }}
                           >
-                            {expanded || isSelected ? (
-                              <FolderOpen className="w-3.5 h-3.5 shrink-0 text-purple-500" />
-                            ) : (
-                              <Folder className="w-3.5 h-3.5 shrink-0 text-purple-500" />
-                            )}
-                            <span className="truncate">{folder.name}</span>
-                          </button>
+                            <IconComp className="w-3.5 h-3.5" />
+                          </span>
+                          <span className="truncate">{nb.name}</span>
                         </div>
 
-                        {/* Action buttons / count / confirm delete */}
-                        {confirmDeleteId === folderId ? (
+                        {/* Note Count & Menu Trigger */}
+                        {isDeleting ? (
                           <div
                             onClick={(e) => e.stopPropagation()}
-                            className={`flex items-center gap-1 border rounded px-1.5 py-0.5 text-[10px] shrink-0 ${
-                              isDark ? 'bg-[#281822] border-red-500/40 text-red-300' : 'bg-red-50 border-red-200 text-red-600'
-                            }`}
+                            className="flex items-center gap-1 border border-red-500/40 bg-red-950/60 text-red-300 rounded px-1.5 py-0.5 text-[10px] shrink-0"
                           >
                             <span>Delete?</span>
                             <button
                               type="button"
                               onClick={(e) => {
                                 e.stopPropagation();
-                                handleDelete(folder);
+                                onDeleteNotebook?.(nbId);
+                                setConfirmDeleteNbId(null);
                               }}
-                              className="text-red-400 hover:text-red-200 font-bold px-1 cursor-pointer"
-                              title="Confirm delete"
+                              className="text-red-400 hover:text-red-200 font-bold px-0.5 cursor-pointer"
                             >
                               Yes
                             </button>
@@ -603,248 +610,108 @@ export const EditorSidebar = ({
                               type="button"
                               onClick={(e) => {
                                 e.stopPropagation();
-                                setConfirmDeleteId(null);
+                                setConfirmDeleteNbId(null);
                               }}
                               className="text-gray-400 hover:text-gray-200 px-0.5 cursor-pointer"
-                              title="Cancel"
                             >
                               No
                             </button>
                           </div>
                         ) : (
                           <div className="flex items-center gap-1 shrink-0">
-                            {/* Note count (visible when not hovering and not selected) */}
-                            <span className={`text-[10px] ${isSelected ? 'hidden' : 'group-hover:hidden'} ${isDark ? 'text-gray-500' : 'text-[#9CA3AF]'}`}>
+                            <span
+                              className={`text-[10px] ${
+                                isSelected ? 'text-pink-400 font-medium' : isDark ? 'text-gray-500' : 'text-[#9CA3AF]'
+                              } group-hover:hidden`}
+                            >
                               {noteCount}
                             </span>
 
-                            {/* Actions: Add subfolder (+) & Delete folder (🗑) - visible on hover or when selected */}
-                            <div className={`${isSelected ? 'flex' : 'hidden group-hover:flex'} items-center gap-0.5`}>
+                            <div className="hidden group-hover:flex items-center gap-0.5">
                               <button
                                 type="button"
                                 onClick={(e) => {
                                   e.stopPropagation();
-                                  setActiveAddSubfolderParentId(folderId);
-                                  setNewSubfolderName('');
-                                  setExpandedFolders((prev) => ({ ...prev, [folderId]: true }));
+                                  setActiveNotebookMenuId(isMenuOpen ? null : nbId);
                                 }}
                                 className={`p-1 rounded transition-colors ${
-                                  isDark ? 'hover:bg-[#252538] text-gray-400 hover:text-purple-300' : 'hover:bg-[#EAE6F4] text-[#6B7280] hover:text-purple-600'
+                                  isDark
+                                    ? 'hover:bg-[#252538] text-gray-400 hover:text-gray-200'
+                                    : 'hover:bg-[#EAE6F4] text-[#6B7280] hover:text-[#181326]'
                                 }`}
-                                title="Add subfolder"
+                                title="Notebook options"
                               >
-                                <Plus className="w-3 h-3" />
-                              </button>
-                              <button
-                                type="button"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  setConfirmDeleteId(folderId);
-                                }}
-                                className={`p-1 rounded transition-colors ${
-                                  isDark ? 'hover:bg-red-950/60 text-gray-400 hover:text-red-400' : 'hover:bg-red-50 text-[#6B7280] hover:text-red-600'
-                                }`}
-                                title="Delete folder"
-                              >
-                                <Trash2 className="w-3 h-3" />
+                                <MoreVertical className="w-3 h-3" />
                               </button>
                             </div>
                           </div>
                         )}
                       </div>
 
-                      {/* Inline Input for Adding Subfolder directly under this folder */}
-                      {isAddingSub && (
-                        <form
-                          onSubmit={(e) => handleCreateSubfolderSubmit(e, folderId)}
-                          className={`flex items-center gap-1.5 py-1 px-2 my-0.5 ml-6 border rounded-[3px] ${
-                            isDark ? 'bg-[#1b1b28] border-purple-500/50' : 'bg-white border-[#DDD6FE]'
+                      {/* Dropdown Menu */}
+                      {isMenuOpen && (
+                        <div
+                          ref={nbMenuRef}
+                          onClick={(e) => e.stopPropagation()}
+                          className={`absolute top-full right-2 mt-1 py-1 w-40 rounded-xl border shadow-xl z-50 text-xs backdrop-blur-md animate-in fade-in zoom-in-95 ${
+                            isDark ? 'bg-[#181826] border-[#2b2b3e] text-gray-200' : 'bg-white border-slate-200 text-slate-800'
                           }`}
                         >
-                          <Folder className="w-3 h-3 text-purple-500 shrink-0" />
-                          <input
-                            type="text"
-                            autoFocus
-                            value={newSubfolderName}
-                            onChange={(e) => setNewSubfolderName(e.target.value)}
-                            placeholder="Subfolder name..."
-                            className={`flex-1 bg-transparent text-xs outline-none ${
-                              isDark ? 'text-gray-200 placeholder-gray-500' : 'text-[#181326] placeholder-[#9CA3AF]'
-                            }`}
-                            onKeyDown={(e) => {
-                              if (e.key === 'Escape') setActiveAddSubfolderParentId(null);
-                            }}
-                          />
-                          <button
-                            type="submit"
-                            className="p-0.5 text-purple-400 hover:text-purple-300"
-                            title="Create subfolder"
-                          >
-                            <Check className="w-3.5 h-3.5" />
-                          </button>
                           <button
                             type="button"
-                            onClick={() => setActiveAddSubfolderParentId(null)}
-                            className={`p-0.5 ${isDark ? 'text-gray-400 hover:text-gray-200' : 'text-[#6B7280] hover:text-[#181326]'}`}
-                            title="Cancel"
+                            onClick={() => {
+                              setActiveNotebookMenuId(null);
+                              onEditNotebook?.(nb);
+                            }}
+                            className={`w-full flex items-center gap-2 px-3 py-1.5 text-left transition-colors cursor-pointer ${
+                              isDark ? 'hover:bg-white/10' : 'hover:bg-slate-100'
+                            }`}
                           >
-                            <X className="w-3.5 h-3.5" />
+                            <Edit2 className="w-3.5 h-3.5 text-purple-400" />
+                            <span>Rename</span>
                           </button>
-                        </form>
-                      )}
 
-                      {/* Subfolders List (Indented Tree) */}
-                      {hasSubfolders && expanded && (
-                        <div className={`ml-5 pl-2.5 border-l space-y-0.5 ${isDark ? 'border-[#242436]' : 'border-[#EAE6F4]'}`}>
-                          {subfolders.map((sub) => {
-                            const subId = sub._id || sub.id;
-                            const isSubSelected = selectedFolder?.toLowerCase() === sub.name?.toLowerCase();
-                            const subCount = getNoteCount(sub);
-                            const isSubAddingNested = activeAddSubfolderParentId === subId;
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setActiveNotebookMenuId(null);
+                              onEditNotebook?.(nb);
+                            }}
+                            className={`w-full flex items-center gap-2 px-3 py-1.5 text-left transition-colors cursor-pointer ${
+                              isDark ? 'hover:bg-white/10' : 'hover:bg-slate-100'
+                            }`}
+                          >
+                            <Palette className="w-3.5 h-3.5 text-pink-400" />
+                            <span>Appearance</span>
+                          </button>
 
-                            return (
-                              <div key={subId} className="space-y-0.5">
-                                <div
-                                  className={`group relative flex items-center justify-between px-2 py-0.5 rounded-[3px] transition-colors ${
-                                    isSubSelected
-                                      ? isDark
-                                        ? 'bg-purple-900/30 text-purple-200 font-medium'
-                                        : 'bg-[#EDE9FE] text-[#7C3AED] font-semibold'
-                                      : isDark
-                                        ? 'text-gray-400 hover:text-gray-200 hover:bg-[#1a1a24]'
-                                        : 'text-[#6B7280] hover:text-[#181326] hover:bg-[#F4F2FA]'
-                                  }`}
-                                >
-                                  {/* Subfolder Select Button */}
-                                  <button
-                                    type="button"
-                                    onClick={() => onSelectFolder(isSubSelected ? null : sub.name)}
-                                    className="flex items-center gap-2 flex-1 min-w-0 text-left truncate mr-1"
-                                    title={sub.name}
-                                  >
-                                    <span
-                                      className={`w-1.5 h-1.5 rounded-full shrink-0 ${
-                                        isSubSelected ? 'bg-purple-500' : 'bg-purple-400/50'
-                                      }`}
-                                    />
-                                    <span className="truncate text-[11px]">{sub.name}</span>
-                                  </button>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setActiveNotebookMenuId(null);
+                              onAddSection?.(nb);
+                            }}
+                            className={`w-full flex items-center gap-2 px-3 py-1.5 text-left transition-colors cursor-pointer ${
+                              isDark ? 'hover:bg-white/10' : 'hover:bg-slate-100'
+                            }`}
+                          >
+                            <Plus className="w-3.5 h-3.5 text-emerald-400" />
+                            <span>Add Section</span>
+                          </button>
 
-                                  {/* Subfolder Actions / Delete Confirm */}
-                                  {confirmDeleteId === subId ? (
-                                    <div
-                                      onClick={(e) => e.stopPropagation()}
-                                      className={`flex items-center gap-1 border rounded px-1.5 py-0.5 text-[10px] shrink-0 ${
-                                        isDark ? 'bg-[#281822] border-red-500/40 text-red-300' : 'bg-red-50 border-red-200 text-red-600'
-                                      }`}
-                                    >
-                                      <span>Delete?</span>
-                                      <button
-                                        type="button"
-                                        onClick={(e) => {
-                                          e.stopPropagation();
-                                          handleDelete(sub);
-                                        }}
-                                        className="text-red-400 hover:text-red-200 font-bold px-1 cursor-pointer"
-                                        title="Delete this subfolder"
-                                      >
-                                        Yes
-                                      </button>
-                                      <button
-                                        type="button"
-                                        onClick={(e) => {
-                                          e.stopPropagation();
-                                          setConfirmDeleteId(null);
-                                        }}
-                                        className="text-gray-400 hover:text-gray-200 px-0.5 cursor-pointer"
-                                        title="Cancel"
-                                      >
-                                        No
-                                      </button>
-                                    </div>
-                                  ) : (
-                                    <div className="flex items-center gap-1 shrink-0">
-                                      {/* Subfolder note count */}
-                                      <span className={`text-[10px] ${isSubSelected ? 'hidden' : 'group-hover:hidden'} ${isDark ? 'text-gray-500' : 'text-[#9CA3AF]'}`}>
-                                        {subCount}
-                                      </span>
+                          <div className={`h-[1px] my-1 ${isDark ? 'bg-white/10' : 'bg-slate-100'}`} />
 
-                                      {/* Actions: Add nested (+) & Delete Subfolder (🗑) - visible on hover or when selected */}
-                                      <div className={`${isSubSelected ? 'flex' : 'hidden group-hover:flex'} items-center gap-0.5`}>
-                                        <button
-                                          type="button"
-                                          onClick={(e) => {
-                                            e.stopPropagation();
-                                            setActiveAddSubfolderParentId(subId);
-                                            setNewSubfolderName('');
-                                          }}
-                                          className={`p-1 rounded transition-colors ${
-                                            isDark ? 'hover:bg-[#252538] text-gray-400 hover:text-purple-300' : 'hover:bg-[#EAE6F4] text-[#6B7280] hover:text-purple-600'
-                                          }`}
-                                          title="Add nested subfolder"
-                                        >
-                                          <Plus className="w-3 h-3" />
-                                        </button>
-                                        <button
-                                          type="button"
-                                          onClick={(e) => {
-                                            e.stopPropagation();
-                                            setConfirmDeleteId(subId);
-                                          }}
-                                          className={`p-1 rounded transition-colors ${
-                                            isDark ? 'hover:bg-red-950/60 text-gray-400 hover:text-red-400' : 'hover:bg-red-50 text-[#6B7280] hover:text-red-600'
-                                          }`}
-                                          title="Delete this subfolder"
-                                        >
-                                          <Trash2 className="w-3 h-3" />
-                                        </button>
-                                      </div>
-                                    </div>
-                                  )}
-                                </div>
-
-                                {/* Nested Subfolder Inline Input */}
-                                {isSubAddingNested && (
-                                  <form
-                                    onSubmit={(e) => handleCreateSubfolderSubmit(e, subId)}
-                                    className={`flex items-center gap-1.5 py-1 px-2 my-0.5 ml-4 border rounded-[3px] ${
-                                      isDark ? 'bg-[#1b1b28] border-purple-500/50' : 'bg-white border-[#DDD6FE]'
-                                    }`}
-                                  >
-                                    <Folder className="w-3 h-3 text-purple-500 shrink-0" />
-                                    <input
-                                      type="text"
-                                      autoFocus
-                                      value={newSubfolderName}
-                                      onChange={(e) => setNewSubfolderName(e.target.value)}
-                                      placeholder="Nested folder name..."
-                                      className={`flex-1 bg-transparent text-xs outline-none ${
-                                        isDark ? 'text-gray-200 placeholder-gray-500' : 'text-[#181326] placeholder-[#9CA3AF]'
-                                      }`}
-                                      onKeyDown={(e) => {
-                                        if (e.key === 'Escape') setActiveAddSubfolderParentId(null);
-                                      }}
-                                    />
-                                    <button
-                                      type="submit"
-                                      className="p-0.5 text-purple-400 hover:text-purple-300"
-                                      title="Create"
-                                    >
-                                      <Check className="w-3.5 h-3.5" />
-                                    </button>
-                                    <button
-                                      type="button"
-                                      onClick={() => setActiveAddSubfolderParentId(null)}
-                                      className={`p-0.5 ${isDark ? 'text-gray-400 hover:text-gray-200' : 'text-[#6B7280] hover:text-[#181326]'}`}
-                                      title="Cancel"
-                                    >
-                                      <X className="w-3.5 h-3.5" />
-                                    </button>
-                                  </form>
-                                )}
-                              </div>
-                            );
-                          })}
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setActiveNotebookMenuId(null);
+                              setConfirmDeleteNbId(nbId);
+                            }}
+                            className="w-full flex items-center gap-2 px-3 py-1.5 text-left text-red-400 hover:text-red-300 hover:bg-red-500/10 transition-colors cursor-pointer"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                            <span>Delete</span>
+                          </button>
                         </div>
                       )}
                     </div>

@@ -2,13 +2,17 @@ const app = require('./app');
 const { connectDB, disconnectDB } = require('./config/database');
 const environment = require('./config/environment');
 const trashService = require('./services/trash.service');
+const migrationService = require('./services/migration.service');
 
 const startServer = async () => {
   try {
     // 1. Connect to MongoDB Atlas
     await connectDB();
 
-    // 2. Start HTTP Listener
+    // 2. Safe idempotent folder-to-notebook migration
+    await migrationService.migrateFoldersToNotebooks();
+
+    // 3. Start HTTP Listener
     const server = app.listen(environment.port, () => {
       console.log(`[Server] NoteNest backend running in ${environment.nodeEnv} mode on port ${environment.port}`);
       console.log(`[Server] API Health check available at: http://localhost:${environment.port}/api/health`);

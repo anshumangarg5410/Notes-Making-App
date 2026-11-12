@@ -9,6 +9,14 @@ db.version(1).stores({
   syncQueue: '++id, noteId, action, timestamp'
 });
 
+db.version(2).stores({
+  notes: '_id, id, title, notebookId, sectionId, isPinned, isFavorite, isDeleted, isArchived, updatedAt, syncStatus',
+  folders: 'id, name',
+  notebooks: '_id, id, name, order, isDeleted',
+  sections: '_id, id, notebookId, name, order, isDeleted',
+  syncQueue: '++id, noteId, action, timestamp'
+});
+
 export const offlineService = {
   // Get all cached notes from local Dexie database
   async getLocalNotes(params = {}) {
@@ -239,6 +247,105 @@ export const offlineService = {
       }
     } catch (err) {
       console.warn('Dexie deleteLocalFolder error:', err);
+    }
+  },
+
+  // Get cached notebooks from local Dexie
+  async getLocalNotebooks() {
+    try {
+      const all = await db.notebooks.filter((nb) => !nb.isDeleted).toArray();
+      return all.sort((a, b) => (a.order || 0) - (b.order || 0));
+    } catch (err) {
+      console.warn('Dexie getLocalNotebooks error:', err);
+      return [];
+    }
+  },
+
+  async cacheServerNotebooks(notebooks = []) {
+    try {
+      if (!Array.isArray(notebooks) || notebooks.length === 0) return;
+      await db.notebooks.bulkPut(
+        notebooks.map((nb) => ({
+          ...nb,
+          id: nb._id || nb.id,
+          _id: nb._id || nb.id
+        }))
+      );
+    } catch (err) {
+      console.warn('Dexie cacheServerNotebooks error:', err);
+    }
+  },
+
+  async saveLocalNotebook(notebookData) {
+    try {
+      const id = notebookData._id || notebookData.id || `nb_${Date.now()}`;
+      const record = { ...notebookData, _id: id, id };
+      await db.notebooks.put(record);
+      return record;
+    } catch (err) {
+      console.warn('Dexie saveLocalNotebook error:', err);
+      return notebookData;
+    }
+  },
+
+  async deleteLocalNotebook(id) {
+    try {
+      if (id) {
+        await db.notebooks.delete(id);
+      }
+    } catch (err) {
+      console.warn('Dexie deleteLocalNotebook error:', err);
+    }
+  },
+
+  // Get cached sections for a notebook
+  async getLocalSections(notebookId) {
+    try {
+      if (!notebookId) return [];
+      const all = await db.sections
+        .filter((s) => !s.isDeleted && (s.notebookId === notebookId || s.notebookId?._id === notebookId))
+        .toArray();
+      return all.sort((a, b) => (a.order || 0) - (b.order || 0));
+    } catch (err) {
+      console.warn('Dexie getLocalSections error:', err);
+      return [];
+    }
+  },
+
+  async cacheServerSections(sections = []) {
+    try {
+      if (!Array.isArray(sections) || sections.length === 0) return;
+      await db.sections.bulkPut(
+        sections.map((s) => ({
+          ...s,
+          id: s._id || s.id,
+          _id: s._id || s.id
+        }))
+      );
+    } catch (err) {
+      console.warn('Dexie cacheServerSections error:', err);
+    }
+  },
+
+  async saveLocalSection(sectionData) {
+    try {
+      const id = sectionData._id || sectionData.id || `sec_${Date.now()}`;
+      const record = { ...sectionData, _id: id, id };
+      await db.sections.put(record);
+      return record;
+    } catch (err) {
+      console.warn('Dexie saveLocalSection error:', err);
+      return sectionData;
+    }
+  },
+
+  async deleteLocalSection(id) {
+    try {
+      if (id) {
+        await db.sections.delete(id);
+      }
+    } catch (err) {
+      console.warn('Dexie deleteLocalSection error:', err);
     }
   }
 };

@@ -7,6 +7,8 @@ const morgan = require('morgan');
 const environment = require('./config/environment');
 const authRoutes = require('./routes/auth.routes');
 const noteRoutes = require('./routes/note.routes');
+const notebookRoutes = require('./routes/notebook.routes');
+const sectionRoutes = require('./routes/section.routes');
 const folderRoutes = require('./routes/folder.routes');
 const trashRoutes = require('./routes/trash.routes');
 const userRoutes = require('./routes/user.routes');
@@ -68,6 +70,8 @@ app.get('/api/health', (req, res) => {
 // 6. API Route Handlers
 app.use('/api/auth', authRoutes);
 app.use('/api/notes', noteRoutes);
+app.use('/api/notebooks', notebookRoutes);
+app.use('/api/sections', sectionRoutes);
 app.use('/api/folders', folderRoutes);
 app.use('/api/trash', trashRoutes);
 app.use('/api/users', userRoutes);

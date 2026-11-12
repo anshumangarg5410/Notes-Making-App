@@ -227,3 +227,4 @@ export default function StorageOnboardingModal({ isOpen, onComplete, user }) {
     </div>
   );
 }
+

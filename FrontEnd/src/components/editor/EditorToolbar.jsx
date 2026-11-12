@@ -23,7 +23,8 @@ import {
   Pencil,
   PenTool,
   Keyboard,
-  Columns
+  Columns,
+  History
 } from 'lucide-react';
 
 export const EditorToolbar = ({
@@ -34,7 +35,9 @@ export const EditorToolbar = ({
   onOpenQuickScribble,
   noteView = 'type',
   onSwitchView,
-  hasDrawings = false
+  hasDrawings = false,
+  onOpenVersionHistory,
+  onSaveVersionSnapshot
 }) => {
   const { isDark } = useTheme();
   const [headingDropdownOpen, setHeadingDropdownOpen] = useState(false);
@@ -641,6 +644,20 @@ export const EditorToolbar = ({
               <span>Split</span>
             </button>
           </div>
+        )}
+
+        {/* 15. Version History */}
+        {onOpenVersionHistory && (
+          <button
+            type="button"
+            onClick={onOpenVersionHistory}
+            className={`p-1.5 rounded-[3px] transition-colors ml-1 ${
+              isDark ? 'text-gray-400 hover:text-pink-300 hover:bg-[#202030]' : 'text-[#6B7280] hover:text-pink-600 hover:bg-[#F3F0F9]'
+            }`}
+            title="Version History & Revisions"
+          >
+            <History className="w-3.5 h-3.5" />
+          </button>
         )}
       </div>
     </div>

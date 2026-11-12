@@ -17,6 +17,8 @@ const activitySchema = new mongoose.Schema(
         'deleted_note',
         'restored_note',
         'favorited_note',
+        'saved_note_version',
+        'restored_note_version',
         'created_folder',
         'updated_folder',
         'deleted_folder',

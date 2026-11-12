@@ -20,8 +20,10 @@ import { SectionModal } from '../notebooks/SectionModal';
 import { MoveSectionModal } from '../notebooks/MoveSectionModal';
 import { MoveNoteModal } from '../notebooks/MoveNoteModal';
 import StorageOnboardingModal from '../storage/StorageOnboardingModal';
+import VersionHistoryPanel from '../versions/VersionHistoryPanel';
 import storageService from '../../services/storageService';
 import driveSyncEngine from '../../services/driveSyncEngine';
+import versionService from '../../services/versionService';
 import websiteLogo from '../../assets/shared/logo/websiteLogo.png';
 import './editorTheme.css';
 
@@ -45,6 +47,8 @@ export const EditorLayout = ({
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [isExplorerCollapsed, setIsExplorerCollapsed] = useState(false);
   const [isInspectorOpen, setIsInspectorOpen] = useState(false); // Collapsed by default as in screenshot, toggleable in tab bar
+  const [isVersionHistoryOpen, setIsVersionHistoryOpen] = useState(false);
+  const [previewVersion, setPreviewVersion] = useState(null);
   const [isFocusMode, setIsFocusMode] = useState(false);
 
   const handleOpenSettings = () => {
@@ -762,6 +766,49 @@ export const EditorLayout = ({
     }
   };
 
+  // Reset version preview whenever active note tab switches
+  useEffect(() => {
+    setPreviewVersion(null);
+  }, [activeTabId]);
+
+  // Version History Handlers
+  const handleToggleVersionHistory = () => {
+    setIsVersionHistoryOpen((prev) => !prev);
+  };
+
+  const handlePreviewVersion = (version) => {
+    setPreviewVersion(version);
+  };
+
+  const handleExitPreview = () => {
+    setPreviewVersion(null);
+  };
+
+  const handleRestoreVersion = async (restoredNote) => {
+    setPreviewVersion(null);
+    if (!restoredNote) return;
+
+    const targetId = restoredNote._id || restoredNote.id;
+
+    // 1. Update in-memory state
+    setNotes((prev) =>
+      prev.map((n) => ((n._id || n.id) === targetId ? restoredNote : n))
+    );
+
+    // 2. Update active tab
+    setTabs((prev) =>
+      prev.map((t) =>
+        t.id === targetId
+          ? { ...t, title: restoredNote.title, note: restoredNote, isUnsaved: false }
+          : t
+      )
+    );
+
+    // 3. Save to local Dexie
+    await offlineService.saveLocalNote(restoredNote, false);
+    await refreshStats();
+  };
+
   // When switching navigation / folder / tag filter, deselect active note if it does not belong to the selected view
   useEffect(() => {
     if (!activeTabId) return;
@@ -1464,7 +1511,15 @@ export const EditorLayout = ({
               onNewTab={handleNewNote}
               saveStatus={saveStatus}
               isInspectorOpen={isInspectorOpen}
-              onToggleInspector={() => setIsInspectorOpen(!isInspectorOpen)}
+              onToggleInspector={() => {
+                setIsInspectorOpen(!isInspectorOpen);
+                if (!isInspectorOpen) setIsVersionHistoryOpen(false);
+              }}
+              isVersionHistoryOpen={isVersionHistoryOpen}
+              onToggleVersionHistory={() => {
+                setIsVersionHistoryOpen(!isVersionHistoryOpen);
+                if (!isVersionHistoryOpen) setIsInspectorOpen(false);
+              }}
               isFocusMode={isFocusMode}
               onToggleFocusMode={() => setIsFocusMode(!isFocusMode)}
               onManualSave={handleManualSave}
@@ -1502,12 +1557,20 @@ export const EditorLayout = ({
             {activeNote && activeTabId && (!activeNote.isDeleted || activeNav === 'trash') ? (
               <div className="flex-1 overflow-hidden relative flex flex-col">
                 <RichTextEditor
-                  key={`${activeTabId}-${currentMode}`}
-                  note={activeNote}
+                  key={`${activeTabId}-${currentMode}-${previewVersion ? (previewVersion._id || previewVersion.id) : 'live'}`}
+                  note={previewVersion ? { ...activeNote, ...previewVersion } : activeNote}
                   mode={currentMode}
                   onUpdateNote={handleUpdateNote}
                   onWordCountChange={setWordStats}
                   onManualSave={handleManualSave}
+                  isReadOnly={Boolean(previewVersion)}
+                  previewVersion={previewVersion}
+                  onExitPreview={handleExitPreview}
+                  onRestorePreview={() => handleRestoreVersion(previewVersion)}
+                  onOpenVersionHistory={() => {
+                    setIsVersionHistoryOpen(true);
+                    setIsInspectorOpen(false);
+                  }}
                 />
               </div>
             ) : selectedSectionId ? (
@@ -1647,8 +1710,24 @@ export const EditorLayout = ({
             />
           </main>
 
-          {/* PANE 4: Right Document Inspector (Properties & Outline) */}
-          {!isFocusMode && isInspectorOpen && activeNote && (
+          {/* PANE 4: Version History Side Panel */}
+          {!isFocusMode && isVersionHistoryOpen && activeNote && (
+            <VersionHistoryPanel
+              note={activeNote}
+              isOpen={isVersionHistoryOpen}
+              onClose={() => {
+                setIsVersionHistoryOpen(false);
+                setPreviewVersion(null);
+              }}
+              onPreviewVersion={handlePreviewVersion}
+              onExitPreview={handleExitPreview}
+              previewVersionId={previewVersion?._id || previewVersion?.id}
+              onRestoreVersion={handleRestoreVersion}
+            />
+          )}
+
+          {/* PANE 5: Right Document Inspector (Properties & Outline) */}
+          {!isFocusMode && isInspectorOpen && !isVersionHistoryOpen && activeNote && (
             <DocumentInspector
               note={activeNote}
               wordCount={wordStats.words}

@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 const Note = require('../models/Note');
 const { logActivity } = require('../utils/activityLogger');
+const versionService = require('./version.service');
 
 class NoteService {
   async create(userId, noteData) {
@@ -200,6 +201,22 @@ class NoteService {
         entityId: note._id,
         entityTitle: note.title
       });
+
+      // If content or title changed meaningfully, evaluate automatic version snapshot
+      if (filteredUpdates.content !== undefined || filteredUpdates.title !== undefined) {
+        try {
+          await versionService.createSnapshot(userId, note._id, {
+            versionType: 'automatic',
+            title: note.title,
+            content: note.content,
+            plainText: note.plainText,
+            tags: note.tags,
+            drawings: note.drawings
+          });
+        } catch (err) {
+          console.warn('[NoteService] Auto-snapshot error:', err.message);
+        }
+      }
     }
 
     return note;
@@ -259,11 +276,29 @@ class NoteService {
 
   async permanentDelete(userId, noteId) {
     if (!mongoose.Types.ObjectId.isValid(noteId)) return null;
-    return await Note.findOneAndDelete({ _id: noteId, userId });
+    const deleted = await Note.findOneAndDelete({ _id: noteId, userId });
+    if (deleted) {
+      try {
+        await versionService.deleteVersionsForNote(noteId, userId);
+      } catch (err) {
+        console.warn('[NoteService] Cleanup versions error:', err.message);
+      }
+    }
+    return deleted;
   }
 
   async emptyTrash(userId) {
-    return await Note.deleteMany({ userId, isDeleted: true });
+    const trashNotes = await Note.find({ userId, isDeleted: true }).select('_id').lean();
+    const trashIds = trashNotes.map((n) => n._id);
+    const result = await Note.deleteMany({ userId, isDeleted: true });
+    if (trashIds.length > 0) {
+      try {
+        await versionService.deleteVersionsForNotes(trashIds, userId);
+      } catch (err) {
+        console.warn('[NoteService] Cleanup trash versions error:', err.message);
+      }
+    }
+    return result;
   }
 
   async duplicate(userId, noteId) {

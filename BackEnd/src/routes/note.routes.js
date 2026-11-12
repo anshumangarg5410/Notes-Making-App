@@ -1,11 +1,15 @@
 const express = require('express');
 const noteController = require('../controllers/note.controller');
+const versionRoutes = require('./version.routes');
 const authenticate = require('../middleware/authenticate');
 
 const router = express.Router();
 
 // All note endpoints require authentication
 router.use(authenticate);
+
+// Mount version history sub-routes
+router.use('/:noteId/versions', versionRoutes);
 
 router.get('/stats', noteController.getStats);
 router.delete('/trash/empty', noteController.emptyTrash);

@@ -11,7 +11,8 @@ import {
   PanelRightOpen,
   Maximize2,
   Minimize2,
-  MoreVertical
+  MoreVertical,
+  History
 } from 'lucide-react';
 
 export const EditorTabBar = ({
@@ -23,6 +24,8 @@ export const EditorTabBar = ({
   saveStatus = 'saved', // 'saved', 'saving', 'unsaved', 'offline'
   isInspectorOpen = true,
   onToggleInspector,
+  isVersionHistoryOpen = false,
+  onToggleVersionHistory,
   isFocusMode = false,
   onToggleFocusMode,
   onOpenMoreMenu,
@@ -128,6 +131,25 @@ export const EditorTabBar = ({
               <span>Saved</span>
             </div>
           )
+        )}
+
+        {/* Version History Toggle */}
+        {onToggleVersionHistory && (
+          <button
+            onClick={onToggleVersionHistory}
+            className={`p-1.5 rounded-[3px] transition-colors ${
+              isVersionHistoryOpen
+                ? isDark
+                  ? 'text-pink-300 bg-pink-900/35 border border-pink-500/40'
+                  : 'text-pink-600 bg-pink-50 border border-pink-200'
+                : isDark
+                ? 'text-gray-400 hover:text-gray-200 hover:bg-[#1c1c28]'
+                : 'text-[#6B7280] hover:text-[#181326] hover:bg-[#F3F0F9]'
+            }`}
+            title={isVersionHistoryOpen ? 'Close Version History' : 'Version History & Revisions'}
+          >
+            <History className="w-4 h-4" />
+          </button>
         )}
 
         {/* Inspector / Properties Panel Toggle */}

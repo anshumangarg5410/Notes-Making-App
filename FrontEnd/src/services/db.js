@@ -27,6 +27,17 @@ db.version(3).stores({
   storageMeta: 'key, value'
 });
 
+// Version 4: Note Version History Support
+db.version(4).stores({
+  notes: '_id, id, title, notebookId, sectionId, isPinned, isFavorite, isDeleted, isArchived, updatedAt, lastSyncedAt, providerFileId, syncStatus',
+  folders: 'id, name',
+  notebooks: '_id, id, name, order, isDeleted, updatedAt, lastSyncedAt, providerFileId',
+  sections: '_id, id, notebookId, name, order, isDeleted, updatedAt, lastSyncedAt, providerFileId',
+  syncQueue: '++id, recordType, recordId, action, timestamp',
+  storageMeta: 'key, value',
+  versions: '_id, id, noteId, userId, versionType, createdAt'
+});
+
 export const offlineService = {
   // Storage Meta helpers
   async getStorageMeta(key, defaultValue = null) {
@@ -543,10 +554,58 @@ export const offlineService = {
         db.notebooks.clear(),
         db.sections.clear(),
         db.syncQueue.clear(),
-        db.storageMeta.clear()
+        db.storageMeta.clear(),
+        db.versions ? db.versions.clear() : Promise.resolve()
       ]);
     } catch (err) {
       console.warn('Dexie clearAllData error:', err);
+    }
+  },
+
+  // Version History offline helpers
+  async getLocalVersions(noteId) {
+    try {
+      if (!db.versions) return [];
+      const all = await db.versions.filter((v) => v.noteId === noteId).toArray();
+      return all.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+    } catch (err) {
+      console.warn('Dexie getLocalVersions error:', err);
+      return [];
+    }
+  },
+
+  async saveLocalVersion(noteId, versionData) {
+    try {
+      if (!db.versions) return versionData;
+      const id = versionData._id || versionData.id || `v_${Date.now()}`;
+      const record = {
+        ...versionData,
+        _id: id,
+        id,
+        noteId,
+        createdAt: versionData.createdAt || new Date().toISOString()
+      };
+      await db.versions.put(record);
+      return record;
+    } catch (err) {
+      console.warn('Dexie saveLocalVersion error:', err);
+      return versionData;
+    }
+  },
+
+  async cacheServerVersions(noteId, versions = []) {
+    try {
+      if (!db.versions || !Array.isArray(versions) || versions.length === 0) return;
+      await db.versions.bulkPut(
+        versions.map((v) => ({
+          ...v,
+          id: v._id || v.id,
+          _id: v._id || v.id,
+          noteId
+        }))
+      );
+    } catch (err) {
+      console.warn('Dexie cacheServerVersions error:', err);
     }
   }
 };

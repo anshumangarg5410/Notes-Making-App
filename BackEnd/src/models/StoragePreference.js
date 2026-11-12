@@ -95,3 +95,4 @@ const storagePreferenceSchema = new mongoose.Schema(
 const StoragePreference = mongoose.model('StoragePreference', storagePreferenceSchema);
 
 module.exports = StoragePreference;
+

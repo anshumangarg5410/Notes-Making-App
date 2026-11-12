@@ -36,6 +36,7 @@ import { DrawingAiCleanupModal } from '../drawing/DrawingAiCleanupModal';
 import { DrawingModal } from '../drawing/DrawingModal';
 import { cleanupDrawingWithAi } from '../../services/drawingAiService';
 import { markdownToHtml, htmlToMarkdown, stripHtmlToPlainText } from '../../utils/markdownUtils';
+import VersionPreviewBanner from '../versions/VersionPreviewBanner';
 
 // Enhanced Image extension preserving drawing vector metadata
 const CustomImage = Image.extend({
@@ -67,7 +68,12 @@ export const RichTextEditor = ({
   onUpdateNote,
   onWordCountChange,
   onInsertImageRef,
-  onManualSave
+  onManualSave,
+  isReadOnly = false,
+  previewVersion = null,
+  onExitPreview,
+  onRestorePreview,
+  onOpenVersionHistory
 }) => {
   const { fontSize, lineNumbers, spellCheck } = useEditorSettings();
   const { isDark } = useTheme();
@@ -428,8 +434,10 @@ export const RichTextEditor = ({
         return false;
       }
     },
+    editable: !isReadOnly,
     content: getInitialContent(),
     onUpdate: ({ editor: ed }) => {
+      if (isReadOnly) return;
       const html = ed.getHTML();
       const text = ed.getText();
       const words = text.trim() ? text.trim().split(/\s+/).length : 0;
@@ -448,6 +456,13 @@ export const RichTextEditor = ({
       });
     }
   });
+
+  // Keep editor editable state in sync with isReadOnly
+  useEffect(() => {
+    if (editor) {
+      editor.setEditable(!isReadOnly);
+    }
+  }, [editor, isReadOnly]);
 
   // Calculate statistics initially for WYSIWYG
   useEffect(() => {
@@ -892,6 +907,7 @@ export const RichTextEditor = ({
               noteView={noteView}
               onSwitchView={setNoteView}
               hasDrawings={drawingStrokeCount > 0}
+              onOpenVersionHistory={onOpenVersionHistory}
             />
           )}
 
@@ -905,6 +921,7 @@ export const RichTextEditor = ({
               noteView={noteView}
               onSwitchView={setNoteView}
               hasDrawings={drawingStrokeCount > 0}
+              onOpenVersionHistory={onOpenVersionHistory}
             />
           )}
         </>
@@ -921,12 +938,13 @@ export const RichTextEditor = ({
           <input
             type="text"
             value={title}
-            onChange={handleTitleChange}
+            onChange={isReadOnly ? undefined : handleTitleChange}
+            readOnly={isReadOnly}
             spellCheck={spellCheck}
             placeholder="Untitled Note"
             className={`text-2xl sm:text-3xl font-bold bg-transparent border-none focus:outline-none w-full tracking-tight caret-purple-500 ${
               isDark ? 'text-white placeholder-gray-500' : 'text-[#111827] placeholder-slate-400'
-            }`}
+            } ${isReadOnly ? 'cursor-default opacity-90' : ''}`}
           />
         </div>
 
@@ -1022,6 +1040,15 @@ export const RichTextEditor = ({
     <div className={`flex-1 flex flex-col h-full overflow-hidden select-text transition-colors duration-150 ${
       isDark ? 'bg-[#0e0e14] text-gray-200' : 'bg-white text-[#181326]'
     }`}>
+      {/* Historical Version Preview Banner */}
+      {previewVersion && (
+        <VersionPreviewBanner
+          version={previewVersion}
+          onExitPreview={onExitPreview}
+          onRestore={onRestorePreview}
+        />
+      )}
+
       {/* Hidden file input for inserting images */}
       <input
         type="file"
@@ -1070,11 +1097,12 @@ export const RichTextEditor = ({
             <input
               type="text"
               value={title}
-              onChange={handleTitleChange}
+              onChange={isReadOnly ? undefined : handleTitleChange}
+              readOnly={isReadOnly}
               placeholder="Untitled Sketch"
               className={`text-xl sm:text-2xl font-bold bg-transparent border-none focus:outline-none w-full tracking-tight caret-purple-500 ${
                 isDark ? 'text-white placeholder-gray-500' : 'text-[#111827] placeholder-slate-400'
-              }`}
+              } ${isReadOnly ? 'cursor-default opacity-90' : ''}`}
             />
             <div className="hidden sm:flex items-center gap-2 pl-4">
               <span className="text-[11px] text-purple-400 font-medium px-2 py-0.5 rounded-full bg-purple-500/10 border border-purple-500/20 whitespace-nowrap">

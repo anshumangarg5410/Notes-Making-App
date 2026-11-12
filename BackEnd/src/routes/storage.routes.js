@@ -28,3 +28,4 @@ router.get('/migration/data', storageController.getMigrationData);
 router.post('/backup/export', storageController.exportBackup);
 
 module.exports = router;
+

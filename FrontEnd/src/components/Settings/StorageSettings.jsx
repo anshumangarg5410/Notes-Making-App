@@ -1,9 +1,7 @@
 import React from 'react';
-import { HardDrive, Crown, ArrowUpRight, Check, Sparkles } from 'lucide-react';
+import { HardDrive, Sparkles, Check, Database } from 'lucide-react';
 
 export const StorageSettings = ({ user, notes = [] }) => {
-  const plan = user?.plan || 'pro';
-
   // Calculate real storage
   let totalBytes = 0;
   if (Array.isArray(notes)) {
@@ -53,43 +51,36 @@ export const StorageSettings = ({ user, notes = [] }) => {
         <h4 className="text-xs font-semibold text-gray-300 mb-3">Storage Breakdown</h4>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-5">
           <div className="p-3 bg-[#171722] border border-[#272738] rounded-[5px]">
-            <p className="text-[11px] text-gray-400">Notes & Revisions</p>
-            <p className="text-sm font-bold text-white mt-1">18.4 MB</p>
-            <p className="text-[10px] text-purple-400 mt-0.5">48 active notes</p>
+            <p className="text-[11px] text-gray-400">Notes & Content</p>
+            <p className="text-sm font-bold text-white mt-1">{usedFormatted}</p>
+            <p className="text-[10px] text-purple-400 mt-0.5">{notes.length} active notes</p>
           </div>
           <div className="p-3 bg-[#171722] border border-[#272738] rounded-[5px]">
-            <p className="text-[11px] text-gray-400">Images & Attachments</p>
-            <p className="text-sm font-bold text-white mt-1">210.0 MB</p>
-            <p className="text-[10px] text-purple-400 mt-0.5">Media assets</p>
+            <p className="text-[11px] text-gray-400">Database Quota</p>
+            <p className="text-sm font-bold text-white mt-1">512 MB</p>
+            <p className="text-[10px] text-emerald-400 mt-0.5">MongoDB Atlas M0</p>
           </div>
           <div className="p-3 bg-[#171722] border border-[#272738] rounded-[5px]">
-            <p className="text-[11px] text-gray-400">Cache & Indexes</p>
-            <p className="text-sm font-bold text-white mt-1">16.6 MB</p>
-            <p className="text-[10px] text-purple-400 mt-0.5">Search index</p>
+            <p className="text-[11px] text-gray-400">Client Cache</p>
+            <p className="text-sm font-bold text-white mt-1">IndexedDB</p>
+            <p className="text-[10px] text-purple-400 mt-0.5">Offline-first local</p>
           </div>
         </div>
 
-        {/* Upgrade / Plan info */}
-        <div className="p-4 rounded-[6px] bg-gradient-to-r from-purple-950/40 via-[#1e1430]/60 to-[#14141e] border border-purple-800/40 flex items-center justify-between gap-4">
+        {/* Free Plan / Workspace info */}
+        <div className="p-4 rounded-[6px] bg-[#1a1a26] border border-[#2e2e44] flex items-center justify-between gap-4">
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-[6px] bg-purple-600/30 border border-purple-500/40 flex items-center justify-center text-purple-300">
-              <Crown className="w-5 h-5 text-amber-300" />
+            <div className="w-9 h-9 rounded-[6px] bg-purple-600/20 border border-purple-500/30 flex items-center justify-center text-purple-300">
+              <Database className="w-4 h-4 text-purple-400" />
             </div>
             <div>
               <p className="text-xs font-bold text-white flex items-center gap-1.5">
-                <span>NoteNest Pro Plan</span>
-                <span className="px-1.5 py-0.5 rounded text-[10px] bg-purple-600 text-white font-semibold">Active</span>
+                <span>NoteNest Free Plan</span>
+                <span className="px-1.5 py-0.5 rounded text-[10px] bg-emerald-950 text-emerald-400 border border-emerald-500/40 font-semibold">Active</span>
               </p>
-              <p className="text-[11px] text-gray-400">Unlimited notes, nested folders, and priority cloud sync</p>
+              <p className="text-[11px] text-gray-400">512 MB cloud storage on MongoDB Atlas • Offline-first local sync</p>
             </div>
           </div>
-          <button
-            type="button"
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-[5px] bg-purple-600 hover:bg-purple-500 text-white font-medium text-xs transition-colors cursor-pointer"
-          >
-            <span>Manage Plan</span>
-            <ArrowUpRight className="w-3.5 h-3.5" />
-          </button>
         </div>
       </div>
     </div>

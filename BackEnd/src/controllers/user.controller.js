@@ -22,7 +22,7 @@ class UserController {
           bio: user.bio || 'Student • Developer • Building cool stuff with code.',
           avatar: user.avatar || user.avatarUrl || '',
           coverImage: user.coverImage || '',
-          plan: user.plan || 'Pro Plan',
+          plan: user.plan || 'Free Plan',
           createdAt: user.createdAt,
           preferences: user.preferences || {
             theme: 'dark',
@@ -69,7 +69,7 @@ class UserController {
           bio: user.bio,
           avatar: user.avatar || user.avatarUrl || '',
           coverImage: user.coverImage || '',
-          plan: user.plan || 'Pro Plan',
+          plan: user.plan || 'Free Plan',
           createdAt: user.createdAt,
           preferences: user.preferences
         }
@@ -139,7 +139,7 @@ class UserController {
         bio: user.bio,
         avatar: user.avatar,
         coverImage: user.coverImage || '',
-        plan: user.plan || 'Pro Plan',
+        plan: user.plan || 'Free Plan',
         preferences: user.preferences
       };
 

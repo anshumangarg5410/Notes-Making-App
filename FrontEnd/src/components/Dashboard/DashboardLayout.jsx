@@ -13,7 +13,6 @@ import { IntegratedFoldersView } from './IntegratedFoldersView';
 import { IntegratedSettingsView } from './IntegratedSettingsView';
 import { NewFolderModal } from './NewFolderModal';
 import { ImportExportModal } from './ImportExportModal';
-import { UpgradeProModal } from './UpgradeProModal';
 import { SettingsModal } from '../modals/SettingsModal';
 import { useTheme } from '../../context/ThemeContext';
 import dashboardBgDark from '../../assets/dashboard/dashboard-bg-dark.png';
@@ -26,7 +25,7 @@ export const DashboardLayout = ({
   folders = [],
   tags = [],
   activities = [],
-  storage = { usedMb: 245, totalGb: 2, percentage: 12 },
+  storage = { usedMb: 0.1, totalMb: 512, percentage: 0.1 },
   activeNav = 'dashboard',
   onSelectNav,
   onSelectNote,
@@ -51,7 +50,6 @@ export const DashboardLayout = ({
   const [isFolderModalOpen, setIsFolderModalOpen] = useState(false);
   const [isImportExportModalOpen, setIsImportExportModalOpen] = useState(false);
   const [importExportMode, setImportExportMode] = useState('import');
-  const [isUpgradeModalOpen, setIsUpgradeModalOpen] = useState(false);
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
 
   const handleOpenImport = () => {
@@ -76,7 +74,6 @@ export const DashboardLayout = ({
         onToggleCollapse={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
         isMobileOpen={isMobileSidebarOpen}
         onCloseMobile={() => setIsMobileSidebarOpen(false)}
-        onOpenUpgradeModal={() => setIsUpgradeModalOpen(true)}
       />
 
       {/* 2. Main Content Wrapper */}
@@ -112,6 +109,7 @@ export const DashboardLayout = ({
             <IntegratedSettingsView
               onBackToDashboard={() => onSelectNav && onSelectNav('dashboard')}
               initialTab={activeNav === 'profile' ? 'profile' : 'profile'}
+              notes={notes}
             />
           ) : (
             /* Main 2-Column Responsive Layout */
@@ -187,11 +185,6 @@ export const DashboardLayout = ({
         initialMode={importExportMode}
         notes={notes}
         onImportNote={onImportNote}
-      />
-
-      <UpgradeProModal
-        isOpen={isUpgradeModalOpen}
-        onClose={() => setIsUpgradeModalOpen(false)}
       />
 
       <SettingsModal

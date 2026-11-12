@@ -56,7 +56,7 @@ const userSchema = new mongoose.Schema(
     },
     plan: {
       type: String,
-      default: 'Pro Plan'
+      default: 'Free Plan'
     },
     coverImage: {
       type: String,

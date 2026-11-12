@@ -75,7 +75,7 @@ const CATEGORY_META = {
   }
 };
 
-export const IntegratedSettingsView = ({ onBackToDashboard, initialTab = 'profile' }) => {
+export const IntegratedSettingsView = ({ onBackToDashboard, initialTab = 'profile', notes = [] }) => {
   const { user, updateUser } = useAuth();
   const { theme, setTheme } = useTheme();
   const { success } = useToast();
@@ -188,8 +188,8 @@ export const IntegratedSettingsView = ({ onBackToDashboard, initialTab = 'profil
 
             {activeTab === 'storage' && (
               <StorageSettings
-                storage={{ usedMb: 245, totalGb: 2, percentage: 12 }}
-                onOpenUpgrade={() => {}}
+                user={currentUser}
+                notes={notes}
               />
             )}
 

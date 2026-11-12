@@ -1,5 +1,5 @@
 import React, { useRef, useState, useEffect } from 'react';
-import { Pencil, Image, Sparkles, Crown } from 'lucide-react';
+import { Pencil, Image, Sparkles } from 'lucide-react';
 import purpleMountainMoon from '../../assets/editor/purple-mountain-moon.png';
 
 export const ProfileBanner = ({
@@ -129,9 +129,9 @@ export const ProfileBanner = ({
             </div>
 
             <div className="flex items-center gap-2 pt-0.5 text-xs text-gray-400">
-              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium bg-purple-950/60 text-purple-300 border border-purple-500/40">
-                <Crown className="w-3 h-3 text-amber-400" />
-                <span>{user?.plan || 'Pro Plan'}</span>
+              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium bg-emerald-950/60 text-emerald-300 border border-emerald-500/40">
+                <Sparkles className="w-3 h-3 text-emerald-400" />
+                <span>Free Plan</span>
               </span>
               <span className="text-gray-600">•</span>
               <span className="text-[11px] text-gray-400">

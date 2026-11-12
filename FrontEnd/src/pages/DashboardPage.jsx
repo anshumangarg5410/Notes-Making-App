@@ -14,7 +14,7 @@ export const DashboardPage = ({ onOpenNoteInEditor = null }) => {
     folders: [],
     tags: [],
     activities: [],
-    storage: { usedMb: 245, totalGb: 2, percentage: 12 }
+    storage: { usedMb: 0.1, totalMb: 512, totalGb: 0.5, percentage: 0.1 }
   });
   const [loading, setLoading] = useState(true);
   const [activeNav, setActiveNav] = useState(initialNav);

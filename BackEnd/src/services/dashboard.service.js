@@ -146,7 +146,6 @@ class DashboardService {
         percentage,
         provider: 'MongoDB Atlas (512 MB M0)'
       },
-      },
       syncStatus: {
         synced: true,
         message: 'All notes are up to date',

@@ -16,7 +16,6 @@ import {
   Settings,
   HelpCircle
 } from 'lucide-react';
-import upgradeProIcon from '../../assets/dashboard/upgrade-pro-icon-clean.png';
 import { useTheme } from '../../context/ThemeContext';
 import sidebarQuoteDark from '../../assets/dashboard/sidebar-quote-dark.png';
 import sidebarQuoteLight from '../../assets/dashboard/sidebar-quote-light.png';
@@ -26,12 +25,11 @@ export const Sidebar = ({
   activeNav = 'dashboard',
   onSelectNav,
   folders = [],
-  storage = { usedMb: 245, totalGb: 2, percentage: 12 },
+  storage = { usedMb: 0.1, totalMb: 512, percentage: 0.1 },
   isCollapsed = false,
   onToggleCollapse,
   isMobileOpen = false,
-  onCloseMobile,
-  onOpenUpgradeModal
+  onCloseMobile
 }) => {
   const [foldersExpanded, setFoldersExpanded] = useState(false);
   const { isDark } = useTheme();
@@ -222,7 +220,7 @@ export const Sidebar = ({
               </div>
 
               <p className="text-[11px] text-purple-300/70">
-                {storage.usedMb} MB of {storage.totalGb} GB used
+                {storage.usedMb < 1 ? '< 1 MB' : `${storage.usedMb} MB`} of 512 MB used
               </p>
             </div>
           ) : (
@@ -241,44 +239,6 @@ export const Sidebar = ({
               aria-hidden="true"
               className="w-full h-auto object-contain"
             />
-          )}
-
-          {/* Upgrade to Pro Card */}
-          {!isCollapsed && (
-            <div className="relative rounded-[4px] p-4 bg-gradient-to-b from-[#1e1532] to-[#150f24] border border-purple-500/30 overflow-hidden shadow-lg group">
-              {/* Subtle background ambient purple glow */}
-              <div className="absolute -top-10 -right-10 w-24 h-24 bg-purple-600/20 rounded-full blur-xl pointer-events-none" />
-
-              {/* Document Illustration */}
-              <div className="flex items-center justify-center mb-2.5">
-                <img
-                  src={upgradeProIcon}
-                  alt="Upgrade to Pro"
-                  className="w-16 h-auto object-contain drop-shadow-md group-hover:scale-105 transition-transform duration-300"
-                />
-              </div>
-
-              {/* Card Text */}
-              <div className="text-center mb-3">
-                <h4 className="text-xs sm:text-sm font-bold text-white flex items-center justify-center gap-1">
-                  <span>Upgrade to Pro</span>
-                  <Sparkles className="w-3 h-3 text-amber-400" />
-                </h4>
-                <p className="text-[11px] text-stone-300/80 mt-1 leading-snug">
-                  Get more storage, sync across devices and more.
-                </p>
-              </div>
-
-              {/* CTA Button */}
-              <button
-                type="button"
-                onClick={onOpenUpgradeModal}
-                className="w-full py-2 px-3 rounded-[3px] text-xs font-semibold bg-gradient-to-r from-[#9333ea] to-[#7c3aed] hover:from-[#8b5cf6] hover:to-[#6d28d9] text-white border border-purple-400/50 shadow-[0_0_12px_rgba(147,51,234,0.35)] hover:shadow-[0_0_18px_rgba(147,51,234,0.55)] transition-all cursor-pointer flex items-center justify-center gap-1.5"
-              >
-                <span>Upgrade Now</span>
-                <span className="text-sm">→</span>
-              </button>
-            </div>
           )}
 
           {/* Sidebar Footer Icons */}

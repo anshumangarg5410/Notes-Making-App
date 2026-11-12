@@ -109,7 +109,7 @@ export const dashboardService = {
           stats: d.stats || { totalNotes: 0, folders: 0, tags: 0, favorites: 0 },
           folders: Array.isArray(d.folders) && d.folders.length > 0 ? d.folders : DEFAULT_FOLDERS,
           tags: Array.isArray(d.tags) && d.tags.length > 0 ? d.tags : DEFAULT_TAGS,
-          storage: d.storage || { usedMb: 245, totalGb: 2, percentage: 12 },
+          storage: d.storage || { usedMb: 0.1, totalMb: 512, totalGb: 0.5, percentage: 0.1 },
           activities: Array.isArray(d.activities) && d.activities.length > 0 ? d.activities : DEFAULT_ACTIVITIES,
           syncStatus: d.syncStatus || { synced: true, message: 'All notes are up to date' }
         };
@@ -167,7 +167,9 @@ export const dashboardService = {
         const text = (n.title || '') + (n.plainText || '') + JSON.stringify(n.content || '');
         return acc + text.length;
       }, 0) / 1024;
-      const usedMb = Math.max(245, Math.round(notesSizeKb / 1024 * 10) / 10);
+      const usedMb = Math.round((notesSizeKb / 1024) * 100) / 100;
+      const totalMb = 512;
+      const percentage = Math.min(100, Math.max(0.1, Number(((usedMb / totalMb) * 100).toFixed(1))));
 
       // Activities from localStorage or default
       const storedActivities = localStorage.getItem('notenest_recent_activities');
@@ -184,9 +186,10 @@ export const dashboardService = {
         folders,
         tags: dynamicTags,
         storage: {
-          usedMb: 245,
-          totalGb: 2,
-          percentage: 12
+          usedMb,
+          totalMb,
+          totalGb: 0.5,
+          percentage
         },
         activities
       };
@@ -197,7 +200,7 @@ export const dashboardService = {
         stats: { totalNotes: 48, folders: 6, tags: 12, favorites: 9 },
         folders: DEFAULT_FOLDERS,
         tags: DEFAULT_TAGS,
-        storage: { usedMb: 245, totalGb: 2, percentage: 12 },
+        storage: { usedMb: 0.1, totalMb: 512, totalGb: 0.5, percentage: 0.1 },
         activities: DEFAULT_ACTIVITIES
       };
     }

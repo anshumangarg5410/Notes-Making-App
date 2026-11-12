@@ -1,8 +1,28 @@
 import React from 'react';
 import { HardDrive, Crown, ArrowUpRight, Check, Sparkles } from 'lucide-react';
 
-export const StorageSettings = ({ user }) => {
+export const StorageSettings = ({ user, notes = [] }) => {
   const plan = user?.plan || 'pro';
+
+  // Calculate real storage
+  let totalBytes = 0;
+  if (Array.isArray(notes)) {
+    notes.forEach((n) => {
+      const titleBytes = n.title ? new Blob([n.title]).size : 0;
+      const contentStr = typeof n.content === 'string' ? n.content : JSON.stringify(n.content || '');
+      const contentBytes = contentStr ? new Blob([contentStr]).size : 0;
+      totalBytes += titleBytes + contentBytes;
+    });
+  }
+
+  const totalQuotaBytes = 2 * 1024 * 1024 * 1024;
+  const usedFormatted = totalBytes < 1024 * 1024
+    ? `${Math.max(1, Math.round(totalBytes / 1024))} KB`
+    : `${(totalBytes / (1024 * 1024)).toFixed(2)} MB`;
+
+  const rawPct = (totalBytes / totalQuotaBytes) * 100;
+  const percentage = rawPct < 0.1 ? '< 1%' : `${rawPct.toFixed(1)}%`;
+  const progressWidth = `${Math.max(3, Math.min(100, Math.round(rawPct)))}%`;
 
   return (
     <div className="space-y-4 text-xs">
@@ -18,13 +38,13 @@ export const StorageSettings = ({ user }) => {
         {/* Progress Bar & Meter */}
         <div className="p-4 rounded-[6px] bg-[#1a1a26] border border-[#2e2e44] mb-5">
           <div className="flex items-center justify-between text-xs mb-2">
-            <span className="font-semibold text-white">245 MB of 2 GB used</span>
-            <span className="text-purple-400 font-bold">12%</span>
+            <span className="font-semibold text-white">{usedFormatted} of 2 GB used</span>
+            <span className="text-purple-400 font-bold">{percentage}</span>
           </div>
           <div className="w-full h-2 bg-[#252538] rounded-full overflow-hidden">
             <div
-              className="h-full bg-gradient-to-r from-purple-500 to-indigo-500 rounded-full"
-              style={{ width: '12%' }}
+              className="h-full bg-gradient-to-r from-purple-500 to-indigo-500 rounded-full transition-all duration-300"
+              style={{ width: progressWidth }}
             />
           </div>
         </div>

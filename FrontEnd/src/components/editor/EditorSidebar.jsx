@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useTheme } from '../../context/ThemeContext';
@@ -121,6 +121,38 @@ export const EditorSidebar = ({
     .slice(0, 2)
     .join('')
     .toUpperCase() || 'U';
+
+  // Calculate dynamic storage usage from real user notes
+  const storageInfo = useMemo(() => {
+    let totalBytes = 0;
+    if (Array.isArray(notes)) {
+      notes.forEach((n) => {
+        const titleBytes = n.title ? new Blob([n.title]).size : 0;
+        const contentStr = typeof n.content === 'string' ? n.content : JSON.stringify(n.content || '');
+        const contentBytes = contentStr ? new Blob([contentStr]).size : 0;
+        totalBytes += titleBytes + contentBytes;
+      });
+    }
+
+    const totalQuotaBytes = 2 * 1024 * 1024 * 1024; // 2 GB Workspace Quota
+    let usedFormatted = '0 KB';
+    if (totalBytes < 1024 * 1024) {
+      usedFormatted = `${Math.max(1, Math.round(totalBytes / 1024))} KB`;
+    } else {
+      usedFormatted = `${(totalBytes / (1024 * 1024)).toFixed(2)} MB`;
+    }
+
+    const rawPct = (totalBytes / totalQuotaBytes) * 100;
+    const percentage = rawPct < 0.1 ? '< 1%' : `${rawPct.toFixed(1)}%`;
+    const progressWidth = Math.max(3, Math.min(100, Math.round(rawPct)));
+
+    return {
+      usedFormatted,
+      percentage,
+      progressWidth: `${progressWidth}%`,
+      totalBytes
+    };
+  }, [notes]);
 
   const handleLogout = async () => {
     try {
@@ -409,6 +441,11 @@ export const EditorSidebar = ({
               />
               {!isCollapsed && <span>Drawing Canvas</span>}
             </div>
+            {!isCollapsed && (
+              <span className={`text-[10px] ${isDark ? 'text-gray-500' : 'text-[#9CA3AF]'}`}>
+                {notes.filter((n) => !n.isDeleted && ((n.drawings && n.drawings.length > 0) || (n.tags && n.tags.includes('sketch')))).length}
+              </span>
+            )}
           </button>
         </div>
 
@@ -917,16 +954,20 @@ export const EditorSidebar = ({
                 <Cloud className="w-3.5 h-3.5" style={{ color: 'var(--accent, #a855f7)' }} />
                 <span>Storage</span>
               </div>
-              <span className="text-[11px] font-medium" style={{ color: 'var(--accent-text, #c084fc)' }}>12%</span>
+              <span className="text-[11px] font-medium" style={{ color: 'var(--accent-text, #c084fc)' }}>
+                {storageInfo.percentage}
+              </span>
             </div>
-            <div className={`text-[10px] ${isDark ? 'text-gray-400' : 'text-[#6B7280]'}`}>245 MB of 2 GB used</div>
+            <div className={`text-[10px] ${isDark ? 'text-gray-400' : 'text-[#6B7280]'}`}>
+              {storageInfo.usedFormatted} of 2 GB used
+            </div>
             <div className={`w-full h-1.5 rounded-full overflow-hidden ${
               isDark ? 'bg-[#252536]' : 'bg-[#E5E1F0]'
             }`}>
               <div
-                className="h-full rounded-full transition-all"
+                className="h-full rounded-full transition-all duration-300"
                 style={{
-                  width: '12%',
+                  width: storageInfo.progressWidth,
                   backgroundColor: 'var(--accent, #a855f7)'
                 }}
               />

@@ -118,17 +118,15 @@ class DashboardService {
       };
     });
 
-    // 7. Storage metrics
+    // 7. Real Storage metrics calculated from document bytes
     const totalBytes = notes.reduce((sum, n) => {
       const contentStr = typeof n.content === 'string' ? n.content : JSON.stringify(n.content || '');
       return sum + Buffer.byteLength(n.title || '', 'utf8') + Buffer.byteLength(contentStr, 'utf8');
     }, 0);
 
-    const actualMb = Math.round((totalBytes / (1024 * 1024)) * 10) / 10;
-    // Base allowance presentation matches screenshot reference: 245 MB of 2 GB used (12%)
-    const usedMb = Math.max(245, actualMb);
+    const usedMb = Math.round((totalBytes / (1024 * 1024)) * 100) / 100;
     const totalGb = 2;
-    const percentage = Math.min(100, Math.max(12, Math.round((usedMb / (totalGb * 1024)) * 100)));
+    const percentage = Math.min(100, Math.max(0.1, Number(((usedMb / (totalGb * 1024)) * 100).toFixed(1))));
 
     return {
       stats: {

@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useMemo, useEffect } from 'react';
 import {
   User,
   Moon,
@@ -84,6 +84,65 @@ export const SettingsView = ({
     .slice(0, 2)
     .join('')
     .toUpperCase() || 'U';
+
+  // Calculate dynamic storage usage from real user notes
+  const storageInfo = useMemo(() => {
+    let totalBytes = 0;
+    if (Array.isArray(notes)) {
+      notes.forEach((n) => {
+        const titleBytes = n.title ? new Blob([n.title]).size : 0;
+        const contentStr = typeof n.content === 'string' ? n.content : JSON.stringify(n.content || '');
+        const contentBytes = contentStr ? new Blob([contentStr]).size : 0;
+        totalBytes += titleBytes + contentBytes;
+      });
+    }
+
+    const totalQuotaBytes = 2 * 1024 * 1024 * 1024; // 2 GB Workspace Quota
+    let usedFormatted = '0 KB';
+    if (totalBytes < 1024 * 1024) {
+      usedFormatted = `${Math.max(1, Math.round(totalBytes / 1024))} KB`;
+    } else {
+      usedFormatted = `${(totalBytes / (1024 * 1024)).toFixed(2)} MB`;
+    }
+
+    const rawPct = (totalBytes / totalQuotaBytes) * 100;
+    const percentage = rawPct < 0.1 ? '< 1%' : `${rawPct.toFixed(1)}%`;
+    const progressWidth = Math.max(3, Math.min(100, Math.round(rawPct)));
+
+    return {
+      usedFormatted,
+      percentage,
+      progressWidth: `${progressWidth}%`,
+      totalBytes
+    };
+  }, [notes]);
+
+  const [localCacheSize, setLocalCacheSize] = useState('Checking...');
+
+  useEffect(() => {
+    let isMounted = true;
+    const checkStorage = async () => {
+      if (typeof navigator !== 'undefined' && navigator.storage && navigator.storage.estimate) {
+        try {
+          const est = await navigator.storage.estimate();
+          const bytes = est.usage || 0;
+          if (isMounted) {
+            if (bytes < 1024 * 1024) {
+              setLocalCacheSize(`${Math.max(1, Math.round(bytes / 1024))} KB Local`);
+            } else {
+              setLocalCacheSize(`${(bytes / (1024 * 1024)).toFixed(1)} MB Local`);
+            }
+          }
+        } catch (_) {
+          if (isMounted) setLocalCacheSize(`${storageInfo.usedFormatted} Local`);
+        }
+      } else {
+        if (isMounted) setLocalCacheSize(`${storageInfo.usedFormatted} Local`);
+      }
+    };
+    checkStorage();
+    return () => { isMounted = false; };
+  }, [storageInfo.usedFormatted]);
 
   // Section Refs for smooth scrolling
   const sectionRefs = {
@@ -741,10 +800,18 @@ export const SettingsView = ({
             <div className="space-y-2">
               <div className="flex items-center justify-between text-xs">
                 <span className={`font-medium ${isDark ? 'text-gray-300' : 'text-[#374151]'}`}>Workspace Cloud Storage</span>
-                <span className={`font-semibold ${isDark ? 'text-purple-400' : 'text-[#7C3AED]'}`}>245 MB of 2 GB used (12%)</span>
+                <span className={`font-semibold ${isDark ? 'text-purple-400' : 'text-[#7C3AED]'}`}>
+                  {storageInfo.usedFormatted} of 2 GB used ({storageInfo.percentage})
+                </span>
               </div>
               <div className={`w-full h-2 rounded-full overflow-hidden ${isDark ? 'bg-[#212234]' : 'bg-[#E5E1F0]'}`}>
-                <div className="h-full bg-gradient-to-r from-purple-500 to-indigo-500 w-[12%] rounded-full" />
+                <div
+                  className="h-full rounded-full transition-all duration-300"
+                  style={{
+                    width: storageInfo.progressWidth,
+                    background: 'linear-gradient(to right, var(--accent, #a855f7), #6366f1)'
+                  }}
+                />
               </div>
             </div>
 
@@ -755,7 +822,7 @@ export const SettingsView = ({
               </div>
               <div className={`p-3 rounded-xl border ${isDark ? 'bg-[#1a1b2c] border-[#26273c]' : 'bg-[#F8F7FD] border-[#EAE6F4]'}`}>
                 <div className={`text-[10px] ${isDark ? 'text-gray-400' : 'text-[#6B7280]'}`}>IndexedDB Cache</div>
-                <div className={`text-sm font-bold mt-1 ${isDark ? 'text-gray-100' : 'text-[#181326]'}`}>18 MB Local</div>
+                <div className={`text-sm font-bold mt-1 ${isDark ? 'text-gray-100' : 'text-[#181326]'}`}>{localCacheSize}</div>
               </div>
               <div className={`p-3 rounded-xl border ${isDark ? 'bg-[#1a1b2c] border-[#26273c]' : 'bg-[#F8F7FD] border-[#EAE6F4]'}`}>
                 <div className={`text-[10px] ${isDark ? 'text-gray-400' : 'text-[#6B7280]'}`}>Media CDN</div>

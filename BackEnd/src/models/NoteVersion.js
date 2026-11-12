@@ -83,3 +83,4 @@ noteVersionSchema.index({ noteId: 1, versionType: 1, createdAt: 1 });
 const NoteVersion = mongoose.model('NoteVersion', noteVersionSchema);
 
 module.exports = NoteVersion;
+

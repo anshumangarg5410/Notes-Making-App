@@ -1134,7 +1134,7 @@ export const SettingsView = ({
 
               <button
                 type="button"
-                onClick={handleDownloadBackup}
+                onClick={handleDownloadFullBackup}
                 className={`flex items-center gap-2 px-4 py-2 rounded-xl border text-xs font-medium transition-colors ${isDark
                   ? 'bg-[#1b1c2c] hover:bg-[#25263c] border-[#2d2e44] text-gray-200'
                   : 'bg-white hover:bg-[#F9F8FD] border-[#E2DEEE] text-[#374151]'

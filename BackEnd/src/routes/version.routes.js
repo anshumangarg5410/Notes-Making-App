@@ -19,3 +19,4 @@ router
 router.post('/:versionId/restore', versionController.restoreVersion);
 
 module.exports = router;
+

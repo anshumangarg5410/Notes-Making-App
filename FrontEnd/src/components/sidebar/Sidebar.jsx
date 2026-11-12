@@ -11,6 +11,8 @@ import {
   X
 } from 'lucide-react';
 import websiteLogo from '../../assets/shared/logo/websiteLogo.png';
+import sidebarQuoteDark from '../../assets/dashboard/sidebar-quote-dark.png';
+import sidebarQuoteLight from '../../assets/dashboard/sidebar-quote-light.png';
 import { useTheme } from '../../context/ThemeContext';
 
 export const Sidebar = ({

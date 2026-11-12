@@ -230,48 +230,6 @@ export const EditorSidebar = ({
 
   const popularTags = ['#go', '#system-design', '#dbms', '#ui-ux', '#projects'];
 
-  const handleCreateRootFolderSubmit = (e) => {
-    e.preventDefault();
-    if (newFolderName.trim() && onCreateFolder) {
-      onCreateFolder(newFolderName.trim(), null);
-      setNewFolderName('');
-      setIsCreatingFolder(false);
-    }
-  };
-
-  const handleCreateSubfolderSubmit = (e, parentId) => {
-    e.preventDefault();
-    if (newSubfolderName.trim() && onCreateFolder) {
-      onCreateFolder(newSubfolderName.trim(), parentId);
-      setNewSubfolderName('');
-      setActiveAddSubfolderParentId(null);
-      setExpandedFolders((prev) => ({ ...prev, [parentId]: true }));
-    }
-  };
-
-  const handleDelete = (item) => {
-    if (onDeleteFolder) {
-      onDeleteFolder(item._id || item.id, item.name);
-    }
-    setConfirmDeleteId(null);
-  };
-
-  const toggleFolderExpanded = (id) => {
-    setExpandedFolders((prev) => ({
-      ...prev,
-      [id]: prev[id] === undefined ? false : !prev[id]
-    }));
-  };
-
-  const isFolderExpanded = (folder, hasChildren) => {
-    const id = folder._id || folder.id;
-    if (expandedFolders[id] !== undefined) {
-      return expandedFolders[id];
-    }
-    // Default: expanded if it has children or matches active selection
-    return hasChildren || selectedFolder === folder.name;
-  };
-
   return (
     <aside
       className={`h-full border-r flex flex-col justify-between select-none text-xs transition-all duration-200 ${

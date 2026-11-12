@@ -337,6 +337,12 @@ export const RichTextEditor = ({
     }
   };
 
+  const handleOpenInsertDrawing = () => {
+    setEditingDrawing(null);
+    setIsQuickScribble(false);
+    setIsDrawingModalOpen(true);
+  };
+
   // Determine initial content from the note object
   const getInitialContent = () => {
     if (note?.content && typeof note.content === 'string' && note.content.trim()) {

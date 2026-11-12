@@ -91,3 +91,4 @@ class VersionController {
 }
 
 module.exports = new VersionController();
+

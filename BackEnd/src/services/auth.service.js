@@ -1,6 +1,5 @@
 const User = require('../models/User');
 const crypto = require('crypto');
-const { OAuth2Client } = require('google-auth-library');
 const {
   generateAccessToken,
   generateRefreshToken,
@@ -357,6 +356,15 @@ class AuthService {
    * POST /api/auth/google
    */
   async googleLogin(idToken) {
+    if (!environment.google?.enabled) {
+      const error = new Error(
+        "Google Sign-In is temporarily unavailable. Please use your email and password to sign in."
+      );
+      error.statusCode = 503;
+      error.code = 'GOOGLE_LOGIN_DISABLED';
+      throw error;
+    }
+
     if (!idToken) {
       const error = new Error('Google ID token is required.');
       error.statusCode = 400;
@@ -373,10 +381,12 @@ class AuthService {
 
     if (!clientId) {
       const error = new Error('GOOGLE_CLIENT_ID is not configured on the server. Please set GOOGLE_CLIENT_ID in BackEnd/.env.');
-      error.statusCode = 500;
+      error.statusCode = 503;
+      error.code = 'GOOGLE_LOGIN_DISABLED';
       throw error;
     }
 
+    const { OAuth2Client } = require('google-auth-library');
     const client = new OAuth2Client(clientId);
     let ticket;
     try {

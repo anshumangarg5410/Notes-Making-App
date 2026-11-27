@@ -178,6 +178,19 @@ class AuthController {
   }
 
   /**
+   * GET /api/auth/google/status
+   * Returns whether Google Sign-In is currently enabled
+   */
+  async googleStatus(req, res) {
+    const environment = require('../config/environment');
+    const enabled = Boolean(environment.google?.enabled && environment.google?.clientId);
+    return res.status(200).json({
+      success: true,
+      data: { enabled }
+    });
+  }
+
+  /**
    * POST /api/auth/google
    * Verifies Google ID token and logs in the user
    */

@@ -46,7 +46,12 @@ router.post(
   authController.login
 );
 
-// B2. Google Login
+// B2. Google Login & Availability Status
+router.get(
+  '/google/status',
+  authController.googleStatus
+);
+
 router.post(
   '/google',
   generalAuthLimiter,

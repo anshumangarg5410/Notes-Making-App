@@ -3,6 +3,7 @@ const Note = require('../models/Note');
 const { logActivity } = require('../utils/activityLogger');
 const versionService = require('./version.service');
 const storageService = require('./storage.service');
+const environment = require('../config/environment');
 
 class NoteService {
   async create(userId, noteData) {
@@ -245,9 +246,11 @@ class NoteService {
         entityTitle: note.title
       });
 
-      storageService.trashOrDeleteNoteFromDrive(userId, noteId, false).catch((err) => {
-        console.warn('[NoteService] Google Drive softDelete sync error:', err.message);
-      });
+      if (environment.googleDrive?.enabled) {
+        storageService.trashOrDeleteNoteFromDrive(userId, noteId, false).catch((err) => {
+          console.warn('[NoteService] Google Drive softDelete sync error:', err.message);
+        });
+      }
     }
 
     return note;
@@ -289,9 +292,11 @@ class NoteService {
         console.warn('[NoteService] Cleanup versions error:', err.message);
       }
 
-      storageService.trashOrDeleteNoteFromDrive(userId, noteId, true).catch((err) => {
-        console.warn('[NoteService] Google Drive permanentDelete sync error:', err.message);
-      });
+      if (environment.googleDrive?.enabled) {
+        storageService.trashOrDeleteNoteFromDrive(userId, noteId, true).catch((err) => {
+          console.warn('[NoteService] Google Drive permanentDelete sync error:', err.message);
+        });
+      }
     }
     return deleted;
   }
@@ -307,10 +312,12 @@ class NoteService {
         console.warn('[NoteService] Cleanup trash versions error:', err.message);
       }
 
-      for (const tId of trashIds) {
-        storageService.trashOrDeleteNoteFromDrive(userId, tId, true).catch((err) => {
-          console.warn('[NoteService] Google Drive emptyTrash sync error:', err.message);
-        });
+      if (environment.googleDrive?.enabled) {
+        for (const tId of trashIds) {
+          storageService.trashOrDeleteNoteFromDrive(userId, tId, true).catch((err) => {
+            console.warn('[NoteService] Google Drive emptyTrash sync error:', err.message);
+          });
+        }
       }
     }
     return result;

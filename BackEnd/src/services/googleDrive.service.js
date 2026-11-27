@@ -1,18 +1,32 @@
-const { OAuth2Client } = require('google-auth-library');
 const environment = require('../config/environment');
 const { encryptToken, decryptToken, createSignedState, verifySignedState, peekSignedState } = require('../utils/crypto');
 
 class GoogleDriveService {
   /**
-   * Initializes a Google OAuth2Client for Drive access
+   * Lazily initializes a Google OAuth2Client for Drive access only when requested
    * @param {string} [redirectUri] Optional custom redirect URI
    * @returns {OAuth2Client}
    */
   createOAuthClient(redirectUri) {
+    if (!environment.googleDrive?.enabled) {
+      const err = new Error('Google Drive integration is currently disabled.');
+      err.statusCode = 503;
+      err.code = 'GOOGLE_DRIVE_DISABLED';
+      throw err;
+    }
+
     const clientId = environment.googleDrive?.clientId;
     const clientSecret = environment.googleDrive?.clientSecret;
     const resolvedRedirectUri = redirectUri || environment.googleDrive?.redirectUri;
 
+    if (!clientId || !clientSecret) {
+      const err = new Error('Google Drive OAuth credentials are not configured.');
+      err.statusCode = 503;
+      err.code = 'GOOGLE_DRIVE_DISABLED';
+      throw err;
+    }
+
+    const { OAuth2Client } = require('google-auth-library');
     return new OAuth2Client(clientId, clientSecret, resolvedRedirectUri);
   }
 
@@ -306,6 +320,9 @@ class GoogleDriveService {
     });
 
     if (!res.ok) {
+      if (fileId && res.status === 404 && parentId) {
+        return this.uploadFile(accessToken, { fileId: null, parentId, fileName, mimeType, content });
+      }
       const errText = await res.text();
       throw new Error(`Failed to save file "${fileName}" on Google Drive: ${errText}`);
     }

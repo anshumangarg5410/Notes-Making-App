@@ -14,6 +14,11 @@ const storagePreferenceSchema = new mongoose.Schema(
       enum: ['local', 'google-drive'],
       default: 'local'
     },
+    driveStatus: {
+      type: String,
+      enum: ['not_configured', 'declined', 'connection_failed', 'connected', 'disconnected'],
+      default: 'not_configured'
+    },
     onboardingCompleted: {
       type: Boolean,
       default: false,

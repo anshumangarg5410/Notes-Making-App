@@ -76,6 +76,20 @@ class StorageController {
    */
   async connectGoogle(req, res, next) {
     try {
+      if (
+        !environment.googleDrive?.enabled ||
+        !environment.googleDrive?.clientId ||
+        !environment.googleDrive?.clientSecret
+      ) {
+        await storageService.markConnectionFailed(req.user._id).catch(() => {});
+        return res.status(503).json({
+          success: false,
+          code: 'GOOGLE_DRIVE_DISABLED',
+          message:
+            "We're currently unable to connect to Google Drive. You can continue using NoteNest without it. Your existing notes and files remain unaffected."
+        });
+      }
+
       const redirectUri = req.query.redirect_uri || undefined;
       // Capture originating client origin from query or headers
       const rawOrigin = req.query.origin || req.headers.origin || req.headers.referer || undefined;
@@ -125,6 +139,14 @@ class StorageController {
     );
 
     const frontendBaseUrl = returnOrigin || defaultFrontend;
+
+    if (!environment.googleDrive?.enabled) {
+      return res.redirect(
+        `${frontendBaseUrl}/dashboard?storage_error=${encodeURIComponent(
+          'Google Drive is temporarily unavailable.'
+        )}`
+      );
+    }
 
     if (error) {
       return res.redirect(`${frontendBaseUrl}/dashboard?storage_error=${encodeURIComponent(error)}`);

@@ -107,7 +107,9 @@ export const EditorLayout = ({
     if (storageConnected === 'true') {
       window.history.replaceState({}, document.title, window.location.pathname);
       offlineService.setStorageMeta('storage_provider', 'google-drive');
+      offlineService.setStorageMeta('drive_connected', true);
       offlineService.setStorageMeta('onboarding_completed', true);
+      driveSyncEngine.startAutoSync(60000);
       success('Google Drive connected! Initializing cloud synchronization...');
       driveSyncEngine.syncNow().then((res) => {
         if (res.success) {
@@ -116,7 +118,9 @@ export const EditorLayout = ({
       });
     } else if (storageError) {
       window.history.replaceState({}, document.title, window.location.pathname);
-      toastError(`Google Drive connection failed: ${storageError}`);
+      offlineService.setStorageMeta('storage_provider', 'local');
+      offlineService.setStorageMeta('drive_connected', false);
+      toastError(`Google Drive is temporarily unavailable: ${storageError}`);
     }
   }, [success, toastError]);
 
@@ -126,14 +130,27 @@ export const EditorLayout = ({
       if (!user) return;
       try {
         const localDone = await offlineService.getStorageMeta('onboarding_completed');
-        if (localDone === true) return;
+        if (localDone === true) {
+          const isDriveActive = await driveSyncEngine.isGoogleDriveEnabled();
+          if (isDriveActive) {
+            driveSyncEngine.startAutoSync(60000);
+          }
+          return;
+        }
 
         if (navigator.onLine) {
           const res = await storageService.getPreferences();
           if (res.success && res.data) {
+            const isConnected = Boolean(res.data.googleDrive?.connected);
+            const activeProvider = isConnected && res.data.provider === 'google-drive' ? 'google-drive' : 'local';
+            await offlineService.setStorageMeta('drive_connected', isConnected);
+            await offlineService.setStorageMeta('storage_provider', activeProvider);
+
             if (res.data.onboardingCompleted) {
               await offlineService.setStorageMeta('onboarding_completed', true);
-              await offlineService.setStorageMeta('storage_provider', res.data.provider || 'local');
+              if (activeProvider === 'google-drive' && res.data.googleDriveEnabled !== false) {
+                driveSyncEngine.startAutoSync(60000);
+              }
               return;
             }
           }
@@ -146,15 +163,10 @@ export const EditorLayout = ({
     };
 
     checkOnboarding();
-  }, [user]);
-
-  // Start background auto-sync engine
-  useEffect(() => {
-    driveSyncEngine.startAutoSync(60000);
     return () => {
       driveSyncEngine.stopAutoSync();
     };
-  }, []);
+  }, [user]);
 
   // Monitor network connectivity
   useEffect(() => {
@@ -367,7 +379,7 @@ export const EditorLayout = ({
             // Replace Dexie cache with fresh server folders (clearing deleted ones)
             try {
               await db.folders.clear();
-            } catch (_) {}
+            } catch (_) { }
             await offlineService.cacheServerFolders(fetchedFolders);
           }
         } catch (apiErr) {
@@ -426,7 +438,7 @@ export const EditorLayout = ({
         prev.map((n) => {
           if (n.folder === folderName || n.category === folderName) {
             const updated = { ...n, folder: '', category: 'Personal' };
-            offlineService.saveLocalNote(updated, false).catch(() => {});
+            offlineService.saveLocalNote(updated, false).catch(() => { });
             return updated;
           }
           return n;
@@ -985,6 +997,9 @@ export const EditorLayout = ({
       setTabs((prev) =>
         prev.map((t) => (t.id === activeTabId ? { ...t, isUnsaved: false } : t))
       );
+
+      // Sync saved changes to Google Drive if connected
+      driveSyncEngine.triggerAutoSync();
     } catch (err) {
       console.warn('Save error:', err);
       setSaveStatus('offline');
@@ -1041,12 +1056,12 @@ export const EditorLayout = ({
     (activeNote?.title?.endsWith('.md')
       ? 'Markdown'
       : activeNote?.title?.endsWith('.txt')
-      ? 'Plain Text'
-      : defaultFormat === 'markdown'
-      ? 'Markdown'
-      : defaultFormat === 'plaintext'
-      ? 'Plain Text'
-      : 'Rich Text');
+        ? 'Plain Text'
+        : defaultFormat === 'markdown'
+          ? 'Markdown'
+          : defaultFormat === 'plaintext'
+            ? 'Plain Text'
+            : 'Rich Text');
 
   // Switch editor mode handler
   const handleSelectMode = (newMode) => {
@@ -1513,9 +1528,8 @@ export const EditorLayout = ({
           )}
 
           {/* PANE 3: Main Writing Area */}
-          <main className={`editor-main flex-1 flex flex-col h-full overflow-hidden min-w-0 transition-colors duration-150 ${
-            isDark ? 'bg-[#0e0e14]' : 'bg-white'
-          }`}>
+          <main className={`editor-main flex-1 flex flex-col h-full overflow-hidden min-w-0 transition-colors duration-150 ${isDark ? 'bg-[#0e0e14]' : 'bg-white'
+            }`}>
             {/* Tab Bar at the top */}
             <EditorTabBar
               tabs={tabs}
@@ -1661,15 +1675,13 @@ export const EditorLayout = ({
                   />
                 </div>
 
-                <h3 className={`text-xl font-bold tracking-tight mb-2 ${
-                  isDark ? 'text-gray-100' : 'text-slate-800'
-                }`}>
+                <h3 className={`text-xl font-bold tracking-tight mb-2 ${isDark ? 'text-gray-100' : 'text-slate-800'
+                  }`}>
                   Select a note to view or create a new note
                 </h3>
 
-                <p className={`text-sm max-w-md mb-6 leading-relaxed ${
-                  isDark ? 'text-gray-400' : 'text-slate-500'
-                }`}>
+                <p className={`text-sm max-w-md mb-6 leading-relaxed ${isDark ? 'text-gray-400' : 'text-slate-500'
+                  }`}>
                   Choose an existing note from the explorer on the left, or create a brand new note to begin writing.
                 </p>
 
@@ -1682,30 +1694,25 @@ export const EditorLayout = ({
                   <span>Create New Note</span>
                 </button>
 
-                <div className={`mt-8 pt-6 border-t flex flex-wrap items-center justify-center gap-4 text-xs ${
-                  isDark ? 'border-[#20202e] text-gray-500' : 'border-[#EAE6F4] text-slate-400'
-                }`}>
+                <div className={`mt-8 pt-6 border-t flex flex-wrap items-center justify-center gap-4 text-xs ${isDark ? 'border-[#20202e] text-gray-500' : 'border-[#EAE6F4] text-slate-400'
+                  }`}>
                   <span className="flex items-center gap-1.5">
-                    <kbd className={`px-1.5 py-0.5 rounded text-[10px] font-mono border ${
-                      isDark ? 'bg-[#181824] border-[#2d2d3e] text-gray-300' : 'bg-slate-100 border-slate-200 text-slate-600'
-                    }`}>Ctrl</kbd>
+                    <kbd className={`px-1.5 py-0.5 rounded text-[10px] font-mono border ${isDark ? 'bg-[#181824] border-[#2d2d3e] text-gray-300' : 'bg-slate-100 border-slate-200 text-slate-600'
+                      }`}>Ctrl</kbd>
                     <span>+</span>
-                    <kbd className={`px-1.5 py-0.5 rounded text-[10px] font-mono border ${
-                      isDark ? 'bg-[#181824] border-[#2d2d3e] text-gray-300' : 'bg-slate-100 border-slate-200 text-slate-600'
-                    }`}>K</kbd>
+                    <kbd className={`px-1.5 py-0.5 rounded text-[10px] font-mono border ${isDark ? 'bg-[#181824] border-[#2d2d3e] text-gray-300' : 'bg-slate-100 border-slate-200 text-slate-600'
+                      }`}>K</kbd>
                     <span>Search notes</span>
                   </span>
 
                   <span className="opacity-40">•</span>
 
                   <span className="flex items-center gap-1.5">
-                    <kbd className={`px-1.5 py-0.5 rounded text-[10px] font-mono border ${
-                      isDark ? 'bg-[#181824] border-[#2d2d3e] text-gray-300' : 'bg-slate-100 border-slate-200 text-slate-600'
-                    }`}>Ctrl</kbd>
+                    <kbd className={`px-1.5 py-0.5 rounded text-[10px] font-mono border ${isDark ? 'bg-[#181824] border-[#2d2d3e] text-gray-300' : 'bg-slate-100 border-slate-200 text-slate-600'
+                      }`}>Ctrl</kbd>
                     <span>+</span>
-                    <kbd className={`px-1.5 py-0.5 rounded text-[10px] font-mono border ${
-                      isDark ? 'bg-[#181824] border-[#2d2d3e] text-gray-300' : 'bg-slate-100 border-slate-200 text-slate-600'
-                    }`}>S</kbd>
+                    <kbd className={`px-1.5 py-0.5 rounded text-[10px] font-mono border ${isDark ? 'bg-[#181824] border-[#2d2d3e] text-gray-300' : 'bg-slate-100 border-slate-200 text-slate-600'
+                      }`}>S</kbd>
                     <span>Save note</span>
                   </span>
                 </div>

@@ -154,23 +154,51 @@ describe('NoteNest Authentication System', () => {
   });
 
   describe('POST /api/auth/google', () => {
-    it('should reject requests with missing token', async () => {
+    it('should return controlled 503 error when GOOGLE_LOGIN_ENABLED is false', async () => {
+      const prevFlag = process.env.GOOGLE_LOGIN_ENABLED;
+      process.env.GOOGLE_LOGIN_ENABLED = 'false';
+
+      const res = await request(app)
+        .post('/api/auth/google')
+        .send({ idToken: 'any.token' });
+
+      expect(res.status).toBe(503);
+      expect(res.body.success).toBe(false);
+      expect(res.body.code).toBe('GOOGLE_LOGIN_DISABLED');
+
+      if (prevFlag !== undefined) process.env.GOOGLE_LOGIN_ENABLED = prevFlag;
+      else delete process.env.GOOGLE_LOGIN_ENABLED;
+    });
+
+    it('should reject requests with missing token when enabled', async () => {
+      const prevFlag = process.env.GOOGLE_LOGIN_ENABLED;
+      process.env.GOOGLE_LOGIN_ENABLED = 'true';
+
       const res = await request(app)
         .post('/api/auth/google')
         .send({});
 
       expect(res.status).toBe(400);
       expect(res.body.success).toBe(false);
+
+      if (prevFlag !== undefined) process.env.GOOGLE_LOGIN_ENABLED = prevFlag;
+      else delete process.env.GOOGLE_LOGIN_ENABLED;
     });
 
-    it('should reject invalid or tampered Google tokens', async () => {
+    it('should reject invalid or tampered Google tokens when enabled', async () => {
+      const prevFlag = process.env.GOOGLE_LOGIN_ENABLED;
+      process.env.GOOGLE_LOGIN_ENABLED = 'true';
       process.env.GOOGLE_CLIENT_ID = 'test-client-id.apps.googleusercontent.com';
+
       const res = await request(app)
         .post('/api/auth/google')
         .send({ idToken: 'invalid.malformed.token' });
 
       expect(res.status).toBe(401);
       expect(res.body.success).toBe(false);
+
+      if (prevFlag !== undefined) process.env.GOOGLE_LOGIN_ENABLED = prevFlag;
+      else delete process.env.GOOGLE_LOGIN_ENABLED;
     });
   });
 });

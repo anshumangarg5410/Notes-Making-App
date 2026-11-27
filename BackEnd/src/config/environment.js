@@ -41,18 +41,36 @@ const environment = {
   },
 
   google: {
-    clientId: (process.env.GOOGLE_CLIENT_ID || '').replace(/["'\s]/g, '').trim()
+    get enabled() {
+      const flag = process.env.GOOGLE_LOGIN_ENABLED;
+      if (flag !== undefined) return flag.toLowerCase() === 'true';
+      return true;
+    },
+    get clientId() {
+      return (process.env.GOOGLE_CLIENT_ID || '').replace(/["'\s]/g, '').trim();
+    }
   },
 
   googleDrive: {
-    clientId: (process.env.GOOGLE_DRIVE_CLIENT_ID || process.env.GOOGLE_CLIENT_ID || '').replace(/["'\s]/g, '').trim(),
-    clientSecret: (process.env.GOOGLE_DRIVE_CLIENT_SECRET || '').replace(/["'\s]/g, '').trim(),
-    redirectUri: (
-      process.env.GOOGLE_DRIVE_REDIRECT_URI ||
-      (process.env.NODE_ENV === 'production'
-        ? 'https://notes-making-app-uos3.onrender.com/api/storage/google/callback'
-        : 'http://localhost:5001/api/storage/google/callback')
-    ).replace(/["'\s]/g, '').trim()
+    get enabled() {
+      const flag = process.env.GOOGLE_DRIVE_ENABLED;
+      if (flag !== undefined) return flag.toLowerCase() === 'true';
+      return true;
+    },
+    get clientId() {
+      return (process.env.GOOGLE_DRIVE_CLIENT_ID || process.env.GOOGLE_CLIENT_ID || '').replace(/["'\s]/g, '').trim();
+    },
+    get clientSecret() {
+      return (process.env.GOOGLE_DRIVE_CLIENT_SECRET || '').replace(/["'\s]/g, '').trim();
+    },
+    get redirectUri() {
+      return (
+        process.env.GOOGLE_DRIVE_REDIRECT_URI ||
+        (process.env.NODE_ENV === 'production'
+          ? 'https://notes-making-app-uos3.onrender.com/api/storage/google/callback'
+          : 'http://localhost:5001/api/storage/google/callback')
+      ).replace(/["'\s]/g, '').trim();
+    }
   },
 
   storage: {

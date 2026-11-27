@@ -210,6 +210,16 @@ export const offlineService = {
       const ids = trashNotes.map((n) => n._id || n.id).filter(Boolean);
       if (ids.length > 0) {
         await db.notes.bulkDelete(ids);
+        await db.syncQueue.bulkAdd(
+          ids.map((id) => ({
+            recordType: 'note',
+            recordId: id,
+            noteId: id,
+            action: 'permanentDelete',
+            payload: { id },
+            timestamp: Date.now()
+          }))
+        );
       }
     } catch (err) {
       console.warn('Dexie emptyLocalTrash error:', err);

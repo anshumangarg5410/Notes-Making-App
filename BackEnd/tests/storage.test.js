@@ -118,7 +118,30 @@ describe('Storage & Google Drive Architecture API', () => {
   });
 
   describe('GET /api/storage/google/connect', () => {
-    it('should generate a Google Drive OAuth authorization URL with drive.file scope', async () => {
+    it('should return controlled 503 error when GOOGLE_DRIVE_ENABLED is false', async () => {
+      const prevFlag = process.env.GOOGLE_DRIVE_ENABLED;
+      process.env.GOOGLE_DRIVE_ENABLED = 'false';
+
+      const res = await request(app)
+        .get('/api/storage/google/connect')
+        .set('Authorization', `Bearer ${tokenA}`);
+
+      expect(res.status).toBe(503);
+      expect(res.body.success).toBe(false);
+      expect(res.body.code).toBe('GOOGLE_DRIVE_DISABLED');
+
+      if (prevFlag !== undefined) process.env.GOOGLE_DRIVE_ENABLED = prevFlag;
+      else delete process.env.GOOGLE_DRIVE_ENABLED;
+    });
+
+    it('should generate a Google Drive OAuth authorization URL with drive.file scope when enabled', async () => {
+      const prevFlag = process.env.GOOGLE_DRIVE_ENABLED;
+      const prevSecret = process.env.GOOGLE_DRIVE_CLIENT_SECRET;
+      process.env.GOOGLE_DRIVE_ENABLED = 'true';
+      if (!process.env.GOOGLE_DRIVE_CLIENT_SECRET) {
+        process.env.GOOGLE_DRIVE_CLIENT_SECRET = 'test-drive-secret';
+      }
+
       const res = await request(app)
         .get('/api/storage/google/connect')
         .set('Authorization', `Bearer ${tokenA}`);
@@ -132,6 +155,11 @@ describe('Storage & Google Drive Architecture API', () => {
       // State parameter must verify to user A
       const verified = verifySignedState(res.body.data.state);
       expect(verified).toEqual(userAId);
+
+      if (prevFlag !== undefined) process.env.GOOGLE_DRIVE_ENABLED = prevFlag;
+      else delete process.env.GOOGLE_DRIVE_ENABLED;
+      if (prevSecret !== undefined) process.env.GOOGLE_DRIVE_CLIENT_SECRET = prevSecret;
+      else delete process.env.GOOGLE_DRIVE_CLIENT_SECRET;
     });
   });
 

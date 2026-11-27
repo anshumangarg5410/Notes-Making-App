@@ -37,6 +37,7 @@ import { authService } from '../../services/authService';
 import { offlineService, db } from '../../services/db';
 import storageService from '../../services/storageService';
 import driveSyncEngine from '../../services/driveSyncEngine';
+import { getIntegrationFlags, isDriveFlagDisabledInEnv } from '../../services/integrationStatus';
 import api from '../../services/api';
 
 export const SettingsView = ({
@@ -75,6 +76,7 @@ export const SettingsView = ({
   const [pendingSyncCount, setPendingSyncCount] = useState(0);
   const [showDisconnectConfirm, setShowDisconnectConfirm] = useState(false);
   const [isDisconnecting, setIsDisconnecting] = useState(false);
+  const [showDriveUnavailableModal, setShowDriveUnavailableModal] = useState(false);
   const [isImporting, setIsImporting] = useState(false);
   const importInputRef = useRef(null);
 
@@ -319,14 +321,29 @@ export const SettingsView = ({
   // Connect Google Drive
   const handleConnectDrive = async () => {
     try {
+      if (isDriveFlagDisabledInEnv()) {
+        setShowDriveUnavailableModal(true);
+        return;
+      }
+
+      const flags = await getIntegrationFlags(true);
+      if (!flags.googleDriveEnabled) {
+        setShowDriveUnavailableModal(true);
+        return;
+      }
+
       const res = await storageService.getGoogleConnectUrl();
       if (res.success && res.data?.authUrl) {
         window.location.href = res.data.authUrl;
       } else {
-        toastError('Unable to generate Google authorization link');
+        setShowDriveUnavailableModal(true);
       }
     } catch (err) {
-      toastError(err.message || 'Failed to connect Google Drive');
+      if (err?.response?.status === 503 || err?.response?.data?.code === 'GOOGLE_DRIVE_DISABLED') {
+        setShowDriveUnavailableModal(true);
+      } else {
+        setShowDriveUnavailableModal(true);
+      }
     }
   };
 
@@ -336,6 +353,7 @@ export const SettingsView = ({
     try {
       await storageService.disconnectGoogle();
       await offlineService.setStorageMeta('storage_provider', 'local');
+      await offlineService.setStorageMeta('drive_connected', false);
       setStorageProvider('local');
       setDriveStatus({ connected: false, email: '', lastSyncedAt: null });
       setShowDisconnectConfirm(false);
@@ -1299,6 +1317,40 @@ export const SettingsView = ({
           </div>
         </div>
       </div>
+
+      {/* Google Drive Unavailable Modal */}
+      {showDriveUnavailableModal && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-fadeIn"
+          onClick={() => setShowDriveUnavailableModal(false)}
+        >
+          <div
+            className="w-full max-w-md bg-[#12131f] border border-[#26283b] rounded-2xl p-6 text-white shadow-2xl space-y-4"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-start gap-3">
+              <div className="w-10 h-10 rounded-xl bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-amber-400 flex-shrink-0">
+                <AlertCircle className="w-5 h-5" />
+              </div>
+              <div className="space-y-1.5">
+                <h3 className="text-base font-bold text-white">Google Drive Temporarily Unavailable</h3>
+                <p className="text-xs text-gray-300 leading-relaxed">
+                  We're currently unable to connect to Google Drive. You can continue using NoteNest without it. Your existing notes and files remain unaffected.
+                </p>
+              </div>
+            </div>
+            <div className="flex justify-end pt-2">
+              <button
+                type="button"
+                onClick={() => setShowDriveUnavailableModal(false)}
+                className="px-4 py-2 rounded-xl bg-pink-600 hover:bg-pink-500 text-white text-xs font-semibold transition-colors"
+              >
+                Continue Without Google Drive
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Disconnect Google Drive Confirmation Modal */}
       {showDisconnectConfirm && (

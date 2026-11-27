@@ -1,9 +1,11 @@
 import { db, offlineService } from './db';
 import storageService from './storageService';
+import { isDriveFlagDisabledInEnv } from './integrationStatus';
 
 class DriveSyncEngine {
   constructor() {
     this.isSyncing = false;
+    this.pendingResync = false;
     this.subscribers = new Set();
     this.timer = null;
 
@@ -34,12 +36,16 @@ class DriveSyncEngine {
   }
 
   /**
-   * Check if sync is enabled (user selected google-drive)
+   * Check if sync is enabled (Google Drive flag enabled, user opted in, AND Drive is connected)
    */
   async isGoogleDriveEnabled() {
     try {
-      const provider = await offlineService.getStorageMeta('storage_provider');
-      return provider === 'google-drive';
+      if (isDriveFlagDisabledInEnv()) return false;
+      const [provider, driveConnected] = await Promise.all([
+        offlineService.getStorageMeta('storage_provider'),
+        offlineService.getStorageMeta('drive_connected')
+      ]);
+      return provider === 'google-drive' && driveConnected === true;
     } catch (_) {
       return false;
     }
@@ -49,7 +55,11 @@ class DriveSyncEngine {
    * Trigger automatic background sync if conditions are met
    */
   async triggerAutoSync() {
-    if (!navigator.onLine || this.isSyncing) return;
+    if (!navigator.onLine) return;
+    if (this.isSyncing) {
+      this.pendingResync = true;
+      return;
+    }
     const isDrive = await this.isGoogleDriveEnabled();
     if (!isDrive) return;
 
@@ -84,7 +94,12 @@ class DriveSyncEngine {
       ]);
 
       const deletedIds = queuedItems
-        .filter((item) => item.action === 'delete' || item.action === 'permanentDelete')
+        .filter((item) => item.action === 'delete')
+        .map((item) => item.recordId || item.noteId)
+        .filter(Boolean);
+
+      const permanentDeletedIds = queuedItems
+        .filter((item) => item.action === 'permanentDelete')
         .map((item) => item.recordId || item.noteId)
         .filter(Boolean);
 
@@ -122,7 +137,8 @@ class DriveSyncEngine {
           canvasData: note.canvasData || null,
           updatedAt: note.updatedAt || new Date().toISOString()
         })),
-        deletedIds
+        deletedIds,
+        permanentDeletedIds
       };
 
       const res = await storageService.syncGoogleDrive(payload);
@@ -132,8 +148,11 @@ class DriveSyncEngine {
         await offlineService.setStorageMeta('last_synced_at', syncTimestamp);
         await offlineService.setStorageMeta('last_sync_status', 'synced');
 
-        // Clean out queued items
-        await db.syncQueue.clear();
+        // Clean out only the queued items that were processed in this batch
+        const processedIds = queuedItems.map((item) => item.id).filter(Boolean);
+        if (processedIds.length > 0) {
+          await db.syncQueue.bulkDelete(processedIds);
+        }
 
         // Mark local notes as synced
         await db.notes
@@ -164,6 +183,10 @@ class DriveSyncEngine {
       return { success: false, error: err.message };
     } finally {
       this.isSyncing = false;
+      if (this.pendingResync) {
+        this.pendingResync = false;
+        this.triggerAutoSync();
+      }
     }
   }
 

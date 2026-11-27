@@ -1,9 +1,11 @@
+const mongoose = require('mongoose');
 const StoragePreference = require('../models/StoragePreference');
 const DriveFileMapping = require('../models/DriveFileMapping');
 const Note = require('../models/Note');
 const Notebook = require('../models/Notebook');
 const Section = require('../models/Section');
 const googleDriveService = require('./googleDrive.service');
+const environment = require('../config/environment');
 
 class StorageService {
   /**
@@ -108,9 +110,17 @@ class StorageService {
    */
   async trashOrDeleteNoteFromDrive(userId, noteId, permanent = false) {
     try {
+      if (!environment.googleDrive?.enabled) return false;
       if (!mongoose.Types.ObjectId.isValid(userId) || !mongoose.Types.ObjectId.isValid(noteId)) return false;
       const pref = await StoragePreference.findOne({ userId }).select('+googleDrive.refreshTokenEncrypted');
-      if (!pref || !pref.googleDrive?.connected || !pref.googleDrive.refreshTokenEncrypted) return false;
+      if (
+        !pref ||
+        pref.provider !== 'google-drive' ||
+        !pref.googleDrive?.connected ||
+        !pref.googleDrive.refreshTokenEncrypted
+      ) {
+        return false;
+      }
 
       const mapping = await DriveFileMapping.findOne({
         userId,
@@ -167,6 +177,11 @@ class StorageService {
 
     return {
       ...pref.toJSON(),
+      googleDriveEnabled: Boolean(
+        environment.googleDrive?.enabled &&
+          environment.googleDrive?.clientId &&
+          environment.googleDrive?.clientSecret
+      ),
       existingMongoData: {
         hasData: mongoNotesCount > 0 || mongoNotebooksCount > 0,
         notesCount: mongoNotesCount,
@@ -177,7 +192,31 @@ class StorageService {
   }
 
   /**
-   * Updates storage preferences (provider, onboarding status)
+   * Records a failed Google Drive connection attempt without activating Drive
+   * @param {string} userId
+   */
+  async markConnectionFailed(userId) {
+    const existing = await StoragePreference.findOne({ userId });
+    if (existing?.googleDrive?.connected) {
+      return existing;
+    }
+    return StoragePreference.findOneAndUpdate(
+      { userId },
+      {
+        $set: {
+          provider: 'local',
+          driveStatus: 'connection_failed',
+          'googleDrive.connected': false,
+          'googleDrive.lastSyncStatus': 'error',
+          'googleDrive.lastSyncError': 'Google Drive is temporarily unavailable'
+        }
+      },
+      { new: true, upsert: true }
+    );
+  }
+
+  /**
+   * Updates storage preferences (provider, onboarding status, driveStatus)
    * @param {string} userId
    * @param {Object} updateData
    * @returns {Promise<Object>}
@@ -190,6 +229,16 @@ class StorageService {
     if (typeof updateData.onboardingCompleted === 'boolean') {
       allowed.onboardingCompleted = updateData.onboardingCompleted;
     }
+    if (
+      updateData.driveStatus &&
+      ['not_configured', 'declined', 'connection_failed', 'connected', 'disconnected'].includes(
+        updateData.driveStatus
+      )
+    ) {
+      allowed.driveStatus = updateData.driveStatus;
+    } else if (updateData.provider === 'local' && updateData.onboardingCompleted === true) {
+      allowed.driveStatus = 'declined';
+    }
 
     const pref = await StoragePreference.findOneAndUpdate(
       { userId },
@@ -201,16 +250,23 @@ class StorageService {
   }
 
   /**
-   * Gets Google Drive connection status for user
+   * Gets Google Drive connection status for user (lazy: never calls Google APIs unless Drive is enabled & connected)
    * @param {string} userId
    * @returns {Promise<Object>}
    */
   async getGoogleDriveStatus(userId) {
+    const googleDriveEnabled = Boolean(
+      environment.googleDrive?.enabled &&
+        environment.googleDrive?.clientId &&
+        environment.googleDrive?.clientSecret
+    );
     const pref = await StoragePreference.findOne({ userId }).select('+googleDrive.refreshTokenEncrypted');
     if (!pref || !pref.googleDrive?.connected) {
       return {
         connected: false,
+        googleDriveEnabled,
         provider: pref?.provider || 'local',
+        driveStatus: pref?.driveStatus || 'not_configured',
         email: '',
         lastSyncedAt: null,
         rootFolderId: null,
@@ -218,23 +274,27 @@ class StorageService {
       };
     }
 
-    // Check if token is still valid
-    let tokenValid = true;
-    try {
-      if (pref.googleDrive.refreshTokenEncrypted) {
-        await googleDriveService.getAccessToken(pref.googleDrive.refreshTokenEncrypted);
-      } else {
-        tokenValid = false;
-      }
-    } catch (err) {
-      if (err.code === 'DRIVE_TOKEN_EXPIRED') {
-        tokenValid = false;
+    // Only validate/refresh token when Google Drive is globally enabled AND actively selected by the user
+    let tokenValid = googleDriveEnabled && pref.provider === 'google-drive';
+    if (googleDriveEnabled && pref.provider === 'google-drive') {
+      try {
+        if (pref.googleDrive.refreshTokenEncrypted) {
+          await googleDriveService.getAccessToken(pref.googleDrive.refreshTokenEncrypted);
+        } else {
+          tokenValid = false;
+        }
+      } catch (err) {
+        if (err.code === 'DRIVE_TOKEN_EXPIRED') {
+          tokenValid = false;
+        }
       }
     }
 
     return {
       connected: pref.googleDrive.connected,
+      googleDriveEnabled,
       provider: pref.provider,
+      driveStatus: pref.driveStatus || 'connected',
       email: pref.googleDrive.email || '',
       tokenValid,
       rootFolderId: pref.googleDrive.rootFolderId || null,
@@ -265,6 +325,7 @@ class StorageService {
       {
         $set: {
           provider: 'google-drive',
+          driveStatus: 'connected',
           onboardingCompleted: true,
           'googleDrive.connected': true,
           'googleDrive.email': email,
@@ -290,7 +351,7 @@ class StorageService {
    */
   async disconnectGoogleDrive(userId) {
     const pref = await StoragePreference.findOne({ userId }).select('+googleDrive.refreshTokenEncrypted');
-    if (pref && pref.googleDrive?.refreshTokenEncrypted) {
+    if (environment.googleDrive?.enabled && pref && pref.googleDrive?.refreshTokenEncrypted) {
       await googleDriveService.revokeToken(pref.googleDrive.refreshTokenEncrypted);
     }
 
@@ -299,6 +360,7 @@ class StorageService {
       {
         $set: {
           provider: 'local',
+          driveStatus: 'disconnected',
           'googleDrive.connected': false,
           'googleDrive.refreshTokenEncrypted': '',
           'googleDrive.lastSyncStatus': 'idle'
@@ -336,8 +398,20 @@ class StorageService {
    * @returns {Promise<Object>}
    */
   async syncWithGoogleDrive(userId, payload = {}) {
+    if (!environment.googleDrive?.enabled) {
+      const err = new Error('Google Drive integration is temporarily unavailable.');
+      err.statusCode = 503;
+      err.code = 'GOOGLE_DRIVE_DISABLED';
+      throw err;
+    }
+
     const pref = await StoragePreference.findOne({ userId }).select('+googleDrive.refreshTokenEncrypted');
-    if (!pref || !pref.googleDrive?.connected || !pref.googleDrive.refreshTokenEncrypted) {
+    if (
+      !pref ||
+      pref.provider !== 'google-drive' ||
+      !pref.googleDrive?.connected ||
+      !pref.googleDrive.refreshTokenEncrypted
+    ) {
       const err = new Error('Google Drive is not connected. Cannot synchronize.');
       err.statusCode = 400;
       throw err;
@@ -359,12 +433,29 @@ class StorageService {
 
     try {
       // Process explicit deletions from sync payload
+      const permanentDeletedIds = Array.isArray(payload.permanentDeletedIds)
+        ? payload.permanentDeletedIds.map((id) => id.toString())
+        : [];
       const deletedIds = (Array.isArray(payload.deletedIds) ? payload.deletedIds : [])
-        .concat(Array.isArray(payload.deletedNoteIds) ? payload.deletedNoteIds : []);
+        .concat(Array.isArray(payload.deletedNoteIds) ? payload.deletedNoteIds : [])
+        .map((id) => id.toString());
 
-      for (const delId of deletedIds) {
+      for (const permId of permanentDeletedIds) {
         try {
-          const recIdStr = delId.toString();
+          const mapping = await DriveFileMapping.findOne({ userId, recordId: permId });
+          if (mapping && mapping.driveFileId) {
+            await googleDriveService.deleteFile(accessToken, mapping.driveFileId);
+            await DriveFileMapping.deleteOne({ _id: mapping._id });
+            syncedCount++;
+          }
+        } catch (delErr) {
+          errors.push({ recordId: permId, error: delErr.message });
+        }
+      }
+
+      for (const recIdStr of deletedIds) {
+        if (permanentDeletedIds.includes(recIdStr)) continue;
+        try {
           const mapping = await DriveFileMapping.findOne({ userId, recordId: recIdStr });
           if (mapping && mapping.driveFileId && !mapping.isDeleted) {
             await googleDriveService.trashFile(accessToken, mapping.driveFileId);
@@ -373,7 +464,7 @@ class StorageService {
             syncedCount++;
           }
         } catch (delErr) {
-          errors.push({ recordId: delId, error: delErr.message });
+          errors.push({ recordId: recIdStr, error: delErr.message });
         }
       }
 
@@ -457,7 +548,7 @@ class StorageService {
             let noteMapping = await DriveFileMapping.findOne({ userId, recordType: 'note', recordId: noteId });
 
             // If note is deleted or marked deleted, trash it on Google Drive
-            if (note.isDeleted || deletedIds.includes(noteId)) {
+            if (note.isDeleted || deletedIds.includes(noteId) || permanentDeletedIds.includes(noteId)) {
               if (noteMapping && noteMapping.driveFileId && !noteMapping.isDeleted) {
                 await googleDriveService.trashFile(accessToken, noteMapping.driveFileId);
                 noteMapping.isDeleted = true;
@@ -465,6 +556,10 @@ class StorageService {
                 syncedCount++;
               }
               continue;
+            }
+
+            if (noteMapping && noteMapping.driveFileId && noteMapping.isDeleted) {
+              await googleDriveService.untrashFile(accessToken, noteMapping.driveFileId);
             }
 
             const fileName = this.formatNoteFileName(note, noteId);

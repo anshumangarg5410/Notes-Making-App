@@ -64,7 +64,15 @@ app.get('/api/health', (req, res) => {
     success: true,
     message: 'NoteNest API server is running',
     timestamp: new Date().toISOString(),
-    environment: environment.nodeEnv
+    environment: environment.nodeEnv,
+    integrations: {
+      googleLoginEnabled: Boolean(environment.google.enabled && environment.google.clientId),
+      googleDriveEnabled: Boolean(
+        environment.googleDrive.enabled &&
+          environment.googleDrive.clientId &&
+          environment.googleDrive.clientSecret
+      )
+    }
   });
 });
 
